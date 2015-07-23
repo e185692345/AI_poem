@@ -32,6 +32,7 @@ public class Main {
 		for(int i=0; i<Json.get_number(); i++){
 			System.out.println(start.get(i));
 		}
+		System.out.println(System.getProperty("os.name"));
 		//System.out.println(str);
 		
 		/*
