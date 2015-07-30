@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
-import ai.poem.LineComposition;
 import ai.poem.PoemTemplate;
+import ai.sentence.LineComposition;
 import ai.word.ChineseWord;
 import ai.word.WordPile;
 

@@ -1,4 +1,4 @@
-package ai.poem;
+package ai.sentence;
 
 import java.util.Random;
 

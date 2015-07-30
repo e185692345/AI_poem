@@ -3,12 +3,14 @@ package ai.word;
 public class ChineseWord {
 
 	public static final int noun = 1, adj = 2, verb = 4, all=7;
+	
 	private int length;
 	private String word;
 	private char[] bopomofo;
 	private int[] tone;
 	private int wordType;
-	
+	private int relation;
+	private int startOrEnd;
 	/**
 	 * 	建立一個詞，儲存詞性和每個字的平仄、韻腳
 	 * 	@param word: 中文字詞
@@ -20,7 +22,7 @@ public class ChineseWord {
 	 * 	用二進位表示詞性需要3bit(van) 某個bit是1就表示具有該詞性 
 	 * 	例如: 詞性 = 5,van = 101, 表示是動詞和名詞
 	 */
-	public ChineseWord(String word, String[] letterBopomofo, int wordType){
+	public ChineseWord(String word, String[] letterBopomofo, int wordType, int relation, int startOrEnd){
 		String str;
 		
 		this.length = word.length();
@@ -28,6 +30,8 @@ public class ChineseWord {
 		this.tone = new int[this.length];
 		this.word = word;
 		this.wordType = wordType;
+		this.relation = relation;
+		this.startOrEnd = startOrEnd;
 		
 		for (int i = 0 ; i < this.length ; i++){
 			str = letterBopomofo[i];
@@ -55,12 +59,22 @@ public class ChineseWord {
 		}
 	}
 	
-	public ChineseWord(String word, char[] bopomofo, int[] tone, int wordType, int length) {
+	public ChineseWord(String word, char[] bopomofo, int[] tone, int wordType, int length, int relation, int startOrEnd) {
 		this.bopomofo = bopomofo;
 		this.length = length;
 		this.tone = tone;
 		this.word = word;
 		this.wordType = wordType;
+		this.relation = relation;
+		this.startOrEnd = startOrEnd;
+	}
+	
+	public int getStartOrEnd(){
+		return this.startOrEnd;
+	}
+	
+	public int getRelation(){
+		return this.relation;
 	}
 	
 	public int getLength() {

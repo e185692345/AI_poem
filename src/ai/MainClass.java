@@ -14,15 +14,15 @@ import ai.net.JSONReader;
 import ai.word.WordPile;
 
 public class MainClass {
-	private final static int NET_SOURCE = 0, FILE_SOURCE = 1;
+	protected final static int NET_SOURCE = 0, FILE_SOURCE = 1;
 	
 	public static void main(String[] args){
 		WordPile wordPile;
 		/*=====================================*/
 		/*選擇字詞來源 NET_SOURCE(從conceptnet) 或 FILE_SOURCE(wordPile.json)*/
-		final int SOURCE = NET_SOURCE;
+		final int SOURCE = FILE_SOURCE;
 		/*如果來源是NET_SOURCE則要指定主題*/
-		final String topic = new String("狗");
+		final String topic = new String("朋友");
 		/*=====================================*/
 		
 		switch (SOURCE){
@@ -82,35 +82,5 @@ public class MainClass {
 			e.printStackTrace();
 		}
 		
-	}
-}
-
-class Point{
-	XY xy;
-	String name;
-	
-	public Point(String name, int x, int y) {
-		this.name = name;
-		this.xy = new XY(x,y);
-	}
-	
-	public String toString(){
-		return name+"("+xy.getX()+","+xy.getY()+")";
-	}
-}
-
-class XY{
-	int x,y;
-	public XY(int x,int y) {
-		this.x = x;
-		this.y = y;
-	}
-	
-	public int getX(){
-		return this.x;
-	}
-	
-	public int getY(){
-		return this.y;
 	}
 }

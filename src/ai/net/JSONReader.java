@@ -17,9 +17,9 @@ import org.json.JSONObject;
 
 import ai.exception.BopomofoException;
 import ai.word.ChineseWord;
+import ai.word.Relation;
 
 public class JSONReader {
-	
 	/**
 	 * 	利用concept net的API尋找和某個主題相關的詞，並且利用rel來推測詞的詞性
 	 * 	@param  topic: 某個主題(String)
@@ -32,12 +32,13 @@ public class JSONReader {
 	 * 	處理json的library要另外去下載，請參考 http://www.ewdna.com/2008/10/jsonjar.html
 	 */
 	public static ChineseWord[] GetWordList(String topic){
-		final int limit = 1000;
+		final int limit = 9999;
 		ChineseWord[] tempWordList = new ChineseWord[limit];
-		int wordType,count = 0;
+		int wordType,count = 0, relationID;
 		
 		try {
-			String word,startOrEnd;
+			String word;
+			int startOrEnd;
 			//String url = new String("http://conceptnet5.media.mit.edu/data/5.3/c/zh/"+URLEncoder.encode(topic,"UTF-8")+"?limit="+limit);
 			JSONObject obj, jsonObj;
 			
@@ -50,23 +51,24 @@ public class JSONReader {
 				array = obj.getJSONArray("edges");
 				for (int i=0; i<array.length(); i++){
 					jsonObj  = ((JSONObject)array.getJSONObject(i));
+					relationID = Relation.GetRelationID(jsonObj.getString("rel"));
 					if (jsonObj.get("start").toString().indexOf(topic) != -1){
 						word = jsonObj.getString("end").split("/")[3];
-						startOrEnd = new String("end");
+						startOrEnd = Relation.END;
 					}
 					else if (jsonObj.get("end").toString().indexOf(topic) != -1){
 						word = jsonObj.getString("start").split("/")[3];
-						startOrEnd = new String("start");
+						startOrEnd = Relation.START;
 					}
 					else{
-						System.err.println("error : ConceptNet gives a json object without corresponding start wrod / end word");
+						System.err.println("warning : ConceptNet gives a json object without corresponding start wrod / end word");
 						continue;
 					}
 					
-					if (word.length() <= 3){
+					if (word.length() <= 3 && relationID != -1){
 						wordType = GetWordType(jsonObj.getString("rel"),startOrEnd);
 						try {
-							tempWordList[count] =  new ChineseWord(word, HtmlReader.GetBopomofo(word), wordType);
+							tempWordList[count] =  new ChineseWord(word, HtmlReader.GetBopomofo(word), wordType, relationID, startOrEnd);
 							count += 1;
 						} catch (BopomofoException e) {
 							// TODO Auto-generated catch block
@@ -149,16 +151,16 @@ public class JSONReader {
 	 *  
 	 *  如果遇到未知的 relation 則會回傳 0，表示沒有任何詞性
 	 */
-	private static int GetWordType(String relation, String startOrEnd){
+	private static int GetWordType(String relation, int startOrEnd){
 		final String[] rel = new String[] {"/r/RelatedTo","/r/IsA","/r/PartOf","/r/HasA","/r/UsedFor","/r/CapableOf","/r/AtLocation","/r/Causes","/r/HasSubevent","/r/HasFirstSubevent","/r/HasPrerequisite","/r/HasProperty","/r/MotivatedByGoal","/r/Desires","/r/CreatedBy","/r/Synonym","/r/Antonym","/r/DerivedFrom","/r/MadeOf"};
 		final String[] start = new String[] {"名形動","名","名","名","名","名","名","名動","動","動","動","名","動","名","名","名","名","名","名"};
 		final String[] end = new String[] {"名形動","名","名","名","動","動","名","形動","動","動","動","形","名形動","名動","名","名","名","名","名"};
 		int wordType = 0;
 		String[] type = start;
 		
-		if (startOrEnd.equals("start"))
+		if (startOrEnd == Relation.START) // start : 0
 			type = start;
-		else if (startOrEnd.equals("end"))
+		else if (startOrEnd == Relation.END) // end : 1
 			type = end;
 		else {
 			System.err.println("error : the second argument of GetWordType can only be \"start\" or \"end\"");
