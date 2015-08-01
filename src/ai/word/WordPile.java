@@ -13,22 +13,40 @@ public class WordPile {
 	private ArrayList<ArrayList<ChineseWord>> adjWord = new ArrayList<ArrayList<ChineseWord>>();
 	private ArrayList<ArrayList<ChineseWord>> verbWord = new ArrayList<ArrayList<ChineseWord>>();
 	private ArrayList<ArrayList<ArrayList<ArrayList<ChineseWord>>>>  relationPile = new ArrayList<ArrayList<ArrayList<ArrayList<ChineseWord>>>>();
-	private ChineseWord[] wordList;
-	
+	private ArrayList<ChineseWord[]> wordListPile;
+	private int totalWord;
 	private Random rand = new Random();
 	
-	public WordPile(ChineseWord[] wordList) {
+	public WordPile() {
 		InitLsit();
-		this.wordList = wordList;
-		ClassifyWords();
-		System.out.printf("===詞庫中總共有%d個詞===\n",wordList.length);
+		wordListPile = new ArrayList<ChineseWord[]>();
+		totalWord = 0;
 	}
 	
-	public WordPile(JSONObject json){
-		InitLsit();
+	public void AddWords(ChineseWord[] wordList){
+		wordListPile.add(wordList);
+		totalWord += wordList.length;
+		System.out.printf("詞庫中新增了 %d 個詞 ， 目前共有 %d 個詞\n",wordList.length,totalWord);
 		
+		for (ChineseWord word : wordList){
+			/*一個詞可能會有很多詞性*/
+			if ( (word.getWordType() & ChineseWord.noun) > 0){
+				nounWord.get(word.getLength()).add(word);
+			}
+			if ((word.getWordType() & ChineseWord.adj) > 0){
+				adjWord.get(word.getLength()).add(word);
+			}
+			if ((word.getWordType() & ChineseWord.verb) > 0){
+				verbWord.get(word.getLength()).add(word);
+			}
+			
+			relationPile.get(word.getRelation()).get(word.getStartOrEnd()).get(word.getLength()).add(word);
+		}
+	}
+	
+	public void AddWords(JSONObject json){
 		JSONArray arr = json.optJSONArray("wordPile");
-		this.wordList = new ChineseWord[arr.length()];
+		ChineseWord[] wordList = new ChineseWord[arr.length()];
 		if ( arr != null){
 			for ( int i = 0 ; i < arr.length() ; i++){
 				JSONObject item;
@@ -37,15 +55,14 @@ public class WordPile {
 					wordList[i] = new ChineseWord(item.optString("word"),GetBopomofo(item.optJSONArray("bopomofo")), 
 							GetTone(item.optJSONArray("tone")),item.optInt("wordType"),item.optInt("length"),item.optInt("relation"),item.optInt("startOrEnd"));
 				} catch (JSONException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
+					continue;
 				}
 				
 				
 			}
 		}
-		ClassifyWords();
-		System.out.printf("===詞庫中總共有%d個詞===\n",wordList.length);
+		AddWords(wordList);
 	}
 	
 	/**
@@ -99,35 +116,21 @@ public class WordPile {
 	public String GetJSONString(){
 		JSONObject json = new JSONObject();
 		JSONArray arr = new JSONArray();
-		for ( ChineseWord word : wordList){
-			JSONObject obj = new JSONObject(word);
-			arr.put(obj);
+		for ( ChineseWord[] wordList : wordListPile){
+			for ( ChineseWord word : wordList){
+				JSONObject obj = new JSONObject(word);
+				arr.put(obj);
+			}
 		}
+		
 		try {
+			json.put("totalWord", totalWord);
 			json.put("wordPile",arr);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return "{}";
 		}
 		return json.toString();
-	}
-	
-	private void ClassifyWords(){
-		
-		for (ChineseWord word : wordList){
-			/*一個詞可能會有很多詞性*/
-			if ( (word.getWordType() & ChineseWord.noun) > 0){
-				nounWord.get(word.getLength()).add(word);
-			}
-			if ((word.getWordType() & ChineseWord.adj) > 0){
-				adjWord.get(word.getLength()).add(word);
-			}
-			if ((word.getWordType() & ChineseWord.verb) > 0){
-				verbWord.get(word.getLength()).add(word);
-			}
-			
-			relationPile.get(word.getRelation()).get(word.getStartOrEnd()).get(word.getLength()).add(word);
-		}
 	}
 	
 	public ChineseWord GetAWord(int wordType, int wordLength) {

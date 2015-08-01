@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 import ai.exception.BopomofoException;
 
-class HtmlReader {
+class BopomofoCrawler {
 	/**
 	 *	用教育部國語辭典查詢單詞的注音，再用通用表示法把注音取出來
 	 *	@param  : 欲查詢的詞(String)

@@ -10,33 +10,33 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import ai.GeneticAlgorithm.GeneticAlgorithm;
-import ai.net.JSONReader;
-import ai.word.ChineseWord;
+import ai.net.ConceptNetCrawler;
 import ai.word.WordPile;
 
 public class MainClass {
 	protected final static int NET_SOURCE = 0, FILE_SOURCE = 1;
 	
 	public static void main(String[] args){
-		WordPile wordPile;
+		WordPile wordPile = new WordPile();
 		/*=====================================*/
 		/*選擇字詞來源 NET_SOURCE(從conceptnet) 或 FILE_SOURCE(wordPile.json)*/
-		final int SOURCE = NET_SOURCE;
+		final int SOURCE = FILE_SOURCE;
 		/*如果來源是NET_SOURCE則要指定主題*/
 		final String topic = new String("朋友");
 		/*=====================================*/
 		
 		switch (SOURCE){
 		case NET_SOURCE :
-			ChineseWord[] wordList= new JSONReader(topic).GetWordList();
-			wordPile = new WordPile(wordList);
-			//new GeneticAlgorithm(8, 5, wordPile).Evole();
+			ConceptNetCrawler wordSource= new ConceptNetCrawler(topic);
+			wordPile.AddWords(wordSource.GetWordList_ChineseSource());
+			wordPile.AddWords(wordSource.GetWordList_EnlishSource());
+			new GeneticAlgorithm(8, 5, wordPile).Evole();
 			WriteToFile("wordPile.json", wordPile.GetJSONString());
 			break;
 		case FILE_SOURCE:
 			try {
-				wordPile = new WordPile(new JSONObject(ReadFile("wordPile.json")));
-				//new GeneticAlgorithm(8, 5, wordPile).Evole();
+				wordPile.AddWords(new JSONObject(ReadFile("wordPile.json")));
+				new GeneticAlgorithm(8, 5, wordPile).Evole();
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

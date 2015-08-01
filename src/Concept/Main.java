@@ -12,10 +12,7 @@ public class Main {
 		
 		URL url = null;
 		String str = new String();
-		String tone = new String();
-		ArrayList<String> rhyme =  new ArrayList<String>();
 		String concept = new String("人");
-		Scanner input = new Scanner(System.in);		 
 		//topic = input.next();
 		//System.out.println(topic);
 		ArrayList<Double> start = new ArrayList<Double>();
