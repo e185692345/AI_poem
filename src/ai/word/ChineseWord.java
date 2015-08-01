@@ -162,7 +162,6 @@ public class ChineseWord {
 		for (int i = 0; i < this.length; i++) {
 			sb.append(word.charAt(i)+", "+bopomofo[i]+", "+String.valueOf(tone[i])+"\n");
 		}
-		sb.append("\n");
 		return sb.toString();
 	}
 }

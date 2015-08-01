@@ -11,6 +11,7 @@ import org.json.JSONObject;
 
 import ai.GeneticAlgorithm.GeneticAlgorithm;
 import ai.net.JSONReader;
+import ai.word.ChineseWord;
 import ai.word.WordPile;
 
 public class MainClass {
@@ -20,21 +21,22 @@ public class MainClass {
 		WordPile wordPile;
 		/*=====================================*/
 		/*選擇字詞來源 NET_SOURCE(從conceptnet) 或 FILE_SOURCE(wordPile.json)*/
-		final int SOURCE = FILE_SOURCE;
+		final int SOURCE = NET_SOURCE;
 		/*如果來源是NET_SOURCE則要指定主題*/
 		final String topic = new String("朋友");
 		/*=====================================*/
 		
 		switch (SOURCE){
 		case NET_SOURCE :
-			wordPile = new WordPile(JSONReader.GetWordList(topic));
-			new GeneticAlgorithm(8, 5, wordPile).Evole();
+			ChineseWord[] wordList= new JSONReader(topic).GetWordList();
+			wordPile = new WordPile(wordList);
+			//new GeneticAlgorithm(8, 5, wordPile).Evole();
 			WriteToFile("wordPile.json", wordPile.GetJSONString());
 			break;
 		case FILE_SOURCE:
 			try {
 				wordPile = new WordPile(new JSONObject(ReadFile("wordPile.json")));
-				new GeneticAlgorithm(8, 5, wordPile).Evole();
+				//new GeneticAlgorithm(8, 5, wordPile).Evole();
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

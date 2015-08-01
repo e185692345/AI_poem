@@ -1,5 +1,8 @@
 package ai;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -11,43 +14,11 @@ import ai.word.WordPile;
 
 public class TestMain extends MainClass{
 	public static void main(String[] args){
-		WordPile wordPile = null;
-		/*=====================================*/
-		/*選擇字詞來源 NET_SOURCE(從conceptnet) 或 FILE_SOURCE(wordPile.json)*/
-		final int SOURCE = FILE_SOURCE;
-		/*如果來源是NET_SOURCE則要指定主題*/
-		final String topic = new String("狗");
-		/*=====================================*/
-		
-		switch (SOURCE){
-		case NET_SOURCE :
-			wordPile = new WordPile(JSONReader.GetWordList(topic));
-			WriteToFile("wordPile.json", wordPile.GetJSONString());
-			break;
-		case FILE_SOURCE:
-			try {
-				wordPile = new WordPile(new JSONObject(ReadFile("wordPile.json")));
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			break;
-		default:
-			System.err.println("error Incorrect source");
-			System.exit(1);
-		}
-		
-		MakeSentence make = new MakeSentence(wordPile);
-		for (int i = 0 ; i < 10 ; ){
-			String sentence = make.GetSenTenceType1(LineComposition.GetRandomComposition(5));
-			if (sentence == null){
-				//System.out.println("null");
-			}
-			else{
-				System.out.println(sentence);
-				i+=1;
-			}
-		}
-		
+		String str="<td colspan=\"2\">&nbsp;1.　毫<span class=\"key\">不做作</span></td>\n</tr>";
+		Matcher matcher3 = Pattern.compile("1\\.　.*<span class=\"key\">.*<\\/span>.*<\\/td>").matcher(str);
+		matcher3.find();
+		String str1 = matcher3.group();
+		str1 = str1.substring(3).replaceAll("<.*?>","");
+		System.out.println(str1);
 	}
 }

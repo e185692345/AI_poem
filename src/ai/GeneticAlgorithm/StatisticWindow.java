@@ -9,7 +9,7 @@ import java.awt.Stroke;
 
 import javax.swing.*;
 
-public class StatisticWindow extends JFrame{
+class StatisticWindow extends JFrame{
 	
 	/**
 	 * 

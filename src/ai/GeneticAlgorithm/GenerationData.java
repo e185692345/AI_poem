@@ -1,6 +1,6 @@
 package ai.GeneticAlgorithm;
 
-public class GenerationData {
+class GenerationData {
 	
 	int[] max, min, average;
 	int maxValue,minValue;
@@ -26,23 +26,23 @@ public class GenerationData {
 		}
 	}
 	
-	public int[] getMax(){
+	int[] getMax(){
 		return this.max;
 	}
 	
-	public int[] getMin(){
+	int[] getMin(){
 		return this.min;
 	}
 	
-	public int[] getAverage(){
+	int[] getAverage(){
 		return this.average;
 	}
 	
-	public int getMaxValue(){
+	int getMaxValue(){
 		return this.maxValue;
 	}
 	
-	public int getMinValue(){
+	int getMinValue(){
 		return this.minValue;
 	}
 }

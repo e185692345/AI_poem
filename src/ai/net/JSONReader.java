@@ -10,16 +10,29 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.HashMap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.memetix.mst.language.Language;
+import com.memetix.mst.translate.Translate;
 
 import ai.exception.BopomofoException;
 import ai.word.ChineseWord;
 import ai.word.Relation;
 
 public class JSONReader {
+	
+	private HashMap<String, Boolean> isRecorded;
+	private String topic;
+	
+	public JSONReader(String topic) {
+		this.topic = topic;
+		isRecorded = new HashMap<String,Boolean>();
+	}
 	/**
 	 * 	利用concept net的API尋找和某個主題相關的詞，並且利用rel來推測詞的詞性
 	 * 	@param  topic: 某個主題(String)
@@ -31,7 +44,7 @@ public class JSONReader {
 	 * 
 	 * 	處理json的library要另外去下載，請參考 http://www.ewdna.com/2008/10/jsonjar.html
 	 */
-	public static ChineseWord[] GetWordList(String topic){
+	public ChineseWord[] GetWordList(){
 		final int limit = 9999;
 		ChineseWord[] tempWordList = new ChineseWord[limit];
 		int wordType,count = 0, relationID;
@@ -46,9 +59,8 @@ public class JSONReader {
 			System.out.println(url);
 			obj = ReadJsonFromURL(url);
 			
-			JSONArray array = null;
 			try {
-				array = obj.getJSONArray("edges");
+				JSONArray array = obj.getJSONArray("edges");
 				for (int i=0; i<array.length(); i++){
 					jsonObj  = ((JSONObject)array.getJSONObject(i));
 					relationID = Relation.GetRelationID(jsonObj.getString("rel"));
@@ -66,32 +78,118 @@ public class JSONReader {
 					}
 					
 					if (word.length() <= 3 && relationID != -1){
-						wordType = GetWordType(jsonObj.getString("rel"),startOrEnd);
-						try {
-							tempWordList[count] =  new ChineseWord(word, HtmlReader.GetBopomofo(word), wordType, relationID, startOrEnd);
-							count += 1;
-						} catch (BopomofoException e) {
-							// TODO Auto-generated catch block
-							/*e.printStackTrace();*/
+						if (!isRecorded.containsKey(word)){
+							isRecorded.put(word, true);
+							wordType = GetWordType(jsonObj.getString("rel"),startOrEnd);
+							try {
+								tempWordList[count] =  new ChineseWord(word, HtmlReader.GetBopomofo(word), wordType, relationID, startOrEnd);
+								count += 1;
+							} catch (BopomofoException e) {
+								System.err.println(e.getMessage());
+								continue;	
+							}
 						}
-						
 					}
 				}
 			} catch (JSONException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			
 		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		ChineseWord[] wordList = new ChineseWord[count];
-		for(int i = 0 ; i < count ; i++){
-			wordList[i] = tempWordList[i];
+		return Arrays.copyOf(tempWordList, count);
+	}
+	
+	public ChineseWord[] GetWordList_UsingEnlishSource(){
+		final int limit = 10;	
+		String englishTopic;
+		
+		Translate.setClientId(MicrosoftTranslatorKey.ID);
+		Translate.setClientSecret(MicrosoftTranslatorKey.SECRET);
+		try {
+			englishTopic = Translate.execute(topic, Language.CHINESE_TRADITIONAL, Language.ENGLISH).toLowerCase();
+		} catch (Exception e1) {
+			englishTopic = "";
+			e1.printStackTrace();
 		}
-		return wordList;
+		
+		String url = new String("http://conceptnet5.media.mit.edu/data/5.2/search?limit="+limit+"&nodes=/c/en/"+englishTopic);
+		System.out.println(url);
+		JSONObject obj = ReadJsonFromURL(url);
+		
+		try {
+			JSONArray array = obj.getJSONArray("edges");
+			String[] englishInput = new String[limit];
+			SemiChineseWord[] semiWordData = new SemiChineseWord[limit];
+			int countTranlation = 0;
+			
+			for (int i=0; i<array.length(); i++){
+				JSONObject jsonObj  = ((JSONObject)array.getJSONObject(i));
+				String word;
+				int startOrEnd;
+				int relationID = Relation.GetRelationID(jsonObj.getString("rel"));
+				int wordType;
+				String startWord = jsonObj.get("start").toString().substring(6);
+				String endWord = jsonObj.getString("end").toString().substring(6);
+				
+				startWord = startWord.replace('_', ' ');
+				endWord = endWord.replace('_', ' ');
+				if (startWord.equals(englishTopic)){
+					word = endWord;
+					startOrEnd = Relation.END;
+				}
+				else if (endWord.equals(englishTopic)){
+					word = startWord;
+					startOrEnd = Relation.START;
+				}
+				else{
+					System.err.println("warning : ConceptNet gives a json object without corresponding start wrod / end word");
+					continue;
+				}
+				wordType = GetWordType(jsonObj.getString("rel"),startOrEnd);
+				
+				if (word.split(" ").length <= 3 && relationID != -1){
+					if (!isRecorded.containsKey(word)){
+						isRecorded.put(word, true);
+						englishInput[countTranlation] = word;
+						semiWordData[countTranlation] = new SemiChineseWord(wordType, relationID, startOrEnd);
+						countTranlation += 1;
+					}
+				}		
+			}
+			
+			
+			
+			String[] chineseOutput = new String[0];
+			try {
+				chineseOutput = Translate.execute(Arrays.copyOf(englishInput, countTranlation),Language.ENGLISH,Language.CHINESE_TRADITIONAL);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			for (int i = 0 ; i < countTranlation ; i++)
+				System.out.println(englishInput[i] + " => " + chineseOutput[i]);
+			ChineseWord[] tempWordList = new ChineseWord[limit]; 
+			int count = 0;
+			for (int i = 0 ; i < countTranlation && i < chineseOutput.length ; i++){
+				if ( englishInput[i].equals(chineseOutput[i]) || chineseOutput[i].length() > 3)
+					continue;
+				try {
+					SemiChineseWord data = semiWordData[i];
+					tempWordList[count] =  new ChineseWord(chineseOutput[i], HtmlReader.GetBopomofo(chineseOutput[i]), data.wordType, data.relationID, data.startOrEnd);
+					count += 1;
+				} catch (BopomofoException e) {
+					System.err.println(e.getMessage());
+					continue;
+				}
+			}
+			
+			return Arrays.copyOf(tempWordList, count);
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return new ChineseWord[0];
+		}
 	}
 	
 	/**
@@ -114,7 +212,6 @@ public class JSONReader {
 			try {
 				json = new JSONObject(jsonStr);
 			} catch (JSONException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			try {
@@ -123,11 +220,9 @@ public class JSONReader {
 				bufferFout.write(jsonStr.getBytes());
 				fout.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		finally {
@@ -135,7 +230,6 @@ public class JSONReader {
 				try {
 					is.close();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -182,5 +276,20 @@ public class JSONReader {
 		}
 		
 		return wordType;
+	}
+	
+	/**
+	 * 儲存除了 word 和 bopomofo 以外其他 ChineseWord的必要元素
+	 */
+	private class SemiChineseWord{
+		int wordType;
+		int relationID;
+		int startOrEnd;
+		
+		public SemiChineseWord(int wordType, int relationID, int startOrEnd) {
+			this.wordType = wordType;
+			this.relationID = relationID;
+			this.startOrEnd = startOrEnd;
+		}
 	}
 }
