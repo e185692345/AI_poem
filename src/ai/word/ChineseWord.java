@@ -2,7 +2,7 @@ package ai.word;
 
 public class ChineseWord {
 
-	public static final int noun = 1, adj = 2, verb = 4, all=7;
+	public static final int padding = 0, noun = 1, adj = 2, verb = 4, all=7;
 	
 	private int length;
 	private String word;
@@ -139,6 +139,8 @@ public class ChineseWord {
 	}
 	public static String ReadableWordType(int wordType){
 		String type = new String();
+		if (wordType == 0)
+			return "填充詞";
 		if ((wordType & noun )> 0)
 			type += "名";
 		if ((wordType & adj )> 0)

@@ -1,7 +1,6 @@
 package Concept;
 
 import java.util.ArrayList;
-import java.util.Scanner;
 import java.net.MalformedURLException;
 import java.net.URL;
 

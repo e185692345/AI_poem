@@ -7,6 +7,7 @@ public class Relation {
 	/**
 	 * 務必確保 TOTAL_RELATION 的值是最大的，TOTAL_RELATION 決定了 WordPile 中要 new 幾個 ArrayList
 	 */
+	public static final int ELSE = -1;
 	public static final int IsA = 0;
 	public static final int PartOf = 1;
 	public static final int HasProperty = 2;

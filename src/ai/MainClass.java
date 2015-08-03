@@ -11,20 +11,21 @@ import org.json.JSONObject;
 
 import ai.GeneticAlgorithm.GeneticAlgorithm;
 import ai.net.ConceptNetCrawler;
+import ai.word.ChineseWord;
 import ai.word.WordPile;
 
 public class MainClass {
 	protected final static int NET_SOURCE = 0, FILE_SOURCE = 1;
 	
 	public static void main(String[] args){
-		WordPile wordPile = new WordPile();
+		
 		/*=====================================*/
 		/*選擇字詞來源 NET_SOURCE(從conceptnet) 或 FILE_SOURCE(wordPile.json)*/
 		final int SOURCE = FILE_SOURCE;
 		/*如果來源是NET_SOURCE則要指定主題*/
 		final String topic = new String("朋友");
 		/*=====================================*/
-		
+		WordPile wordPile = new WordPile(topic,ChineseWord.noun);
 		switch (SOURCE){
 		case NET_SOURCE :
 			ConceptNetCrawler wordSource= new ConceptNetCrawler(topic);

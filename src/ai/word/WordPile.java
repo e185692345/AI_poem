@@ -3,9 +3,13 @@ package ai.word;
 import java.util.ArrayList;
 import java.util.Random;
 
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import ai.exception.BopomofoException;
+import ai.net.BopomofoCrawler;
 
 public class WordPile {
 	
@@ -15,15 +19,34 @@ public class WordPile {
 	private ArrayList<ArrayList<ArrayList<ArrayList<ChineseWord>>>>  relationPile = new ArrayList<ArrayList<ArrayList<ArrayList<ChineseWord>>>>();
 	private ArrayList<ChineseWord[]> wordListPile;
 	private int totalWord;
+	private ChineseWord topic;
+	private ChineseWord[][] paddingWordList;
 	private Random rand = new Random();
 	
-	public WordPile() {
+	public WordPile(String topic, int wordType) {
 		InitLsit();
 		wordListPile = new ArrayList<ChineseWord[]>();
 		totalWord = 0;
+		SetTopic(topic, wordType);
+	}
+	private void SetTopic(String topic, int wordType){
+		try {
+			this.topic = new ChineseWord(topic, BopomofoCrawler.GetBopomofo(topic), wordType, Relation.ELSE,Relation.START);
+		} catch (BopomofoException e) {
+			this.topic = null;
+			e.printStackTrace();
+		}
 	}
 	
-	public void AddWords(ChineseWord[] wordList){
+	public ChineseWord getTopic(){
+		return topic;
+	}
+	
+	public ChineseWord getAPaddingWord(int sentenceType){
+		int index = rand.nextInt(paddingWordList[sentenceType].length);
+		return paddingWordList[sentenceType][index];
+	}
+		public void AddWords(ChineseWord[] wordList){
 		wordListPile.add(wordList);
 		totalWord += wordList.length;
 		System.out.printf("詞庫中新增了 %d 個詞 ， 目前共有 %d 個詞\n",wordList.length,totalWord);
@@ -44,6 +67,10 @@ public class WordPile {
 		}
 	}
 	
+	public void  setPaddindWordList(ChineseWord[][] paddingWordList) {
+		this.paddingWordList = paddingWordList;
+	}
+		
 	public void AddWords(JSONObject json){
 		JSONArray arr = json.optJSONArray("wordPile");
 		ChineseWord[] wordList = new ChineseWord[arr.length()];
