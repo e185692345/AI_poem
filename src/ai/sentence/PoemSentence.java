@@ -19,7 +19,15 @@ public class PoemSentence {
 	
 	public void setSentence(int sentenceType,ChineseWord[] sentence) {
 		this.sentenceType = sentenceType;
-		this.words = sentence;
+		/*不可以用this.words = sentence 這種方式複製*/
+		this.words = new ChineseWord[sentence.length];
+		for (int i = 0 ; i < sentence.length ; i++){
+			words[i] = sentence[i];
+		}
+	}
+	
+	public ChineseWord[] getWords() {
+		return words;
 	}
 	
 	public int getSentenceType() {

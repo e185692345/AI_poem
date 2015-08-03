@@ -3,12 +3,12 @@ package ai.word;
 import java.util.ArrayList;
 import java.util.Random;
 
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import ai.exception.BopomofoException;
+import ai.exception.RelationWordException;
 import ai.net.BopomofoCrawler;
 
 public class WordPile {
@@ -31,7 +31,7 @@ public class WordPile {
 	}
 	private void SetTopic(String topic, int wordType){
 		try {
-			this.topic = new ChineseWord(topic, BopomofoCrawler.GetBopomofo(topic), wordType, Relation.ELSE,Relation.START);
+			this.topic = new ChineseWord(topic, BopomofoCrawler.GetBopomofo(topic), wordType, Relation.TOPIC,Relation.START);
 		} catch (BopomofoException e) {
 			this.topic = null;
 			e.printStackTrace();
@@ -46,13 +46,14 @@ public class WordPile {
 		int index = rand.nextInt(paddingWordList[sentenceType].length);
 		return paddingWordList[sentenceType][index];
 	}
-		public void AddWords(ChineseWord[] wordList){
+	
+	public void AddWords(ChineseWord[] wordList){
 		wordListPile.add(wordList);
 		totalWord += wordList.length;
 		System.out.printf("詞庫中新增了 %d 個詞 ， 目前共有 %d 個詞\n",wordList.length,totalWord);
 		
 		for (ChineseWord word : wordList){
-			/*一個詞可能會有很多詞性*/
+			//一個詞可能會有很多詞性
 			if ( (word.getWordType() & ChineseWord.noun) > 0){
 				nounWord.get(word.getLength()).add(word);
 			}
@@ -160,7 +161,7 @@ public class WordPile {
 		return json.toString();
 	}
 	
-	public ChineseWord GetAWord(int wordType, int wordLength) {
+	/*public ChineseWord GetAWord(int wordType, int wordLength) {
 		ArrayList<ChineseWord> list;
 		
 		if ((wordType & ChineseWord.noun) > 0){
@@ -178,7 +179,7 @@ public class WordPile {
 			return null;
 		}
 		return list.get(rand.nextInt(list.size()));
-	}
+	}*/
 	
 	
 	/**
@@ -189,13 +190,13 @@ public class WordPile {
 	 * @param startOrEnd start : 0 / end : 0
 	 * @param length 詞的長度
 	 * @return 若沒有符合的詞則會還傳null
+	 * @throws RelationWordException 
 	 */
-	public ChineseWord GetRlationWord(int relation,int startOrEnd, int length){
+	public ChineseWord GetRlationWord(int relation,int startOrEnd, int length) throws RelationWordException{
 		ArrayList<ChineseWord> list = relationPile.get(relation).get(startOrEnd).get(length);
 		
 		if (list.size() == 0){
-			System.err.printf("找不到 rel = %d, 長度 = %d的詞\n",relation,length);
-			return null;
+			throw new RelationWordException(relation,length);
 		}
 		else{
 			int index = rand.nextInt(list.size());

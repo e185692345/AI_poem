@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 import ai.exception.MakeSentenceException;
+import ai.exception.RelationWordException;
 import ai.word.ChineseWord;
 import ai.word.Relation;
 import ai.word.WordPile;
@@ -27,18 +28,28 @@ public class MakeSentence {
 	private Random rand = new Random();
 	private WordPile wordPile;
 	private String[][][] sentenceTemplate;
-	
+	private int countType = 0;
+
 	/**
 	 * 從 paddingWordFile 和 sentenceTypeFile 分別載入
 	 * @param wordPile
+	 * @throws Exception 
 	 */
+
 	public MakeSentence(WordPile wordPile) {
 		this.wordPile = wordPile;
-		LoadSentenceType();
-		LoadPaddingWord();
+		int countType1 = LoadSentenceType();
+		int countType2 = LoadPaddingWord();
+		if (countType1 != countType2 && countType1 != 0){
+			System.err.println(paddingWordFile+" 和 "+sentenceTypeFile+" 紀錄的模板數量不一樣");
+			System.exit(1);
+		}
+		else{
+			countType = countType1;
+		}
 	}
 	
-	private void LoadSentenceType(){
+	private int LoadSentenceType(){
 		try {
 			BufferedReader bufRead = new BufferedReader(new FileReader(sentenceTypeFile));
 			int countType = Integer.parseInt(bufRead.readLine());
@@ -52,37 +63,50 @@ public class MakeSentence {
 				}
 			}
 			bufRead.close();
+			return countType;
 		} catch (IOException e) {
 			sentenceTemplate = null;
 			e.printStackTrace();
+			return 0;
 		}
 	}
 	
-	private void LoadPaddingWord(){
+	private int LoadPaddingWord(){
 		String[] str;
-		int countType;
 		try {
 			BufferedReader bufRead = new BufferedReader(new FileReader(paddingWordFile));
-			countType = Integer.parseInt(bufRead.readLine());
+			int countType = Integer.parseInt(bufRead.readLine());
 			ChineseWord[][] paddingWordList = new ChineseWord[countType][];
 			for ( int i = 0 ; i < countType ; i++){
 				int countWord = Integer.valueOf(bufRead.readLine());
 				paddingWordList[i] = new ChineseWord[countWord];
 				for ( int j = 0 ; j < countWord ; j++){
 					str = bufRead.readLine().split(" +");
-					paddingWordList[i][j] = new ChineseWord(str[0],Arrays.copyOfRange(str, 1,str.length), ChineseWord.padding, Relation.ELSE, Relation.START);
+					paddingWordList[i][j] = new ChineseWord(str[0],Arrays.copyOfRange(str, 1,str.length), ChineseWord.none, Relation.PADDING, Relation.START);
 				}
 			}
 			wordPile.setPaddindWordList(paddingWordList);
 			bufRead.close();
+			return countType;
 		} catch (IOException e) {
 			wordPile.setPaddindWordList(null);
 			e.printStackTrace();
+			return 0;
 		}
 	}
 
-	
-
+	public PoemSentence makeRandomSentence() throws MakeSentenceException {
+		int index = rand.nextInt(countType);
+		for ( int i = 0 ; i < countType ; i++){
+			try {
+				return makeSentence((index+i)%countType);
+			} catch (MakeSentenceException e) {
+				e.printStackTrace();
+				continue;
+			}
+		}
+		throw new MakeSentenceException(-1);
+	}
 	public PoemSentence makeSentence(int type) throws MakeSentenceException{
 		int index = rand.nextInt(LineComposition.fiveLetterComposition.length);
 		
@@ -113,15 +137,13 @@ public class MakeSentence {
 					}
 					else{
 						String[] data = sentenceTemplate[type][j][k].split("_");
-						int relation = Relation.GetRelationID(data[0]);
+						int relation = Relation.getRelationID(data[0]);
 						int startOrEnd = Integer.parseInt(data[1]);
-						ChineseWord word = wordPile.GetRlationWord(relation, startOrEnd, composition[k]);
-						if (word == null){
+						try {
+							words[k] = wordPile.GetRlationWord(relation, startOrEnd, composition[k]);
+						} catch (RelationWordException e) {
 							isDone = false;
 							break;
-						}
-						else{
-							words[k] = word;
 						}
 					}
 				}

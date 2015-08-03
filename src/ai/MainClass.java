@@ -11,6 +11,7 @@ import org.json.JSONObject;
 
 import ai.GeneticAlgorithm.GeneticAlgorithm;
 import ai.net.ConceptNetCrawler;
+import ai.sentence.MakeSentence;
 import ai.word.ChineseWord;
 import ai.word.WordPile;
 
@@ -31,13 +32,13 @@ public class MainClass {
 			ConceptNetCrawler wordSource= new ConceptNetCrawler(topic);
 			wordPile.AddWords(wordSource.GetWordList_ChineseSource());
 			wordPile.AddWords(wordSource.GetWordList_EnlishSource());
-			new GeneticAlgorithm(8, 5, wordPile).Evole();
+			new GeneticAlgorithm(8, 5, wordPile, new MakeSentence(wordPile)).Evole();
 			WriteToFile("wordPile.json", wordPile.GetJSONString());
 			break;
 		case FILE_SOURCE:
 			try {
 				wordPile.AddWords(new JSONObject(ReadFile("wordPile.json")));
-				new GeneticAlgorithm(8, 5, wordPile).Evole();
+				new GeneticAlgorithm(8, 5, wordPile, new MakeSentence(wordPile)).Evole();
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

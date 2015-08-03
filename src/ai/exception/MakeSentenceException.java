@@ -4,6 +4,10 @@ import ai.sentence.MakeSentence;
 
 public class MakeSentenceException extends Exception{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5622193619489341012L;
 	String type;
 	public MakeSentenceException(int sentenceType) {
 		
@@ -24,7 +28,7 @@ public class MakeSentenceException extends Exception{
 			type = "可以 + /r/CapableOf";
 			break;
 		default:
-			type="";
+			type="任何句型";
 			break;
 		}
 	}

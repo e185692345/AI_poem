@@ -7,6 +7,8 @@ public class Relation {
 	/**
 	 * 務必確保 TOTAL_RELATION 的值是最大的，TOTAL_RELATION 決定了 WordPile 中要 new 幾個 ArrayList
 	 */
+	public static final int TOPIC = -3;
+	public static final int PADDING = -2;
 	public static final int ELSE = -1;
 	public static final int IsA = 0;
 	public static final int PartOf = 1;
@@ -23,7 +25,13 @@ public class Relation {
 	public static final int MotivatedByGoal = 12;
 	public static final int Desires = 13;
 	public static final int MadeOf = 14;
-	public static final int TOTAL_RELATION = 15;
+	
+	
+	private final static String[] relation = {"/r/IsA","/r/PartOf","/r/HasProperty","/r/UsedFor","/r/CapableOf",
+								 "/r/AtLocation","/r/Cause","/s/HasSubevent","/r/HasFirstSubevent",
+								 "/r/RelatedTo","/r/HasPrerequisite","/r/CreatedBy","/r/MotivatedByGoal",
+								 "/r/Desires","/r/MadeOf"};
+	public static final int TOTAL_RELATION = relation.length;
 	
 	/**
 	 * 將relarion轉換成對應的數字，被排除的relation會回傳-1
@@ -31,60 +39,17 @@ public class Relation {
 	 * @param relation
 	 * @return 
 	 */
-	public static int GetRelationID(String relation){
-		int id;
-		
-		switch (relation) {
-		case "/r/IsA":
-			id = IsA;
-			break;
-		case "/r/PartOf":
-			id = PartOf ;
-			break;
-		case "/r/UsedFor":
-			id = UsedFor ;
-			break;
-		case "/r/CapableOf":
-			id = CapableOf ;
-			break;
-		case "/r/AtLocation":
-			id = AtLocation ;
-			break;
-		case "/r/Causes":
-			id = Causes ;
-			break;
-		case "/r/HasSubevent":
-			id = HasSubevent ;
-			break;
-		case "/r/HasFirstSubevent":
-			id = HasFirstSubevent ;
-			break;
-		case "/r/RelatedTo":
-			id = RelatedTo ;
-			break;
-		case "/r/HasPrerequisite":
-			id = HasPrerequisite ;
-			break;
-		case "/r/HasProperty":
-			id = HasProperty ;
-			break;
-		case "/r/MotivatedByGoal":
-			id = MotivatedByGoal ;
-			break;
-		case "/r/Desires":
-			id = Desires;
-			break;
-		case "/r/CreatedBy":
-			id = CreatedBy;
-			break;
-		case "/r/MadeOf":
-			id = MadeOf;
-			break;
-		default:
-			id = -1;
-			break;
+	public static int getRelationID(String relation){
+		for ( int i = 0 ; i < TOTAL_RELATION ;i++){
+			if (relation.equals(Relation.relation[i]))
+				return i;
 		}
 		
-		return id;
+		return -1;
 	}
+	
+	public static String getRelation(int id){
+		return relation[id];
+	}
+	
 }

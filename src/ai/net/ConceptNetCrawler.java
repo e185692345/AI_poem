@@ -64,7 +64,7 @@ public class ConceptNetCrawler {
 				JSONArray array = obj.getJSONArray("edges");
 				for (int i=0; i<array.length(); i++){
 					jsonObj  = ((JSONObject)array.getJSONObject(i));
-					relationID = Relation.GetRelationID(jsonObj.getString("rel"));
+					relationID = Relation.getRelationID(jsonObj.getString("rel"));
 					String startWord = jsonObj.getString("start").split("/")[3];
 					String endWord = jsonObj.getString("end").split("/")[3];
 					if (startWord.equals(topic)){
@@ -148,7 +148,7 @@ public class ConceptNetCrawler {
 				JSONObject jsonObj  = ((JSONObject)array.getJSONObject(i));
 				String word;
 				int startOrEnd;
-				int relationID = Relation.GetRelationID(jsonObj.getString("rel"));
+				int relationID = Relation.getRelationID(jsonObj.getString("rel"));
 				int wordType;
 				String startWord = jsonObj.get("start").toString().substring(6);
 				String endWord = jsonObj.getString("end").toString().substring(6);

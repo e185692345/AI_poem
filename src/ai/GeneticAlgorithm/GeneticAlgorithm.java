@@ -4,9 +4,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
+import ai.exception.RelationWordException;
 import ai.poem.PoemTemplate;
-import ai.sentence.LineComposition;
+import ai.sentence.MakeSentence;
+import ai.sentence.PoemSentence;
 import ai.word.ChineseWord;
+import ai.word.Relation;
 import ai.word.WordPile;
 
 public class GeneticAlgorithm {
@@ -22,7 +25,7 @@ public class GeneticAlgorithm {
     
     /*詞庫*/
     private WordPile wordPile;
-  
+    private MakeSentence sentenceMaker;
     /*一個世代*/
     private PoemTemplate[] population;
 	
@@ -31,18 +34,19 @@ public class GeneticAlgorithm {
 	
 	/*終止條件*/
 	private final int maxGeneration = 400;
-	private final int targetScore = PoemTemplate.scoreAntithesis + PoemTemplate.scoreDiversity + PoemTemplate.scoreTone + PoemTemplate.scoreRhyme;
+	private final int targetScore = PoemTemplate.maxAntithesisScore + PoemTemplate.maxDiversityScore + PoemTemplate.maxToneScore + PoemTemplate.maxRhymeScore;
 	
 	private int row, col;
-	
+
 	/**
 	 * 
 	 * @param row 詩有幾句
 	 * @param col 每句幾個字
 	 * @param wordPile 單詞庫
 	 */
-    public GeneticAlgorithm(int row, int col,WordPile wordPile) {
+    public GeneticAlgorithm(int row, int col,WordPile wordPile, MakeSentence sentenceMaker) {
 		this.wordPile = wordPile;
+		this.sentenceMaker = sentenceMaker;
 		this.row = row;
 		this.col = col;
 	}
@@ -58,6 +62,7 @@ public class GeneticAlgorithm {
     	InitPopulation();
     	if (DEBUG) PrintPoem();
     	for ( int i = 0 ; i < maxGeneration ; i++, counPoint ++){
+    		if (DEBUG) System.out.println(" === 第"+i+"代 ===");
     		Crossover();
 			Mutation();
 			Select();
@@ -76,6 +81,7 @@ public class GeneticAlgorithm {
 				break;
     	}
     	PrintPoem();
+    	
     	if (counPoint > 0)
     		new StatisticWindow(new GenerationData(counPoint, maxScore, minScore, avgScore));
 	}
@@ -85,28 +91,33 @@ public class GeneticAlgorithm {
     public void InitPopulation(){
     	population = new PoemTemplate[populationSize];
         for (int i = 0 ; i < populationSize ; i++){
-            population[i] = RandomPoem(this.row, this.col);
+           population[i] = PoemTemplate.RandomPoem(this.row, this.col,this.wordPile,this.sentenceMaker);
         }
-        if (DEBUG) PrintPoem();
     }
     
 	/**
-	 * 隨機取2首詩並交換其中的2個詞
+	 * 隨機取2首詩並交換其中的1個句子
 	 */
     private void Crossover(){
-
-		final int count_crossover = 2;
-        int id1,id2;
-        
+          
 		if (DEBUG) System.out.println("===Crossover===");
         for (int i = 0; i < populationSize/2 ; i++){
             if ( CanHappen(crossoverRate)){
-            	id1 = RandIndex(populationSize);
-                id2 = RandIndex(0);
-				for (int j = 0 ; j < count_crossover ; j++){
-					if (DEBUG) System.out.printf("第%d首 <==> 第%d首\n",id1,id2);
-					ExchangeTwoWords(population[id1],population[id2]);
-				}
+            	int id1 = RandIndex(populationSize);
+            	// TODO
+            	/*if (id1 == 0)
+            		id1 = RandIndex(0);*/
+                int id2 = RandIndex(0);
+                // TODO
+                /*if (id2 == 0)
+            		id2 = RandIndex(0);*/
+				int index1 = RandIndex(this.row);
+				int index2 = RandIndex(0);
+				if (DEBUG) System.out.printf("第%d首  的第 %d <==> 第%d首 的第 %d 句\n",id1,index1,id2,index2);
+				PoemSentence tmpSentence = population[id1].getPoem()[index1];
+				population[id1].getPoem()[index1] = population[id2].getPoem()[index2];
+				population[id2].getPoem()[index2] = tmpSentence;
+				
 				
 				if (DEBUG){
 					System.out.println("第 "+id1+" 首詩 = \n"+ population[id1].toString());
@@ -121,16 +132,34 @@ public class GeneticAlgorithm {
 	 * 	將一個隨機位置的詞替換掉
 	 */
     private void Mutation(){
-		int row,col;
+		int chosenRow,chosenCol;
 		if (DEBUG) System.out.println("===Mutation===");
+		
 		for(int i = 0 ; i < populationSize ; i ++){
+			// TODO
+			//if ( i == 0) continue;
 			if (CanHappen(mutationRate)){
-				ChineseWord[][] poem = population[i].getPoem();
-				row = rand.nextInt(poem.length);
-				col = rand.nextInt(poem[row].length);
-				if (DEBUG) System.out.printf("Mutation(%d) at (%d,%d)\n",i,row,col);
-				poem[row][col] = wordPile.GetAWord(ChineseWord.all,population[i].getTeplate()[row][col]);
-				if (DEBUG) System.out.println("第 "+i+" 首詩 =\n "+ population[i].toString());
+				
+				chosenRow = rand.nextInt(this.row);
+				chosenCol = rand.nextInt(population[i].getPoem()[chosenRow].length());
+				
+				ChineseWord word = population[i].getPoem()[chosenRow].getWords()[chosenCol];
+				int relation = word.getRelation();
+				int startOrEnd = word.getStartOrEnd();
+				int length = word.getLength();
+				if (relation >= 0){
+					try {
+						population[i].getPoem()[chosenRow].getWords()[chosenCol] = wordPile.GetRlationWord(relation, startOrEnd, length);
+						if (DEBUG) System.out.printf("Mutation(%d) at (%d,%d) : %s <=> %s\n",i,chosenRow,chosenCol,word.getWord(),population[i].getPoem()[chosenRow].getWords()[chosenCol].getWord());
+						if (DEBUG) System.out.println("第 "+i+" 首詩 =\n "+ population[i].toString());
+					} catch (RelationWordException e) {
+						System.err.println(e.getMessage());
+						System.err.printf("第 %d 首詩的(%d,%d)位置突變失敗\n",i,chosenRow,chosenCol);
+					}
+				}
+				else if (relation == Relation.PADDING){
+					word = wordPile.getAPaddingWord(population[i].getPoem()[chosenRow].getSentenceType());
+				}
 			}
 		}
 	}
@@ -138,7 +167,6 @@ public class GeneticAlgorithm {
 	 * 用轉盤法篩選出下一個世代
 	 */
     private void Select(){
-		
 		int[] cumulativeSum = new int[populationSize];
 		
 		int totalSum = 0;
@@ -166,14 +194,14 @@ public class GeneticAlgorithm {
 			for ( int j = 0 ;j< middle ; j++){
 				if ( cumulativeSum[j] >= nextIndex){
 					if (DEBUG)  System.out.println("第  "+(head+i)+" 次；選到第 "+(head+j)+" 首");
-					population[head+i] = new PoemTemplate(row, col, populationCopy[j].getTeplate(), populationCopy[j].getPoem());
+					population[head+i] = PoemTemplate.getCopy(populationCopy[head+j]);
 					break;
 				}
 			}
 		}
 		
 		for ( int i = 0 ; i < tail ; i++){
-			population[populationSize-1-i] = RandomPoem(row, col);
+			population[populationSize-1-i] = PoemTemplate.RandomPoem(row, col,wordPile,sentenceMaker);
 		}
 		
 	}
@@ -182,7 +210,7 @@ public class GeneticAlgorithm {
 	 * @param poemTemplate1  第一首詩
 	 * @param poemTemplate2  第二首詩
 	 */
-    private void ExchangeTwoWords(PoemTemplate poemTemplate1, PoemTemplate poemTemplate2){
+    /*private void ExchangeTwoWords(PoemTemplate poemTemplate1, PoemTemplate poemTemplate2){
     	int[][] template1 = poemTemplate1.getTeplate();
     	int row1 = rand.nextInt(template1.length);
     	int col1 = rand.nextInt(template1[row1].length);
@@ -214,7 +242,7 @@ public class GeneticAlgorithm {
     		if (row2 == startRow && col2 == startCol)
     			break;
     	}
-    }
+    }*/
 	
     /**
      * 	回傳 0 - (bound-1) 之間的隨機整數
@@ -261,36 +289,9 @@ public class GeneticAlgorithm {
      */
     private void PrintPoem(){
         for (int i = 0 ; i < populationSize ; i++){
-            System.out.println("第 "+i+" 首詩 \n"+population[i].toString()+"\n");
+            System.out.println("第 "+i+" 首詩 ");
+            System.out.println(population[i].printScore());
+            System.out.println(population[i].toString());
         }
-    }
-    
-    /**
-     * 隨機產生一組模板並填入一首新的詩
-     * @param row 詩有幾句
-     * @param col 每句幾個字
-     * @return PoemTemplate的object
-     */
-    private PoemTemplate RandomPoem(int row,int col){
-    	
-    	int[][] wordComposition = new int[row][];
-    	ChineseWord[][] poem = new ChineseWord[row][];
-		for ( int i = 0 ; i < row ; i += 2){
-			wordComposition[i]  = LineComposition.GetRandomComposition(col).clone();
-			wordComposition[i+1]  = wordComposition[i];
-			poem[i] = new ChineseWord[wordComposition[i].length];
-			poem[i+1] = new ChineseWord[wordComposition[i+1].length];
-			if (wordComposition[i].length != poem[i].length || wordComposition[i+1].length != poem[i+1].length){
-				System.err.println("error : template's size and poem's doesn't match");
-				System.exit(1);
-			}
-		}
-		 
-    	for (int i = 0 ; i < wordComposition.length ; i++){
-    		for ( int j = 0 ; j < wordComposition[i].length ; j++){
-    			poem[i][j] = wordPile.GetAWord(ChineseWord.noun|ChineseWord.adj|ChineseWord.verb, wordComposition[i][j]); 
-    		}
-    	}
-    	return new PoemTemplate(row, col, wordComposition, poem);
     }
 }
