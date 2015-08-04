@@ -1,6 +1,7 @@
 package ai.word;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 
 import org.json.JSONArray;
@@ -19,11 +20,13 @@ public class WordPile {
 	private ChineseWord topic;
 	private ChineseWord[][] paddingWordList;
 	private Random rand = new Random();
+	private HashMap<String, Boolean> isRecord;
 	
 	public WordPile(String topic, int wordType) {
 		InitLsit();
 		wordListPile = new ArrayList<ChineseWord[]>();
 		totalWord = 0;
+		isRecord = new HashMap<String, Boolean>();
 		SetTopic(topic, wordType);
 	}
 	private void SetTopic(String topic, int wordType){
@@ -46,12 +49,15 @@ public class WordPile {
 	
 	public void AddWords(ChineseWord[] wordList){
 		wordListPile.add(wordList);
-		totalWord += wordList.length;
-		System.out.printf("詞庫中新增了 %d 個詞 ， 目前共有 %d 個詞\n",wordList.length,totalWord);
 		
 		for (ChineseWord word : wordList){
-			relationPile.get(word.getRelation()).get(word.getStartOrEnd()).get(word.getLength()).add(word);
+			if(!isRecord.containsKey(word.getWord())){
+				isRecord.put(word.getWord(), true);
+				relationPile.get(word.getRelation()).get(word.getStartOrEnd()).get(word.getLength()).add(word);
+				totalWord += 1;
+			}
 		}
+		System.out.printf("詞庫中新增了 %d 個詞 ， 目前共有 %d 個詞\n",wordList.length,totalWord);
 	}
 	
 	public void  setPaddindWordList(ChineseWord[][] paddingWordList) {

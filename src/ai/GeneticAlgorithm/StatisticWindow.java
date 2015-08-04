@@ -6,6 +6,9 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
+import java.util.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 import javax.swing.*;
 
@@ -22,7 +25,9 @@ class StatisticWindow extends JFrame{
 	public StatisticWindow(GenerationData dataSet){
 		this.dataSet = dataSet;
 		
-		this.setTitle("統計畫面");
+		DateFormat sdf = SimpleDateFormat.getDateTimeInstance();
+		Date date = new Date();
+		this.setTitle(sdf.format(date)+" ("+date.getTime()+")");
 		this.setLayout(null);
 		this.setBounds(0,0,1320,730);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

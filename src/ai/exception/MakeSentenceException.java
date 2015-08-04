@@ -10,7 +10,7 @@ public class MakeSentenceException extends Exception{
 	private static final long serialVersionUID = -5622193619489341012L;
 	String type;
 	public MakeSentenceException(int sentenceType) {
-		
+		// TODO 補齊句型
 		switch (sentenceType) {
 		case MakeSentence.sentenceType0:
 			type = "/r/HasProperty + 的 + /r/IsA";

@@ -29,12 +29,11 @@ public class ConceptNetCrawler {
 	private static final int limit = 9999;
 	private static final int maxTranslationTimes = 1000;
 	
-	private HashMap<String, Boolean> isRecorded;
+	
 	private String topic;
 	
 	public ConceptNetCrawler(String topic) {
 		this.topic = topic;
-		isRecorded = new HashMap<String,Boolean>();
 	}
 	/**
 	 * 	利用concept net的API尋找和某個中文主題相關的詞，並且利用rel來推測詞的詞性
@@ -49,7 +48,7 @@ public class ConceptNetCrawler {
 	public ChineseWord[] GetWordList_ChineseSource(){
 		ChineseWord[] tempWordList = new ChineseWord[limit];
 		int wordType,count = 0, relationID;
-		
+		HashMap<String, Boolean> isRecorded = new HashMap<String,Boolean>();
 		try {
 			String word;
 			int startOrEnd;
@@ -124,7 +123,7 @@ public class ConceptNetCrawler {
 	 */
 	public ChineseWord[] GetWordList_EnlishSource(){
 		String englishTopic;
-		
+		HashMap<String, Boolean> isRecorded = new HashMap<String,Boolean>();
 		Translate.setClientId(MicrosoftTranslatorKey.ID);
 		Translate.setClientSecret(MicrosoftTranslatorKey.SECRET);
 		try {
@@ -182,19 +181,25 @@ public class ConceptNetCrawler {
 				}		
 			}
 			
-			String[] chineseOutput = new String[0];
 			/*限制一次翻譯詞語數上限，避免太快把每個月的翻譯配額用完*/
-			System.out.println(countTranlation);
 			if (countTranlation > maxTranslationTimes)
 				countTranlation = maxTranslationTimes;
-			for (String str : Arrays.copyOf(englishInput, countTranlation))
-				System.out.println(str);
 			
+			String[] chineseOutput = new String[countTranlation],tmp;
+			/*把大量的翻譯分成小份的分批執行，不然會有Error*/
+			final int slice = 200;
 			try {
-				chineseOutput = Translate.execute(Arrays.copyOf(englishInput, countTranlation),Language.ENGLISH,Language.CHINESE_TRADITIONAL);
+				int offset = countTranlation % slice;
+				tmp = Translate.execute(Arrays.copyOf(englishInput, offset),Language.ENGLISH,Language.CHINESE_TRADITIONAL);
+				System.arraycopy(tmp, 0, chineseOutput, 0, offset);
+				for (int i = offset ; i < countTranlation ; i += slice){
+					tmp = Translate.execute(Arrays.copyOfRange(englishInput, i, i+slice), Language.ENGLISH,Language.CHINESE_TRADITIONAL);
+					System.arraycopy(tmp, 0, chineseOutput, i, slice);
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			
 			System.out.println("共翻譯了 "+chineseOutput.length+" 個詞");
 			ChineseWord[] tempWordList = new ChineseWord[limit]; 
 			int count = 0;

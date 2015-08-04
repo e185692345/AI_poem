@@ -22,7 +22,7 @@ public class MainClass {
 		
 		/*=====================================*/
 		/*選擇字詞來源 NET_SOURCE(從conceptnet) 或 FILE_SOURCE(wordPile.json)*/
-		final int SOURCE = FILE_SOURCE;
+		final int SOURCE = NET_SOURCE;
 		/*如果來源是NET_SOURCE則要指定主題*/
 		final String topic = new String("朋友");
 		/*=====================================*/

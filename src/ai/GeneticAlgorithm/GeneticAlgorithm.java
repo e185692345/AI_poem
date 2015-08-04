@@ -63,6 +63,7 @@ public class GeneticAlgorithm {
     	if (DEBUG) PrintPoem();
     	for ( int i = 0 ; i < maxGeneration ; i++, counPoint ++){
     		if (DEBUG) System.out.println(" === 第"+i+"代 ===");
+    		// TODO 使用 SelectedCrossover 效果較佳，最佳分數會遞增
     		//Crossover();
     		SelectedCrossover();
 			Mutation();
@@ -81,7 +82,10 @@ public class GeneticAlgorithm {
 			if (maxScore[i] >= targetScore)
 				break;
     	}
-    	PrintPoem();
+    	
+    	System.out.println("最好的詩");
+        System.out.println(population[0].printScore());
+        System.out.println(population[0].toString());
     	
     	if (counPoint > 0)
     		new StatisticWindow(new GenerationData(counPoint, maxScore, minScore, avgScore));
@@ -176,8 +180,6 @@ public class GeneticAlgorithm {
 		if (DEBUG) System.out.println("===Mutation===");
 		
 		for(int i = 0 ; i < populationSize ; i ++){
-			// TODO
-			//if ( i == 0) continue;
 			if (CanHappen(mutationRate)){
 				
 				chosenRow = rand.nextInt(this.row);

@@ -13,14 +13,15 @@ import ai.word.Relation;
 import ai.word.WordPile;
 
 public class MakeSentence {
+	// TODO 補齊所有句型， data檔要增加格式說明
 	public static final int sentenceType0 = 0;	// /r/HasProperty + 的 + /r/IsA
 	public static final int sentenceType1 = 1;	// 在 + /r/AtLocation + /r/CapableOf
 	public static final int sentenceType2 = 2;	// TOPIC + 會/想 + /r/CapableOf
 	public static final int sentenceType3 = 3;	// TOPIC + 是 + /r/IsA
 	public static final int sentenceType4 = 4;	// 可以 + /r/CapableOf
 	
-	private final static String paddingWordFile = "paddingWord.txt";
-	private final static String sentenceTypeFile = "sentenceType.txt";
+	private final static String paddingWordFile = "paddingWord.data";
+	private final static String sentenceTypeFile = "sentenceType.data";
 	
 	private static final String TOPIC = "TOPIC";
 	private static final String PADDIND = "PADDING";
@@ -101,7 +102,6 @@ public class MakeSentence {
 			try {
 				return makeSentence((index+i)%countType);
 			} catch (MakeSentenceException e) {
-				e.printStackTrace();
 				continue;
 			}
 		}
@@ -152,7 +152,6 @@ public class MakeSentence {
 				}
 			}
 		}
-		System.err.println("Fail To Make Sentence");
 		throw new MakeSentenceException(type);
 	}
 	
