@@ -82,7 +82,7 @@ public class MakeSentence {
 				paddingWordList[i] = new ChineseWord[countWord];
 				for ( int j = 0 ; j < countWord ; j++){
 					str = bufRead.readLine().split(" +");
-					paddingWordList[i][j] = new ChineseWord(str[0],Arrays.copyOfRange(str, 1,str.length), ChineseWord.none, Relation.PADDING, Relation.START);
+					paddingWordList[i][j] = new ChineseWord(str[0],Arrays.copyOfRange(str, 1,str.length), ChineseWord.padding, Relation.PADDING, Relation.START);
 				}
 			}
 			wordPile.setPaddindWordList(paddingWordList);

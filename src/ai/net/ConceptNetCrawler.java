@@ -184,8 +184,12 @@ public class ConceptNetCrawler {
 			
 			String[] chineseOutput = new String[0];
 			/*限制一次翻譯詞語數上限，避免太快把每個月的翻譯配額用完*/
+			System.out.println(countTranlation);
 			if (countTranlation > maxTranslationTimes)
 				countTranlation = maxTranslationTimes;
+			for (String str : Arrays.copyOf(englishInput, countTranlation))
+				System.out.println(str);
+			
 			try {
 				chineseOutput = Translate.execute(Arrays.copyOf(englishInput, countTranlation),Language.ENGLISH,Language.CHINESE_TRADITIONAL);
 			} catch (Exception e) {

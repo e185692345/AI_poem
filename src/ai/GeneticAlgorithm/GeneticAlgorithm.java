@@ -63,7 +63,8 @@ public class GeneticAlgorithm {
     	if (DEBUG) PrintPoem();
     	for ( int i = 0 ; i < maxGeneration ; i++, counPoint ++){
     		if (DEBUG) System.out.println(" === 第"+i+"代 ===");
-    		Crossover();
+    		//Crossover();
+    		SelectedCrossover();
 			Mutation();
 			Select();
 			maxScore[i] = 0; minScore[i] = 1000000; sumScore = 0;
@@ -128,6 +129,45 @@ public class GeneticAlgorithm {
         }
     }
     
+    private void SelectedCrossover(){
+    	boolean isFirst = true;
+    	if (DEBUG) System.out.println("===Crossover===");
+    	for (int i = 0 ; i < populationSize/2 ; i++){
+    		if ( CanHappen(crossoverRate)){
+    			PoemTemplate poem1;
+    	    	PoemTemplate poem2;
+    			if (isFirst){
+    				poem1 = population[RandIndex(populationSize)];
+    				isFirst = false;
+    			}
+    			else
+    				poem1= population[RandIndex(0)];
+    			poem2 = population[RandIndex(0)];
+    			PoemSentence[] newSentenceList = new PoemSentence[row];
+    			newSentenceList[0] = chooseSentence(RandIndex(row*2), poem1, poem2);
+    			for ( int j = 1 ; j < row; j++){
+    				newSentenceList[j] = chooseSentence(RandIndex(0), poem1, poem2);
+    			}
+    			PoemTemplate newPoem = new PoemTemplate(row, col, newSentenceList);
+    			int newIndex = rand.nextInt(populationSize);
+    			PoemTemplate oldPoem = population[newIndex];
+    			if (newPoem.getFitnessScore() > oldPoem.getFitnessScore()){
+    				if (DEBUG) System.out.printf(" %d > %d ， 取代第 %d 首\n",newPoem.getFitnessScore(),oldPoem.getFitnessScore(),newIndex);
+    				oldPoem = newPoem;
+    			}
+    		}
+    	}
+    	
+    }
+    
+    private PoemSentence chooseSentence(int index,PoemTemplate poem1, PoemTemplate poem2){
+    	if (index < row){
+    		return poem1.getPoem()[index];
+    	}
+    	else{
+    		return poem2.getPoem()[index-row];
+    	}
+    }
 	/**
 	 * 	將一個隨機位置的詞替換掉
 	 */
@@ -170,7 +210,7 @@ public class GeneticAlgorithm {
 		int[] cumulativeSum = new int[populationSize];
 		
 		int totalSum = 0;
-		int head = populationSize/10,tail = head, middle = populationSize - head - tail;
+		int head = 0,tail = populationSize/10, middle = populationSize - head - tail;
 		
 		Arrays.sort(population);
 		

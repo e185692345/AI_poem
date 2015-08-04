@@ -25,7 +25,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	/**
 	 * 創建一首新的詩，每首詩可以有不同的模板
 	 * <注意>因為poem中的詞語在基因演算法中會被替換，所以每個PoemTemplate都要有一個poem的實體，
-	 * 		不可以單純複製reference，否則修改某個PoemTemplate的poem的某個詞的時候會影響到其他人
+	 * 不可以單純複製reference，否則修改某個PoemTemplate的poem的某個詞的時候會影響到其他人
 	 * 
 	 * @param row
 	 * @param col
@@ -48,10 +48,8 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 		else{
 			maxToneMatch = 4*row;
 		}
-		maxAntithesisMatch= 0;
-		for (int i = 0 ; i < row ; i+= 2){
-			maxAntithesisMatch += poem[i].length();
-		}
+		maxAntithesisMatch= row*col/2;
+		
 		maxDiversityMatch = row*col;
 		modified = true;
 	}
@@ -135,19 +133,49 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	}
 	
 	private int GetAntithesisScore(){
-		/*int countAntithesis = 0;
+		int countAntithesis = 0;
+		//System.out.println(this);
 		for ( int i = 0 ; i < row ; i += 2){
-			for (int j = 0 ; j < wordComposition[i].length ; j++){
-				int wordType = poem[i][j].getWordType() & poem[i+1][j].getWordType();
-				if ( wordType > 0){
-					countAntithesis += 1;
-					if (DEBUG) System.out.println(poem[i][j].getWord()+" , "+poem[i+1][j].getWord()+" => "+ ChineseWord.ReadableWordType(wordType));
+			//System.out.println("比較第 "+i+" 和 "+(i+1)+" 句");
+			int index1 = 0, countLetter1 = 0;
+			int index2 = 0, countLetter2 = 0;
+			while (true){
+				if (countLetter1 == col && countLetter2 == col)
+					break;
+				//System.out.printf("index1 = %d, #letter1 = %d\n",index1,countLetter1);
+				//System.out.printf("index2 = %d, #letter2 = %d\n\n",index2,countLetter2);
+				int len1 = poem[i].getWords()[index1].getLength();
+				int len2 = poem[i+1].getWords()[index2].getLength();
+				if ( (poem[i].getWords()[index1].getWordType() & poem[i+1].getWords()[index2].getWordType() ) > 0){
+					if (DEBUG) System.out.printf("%s (%s) = %s (%s)\n",poem[i].getWords()[index1].getWord(),ChineseWord.ReadableWordType(poem[i].getWords()[index1].getWordType()),poem[i+1].getWords()[index2].getWord(),ChineseWord.ReadableWordType(poem[i+1].getWords()[index2].getWordType()));
+					countAntithesis += Math.min(len1,len2);
+					countLetter1 += len1;
+					countLetter2 += len2;
+					if(index1 +1 < poem[i].length())
+						index1 += 1;
+					if(index2 +1 < poem[i+1].length())
+						index2 += 1;
+				}
+				else{
+					if ( countLetter1 + len1 > countLetter2 + len2){
+						countLetter2 += len2;
+						index2 +=1;
+					}
+					else if (countLetter2 + len2> countLetter1 + len1){
+						countLetter1 += len1;
+						index1 += 1;
+					}
+					else{
+						countLetter1 += len1;
+						countLetter2 += len2;
+						index1 += 1;
+						index2 += 1;
+					}
 				}
 			}
 		}
-		if (DEBUG)System.out.printf(">>對偶的詞共有  %d / %d 個\n",countAntithesis,maxAntithesisMatch);
-		return countAntithesis*scoreAntithesis/maxAntithesisMatch;*/
-		return 0;
+		if (DEBUG) System.out.printf(">>對偶的詞共有  %d / %d 個\n",countAntithesis,maxAntithesisMatch);
+		return countAntithesis*maxAntithesisScore/maxAntithesisMatch;
 	}
 	
 	private int GetToneScore(){

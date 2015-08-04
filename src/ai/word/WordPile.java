@@ -13,9 +13,6 @@ import ai.net.BopomofoCrawler;
 
 public class WordPile {
 	
-	private ArrayList<ArrayList<ChineseWord>> nounWord = new ArrayList<ArrayList<ChineseWord>>();
-	private ArrayList<ArrayList<ChineseWord>> adjWord = new ArrayList<ArrayList<ChineseWord>>();
-	private ArrayList<ArrayList<ChineseWord>> verbWord = new ArrayList<ArrayList<ChineseWord>>();
 	private ArrayList<ArrayList<ArrayList<ArrayList<ChineseWord>>>>  relationPile = new ArrayList<ArrayList<ArrayList<ArrayList<ChineseWord>>>>();
 	private ArrayList<ChineseWord[]> wordListPile;
 	private int totalWord;
@@ -53,17 +50,6 @@ public class WordPile {
 		System.out.printf("詞庫中新增了 %d 個詞 ， 目前共有 %d 個詞\n",wordList.length,totalWord);
 		
 		for (ChineseWord word : wordList){
-			//一個詞可能會有很多詞性
-			if ( (word.getWordType() & ChineseWord.noun) > 0){
-				nounWord.get(word.getLength()).add(word);
-			}
-			if ((word.getWordType() & ChineseWord.adj) > 0){
-				adjWord.get(word.getLength()).add(word);
-			}
-			if ((word.getWordType() & ChineseWord.verb) > 0){
-				verbWord.get(word.getLength()).add(word);
-			}
-			
 			relationPile.get(word.getRelation()).get(word.getStartOrEnd()).get(word.getLength()).add(word);
 		}
 	}
@@ -103,12 +89,6 @@ public class WordPile {
 	 * 第三層 index 依照詞的長度分類 
 	 */
 	private void InitLsit(){
-		for ( int i  = 0 ; i <= 3 ; i++){
-			nounWord.add(new ArrayList<ChineseWord>());
-			adjWord.add(new ArrayList<ChineseWord>());
-			verbWord.add(new ArrayList<ChineseWord>());
-		}
-		
 		for ( int i = 0 ; i < Relation.TOTAL_RELATION ; i++){
 			relationPile.add(new ArrayList<ArrayList<ArrayList<ChineseWord>>>());
 			relationPile.get(i).add(new ArrayList<ArrayList<ChineseWord>>());
@@ -161,30 +141,9 @@ public class WordPile {
 		return json.toString();
 	}
 	
-	/*public ChineseWord GetAWord(int wordType, int wordLength) {
-		ArrayList<ChineseWord> list;
-		
-		if ((wordType & ChineseWord.noun) > 0){
-			list =nounWord.get(wordLength);
-		}
-		else if ((wordType & ChineseWord.adj) > 0){
-			list =adjWord.get(wordLength);
-		}
-		else if ((wordType & ChineseWord.verb) > 0){
-			list =verbWord.get(wordLength);
-		}
-		else{
-			System.err.println("error : invalid word type");
-			System.exit(1);
-			return null;
-		}
-		return list.get(rand.nextInt(list.size()));
-	}*/
-	
 	
 	/**
 	 * 從 relationPile 中隨機取出一個符合條件的詞，若是沒有符合的詞則會回傳null
-	 * // TODO 新增Exception
 	 * 
 	 * @param relation 參見ai.word.Relation
 	 * @param startOrEnd start : 0 / end : 0
@@ -207,24 +166,24 @@ public class WordPile {
 	
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
-		
-		sb.append("=== 名詞清單 ===\n");
-		for ( ArrayList<ChineseWord> list : nounWord ){
-			for ( ChineseWord word : list){
-				sb.append(word.toString());
+		sb.append(String.format("詞庫中共有 %d 個詞\n",totalWord));
+		for (int i = 0 ; i < Relation.TOTAL_RELATION ; i++){
+			sb.append(Relation.getRelation(i)+"\n");
+			sb.append("start : ");
+			for ( int j = 1 ; j <= 3 ;j++){
+				sb.append(relationPile.get(i).get(0).get(j).size());
+				if ( j < 3)
+					sb.append(" ,");
 			}
-		}
-		sb.append("=== 形容詞清單 ===\n");
-		for ( ArrayList<ChineseWord> list : adjWord ){
-			for ( ChineseWord word : list){
-				sb.append(word.toString());
+			sb.append('\n');
+			sb.append("end : ");
+			for ( int j = 1 ; j <= 3 ;j++){
+				sb.append(relationPile.get(i).get(1).get(j).size());
+				if ( j < 3)
+					sb.append(" ,");
 			}
-		}
-		sb.append("=== 動詞清單 ===\n");
-		for ( ArrayList<ChineseWord> list : verbWord ){
-			for ( ChineseWord word : list){
-				sb.append(word.toString());
-			}
+			sb.append('\n');
+			sb.append('\n');
 		}
 		return sb.toString();
 	}
