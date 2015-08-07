@@ -23,7 +23,7 @@ public class WordPile {
 	private HashMap<String, Boolean> isRecord;
 	
 	public WordPile(String topic, int wordType) {
-		InitLsit();
+		initLsit();
 		wordListPile = new ArrayList<ChineseWord[]>();
 		totalWord = 0;
 		isRecord = new HashMap<String, Boolean>();
@@ -31,7 +31,7 @@ public class WordPile {
 	}
 	private void SetTopic(String topic, int wordType){
 		try {
-			this.topic = new ChineseWord(topic, BopomofoCrawler.GetBopomofo(topic), wordType, Relation.TOPIC,Relation.START);
+			this.topic = new ChineseWord(topic, BopomofoCrawler.getBopomofo(topic), wordType, Relation.TOPIC,Relation.START);
 		} catch (BopomofoException e) {
 			this.topic = null;
 			e.printStackTrace();
@@ -64,7 +64,7 @@ public class WordPile {
 		this.paddingWordList = paddingWordList;
 	}
 		
-	public void AddWords(JSONObject json){
+	public void addWords(JSONObject json){
 		JSONArray arr = json.optJSONArray("wordPile");
 		ChineseWord[] wordList = new ChineseWord[arr.length()];
 		if ( arr != null){
@@ -72,8 +72,8 @@ public class WordPile {
 				JSONObject item;
 				try {
 					item = arr.getJSONObject(i);
-					wordList[i] = new ChineseWord(item.optString("word"),GetBopomofo(item.optJSONArray("bopomofo")), 
-							GetTone(item.optJSONArray("tone")),item.optInt("wordType"),item.optInt("length"),item.optInt("relation"),item.optInt("startOrEnd"));
+					wordList[i] = new ChineseWord(item.optString("word"),getBopomofo(item.optJSONArray("bopomofo")), 
+							getTone(item.optJSONArray("tone")),item.optInt("wordType"),item.optInt("length"),item.optInt("relation"),item.optInt("startOrEnd"));
 				} catch (JSONException e) {
 					e.printStackTrace();
 					continue;
@@ -94,7 +94,7 @@ public class WordPile {
 	 * 第二層 index 依照詞是在 star/end 分類
 	 * 第三層 index 依照詞的長度分類 
 	 */
-	private void InitLsit(){
+	private void initLsit(){
 		for ( int i = 0 ; i < Relation.TOTAL_RELATION ; i++){
 			relationPile.add(new ArrayList<ArrayList<ArrayList<ChineseWord>>>());
 			relationPile.get(i).add(new ArrayList<ArrayList<ChineseWord>>());
@@ -111,7 +111,7 @@ public class WordPile {
 		}
 	}
 	
-	private int[] GetTone(JSONArray arr){
+	private int[] getTone(JSONArray arr){
 		int[] tone = new int[arr.length()];
 		for (int i = 0 ; i < arr.length() ; i++){
 			tone[i] = arr.optInt(i);
@@ -119,7 +119,7 @@ public class WordPile {
 		
 		return tone;
 	}
-	private char[] GetBopomofo(JSONArray arr){
+	private char[] getBopomofo(JSONArray arr){
 		char[] bopomofo = new char[arr.length()];
 		for (int i = 0 ; i < arr.length() ; i++){
 			bopomofo[i] = arr.optString(i).charAt(0);
@@ -127,7 +127,7 @@ public class WordPile {
 		return bopomofo;
 	}
 	
-	public String GetJSONString(){
+	public String getJSONString(){
 		JSONObject json = new JSONObject();
 		JSONArray arr = new JSONArray();
 		for ( ChineseWord[] wordList : wordListPile){
@@ -157,7 +157,7 @@ public class WordPile {
 	 * @return 若沒有符合的詞則會還傳null
 	 * @throws RelationWordException 
 	 */
-	public ChineseWord GetRlationWord(int relation,int startOrEnd, int length) throws RelationWordException{
+	public ChineseWord getRlationWord(int relation,int startOrEnd, int length) throws RelationWordException{
 		ArrayList<ChineseWord> list = relationPile.get(relation).get(startOrEnd).get(length);
 		
 		if (list.size() == 0){

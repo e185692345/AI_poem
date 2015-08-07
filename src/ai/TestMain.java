@@ -23,11 +23,11 @@ public class TestMain {
 		//==========================================================================
 		for ( String file : fileList){
 			try {
-				wordPile= new WordPile(topic, ChineseWord.noun);
-				wordPile.AddWords(new JSONObject(MainClass.ReadFile(file)));
+				wordPile= new WordPile(topic, ChineseWord.NOUN);
+				wordPile.addWords(new JSONObject(MainClass.ReadFile(file)));
 				MakeSentence maker = new MakeSentence(wordPile);
 				for ( int i = 0 ; i < 3 ; i++){
-					new GeneticAlgorithm(8, 5, wordPile, maker).Evole();
+					new GeneticAlgorithm(8, 5, wordPile, maker).evole();
 				}
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block

@@ -26,8 +26,8 @@ import ai.word.Relation;
 
 public class ConceptNetCrawler {
 	
-	private static final int limit = 9999;
-	private static final int maxTranslationTimes = 1000;
+	private static final int LIMIT = 9999;
+	private static final int MAX_TRANSLATION = 1000;
 	
 	
 	private String topic;
@@ -45,8 +45,8 @@ public class ConceptNetCrawler {
 	 * 
 	 * 	處理json的library要另外去下載，請參考 http://www.ewdna.com/2008/10/jsonjar.html
 	 */
-	public ChineseWord[] GetWordList_ChineseSource(){
-		ChineseWord[] tempWordList = new ChineseWord[limit];
+	public ChineseWord[] getWordList_ChineseSource(){
+		ChineseWord[] tempWordList = new ChineseWord[LIMIT];
 		int wordType,count = 0, relationID;
 		HashMap<String, Boolean> isRecorded = new HashMap<String,Boolean>();
 		try {
@@ -55,9 +55,9 @@ public class ConceptNetCrawler {
 			//String url = new String("http://conceptnet5.media.mit.edu/data/5.3/c/zh/"+URLEncoder.encode(topic,"UTF-8")+"?limit="+limit);
 			JSONObject obj, jsonObj;
 			
-			String url = new String("http://conceptnet5.media.mit.edu/data/5.2/search?limit="+limit+"&nodes=/c/zh_TW/"+URLEncoder.encode(topic,"UTF-8"));
+			String url = new String("http://conceptnet5.media.mit.edu/data/5.2/search?limit="+LIMIT+"&nodes=/c/zh_TW/"+URLEncoder.encode(topic,"UTF-8"));
 			System.out.println(url);
-			obj = ReadJsonFromURL(url);
+			obj = readJsonFromURL(url);
 			
 			try {
 				JSONArray array = obj.getJSONArray("edges");
@@ -82,9 +82,9 @@ public class ConceptNetCrawler {
 					if (word.length() <= 3 && relationID != -1){
 						if (!isRecorded.containsKey(word)){
 							isRecorded.put(word, true);
-							wordType = GetWordType(jsonObj.getString("rel"),startOrEnd);
+							wordType = getWordType(jsonObj.getString("rel"),startOrEnd);
 							try {
-								tempWordList[count] =  new ChineseWord(word, BopomofoCrawler.GetBopomofo(word), wordType, relationID, startOrEnd);
+								tempWordList[count] =  new ChineseWord(word, BopomofoCrawler.getBopomofo(word), wordType, relationID, startOrEnd);
 								count += 1;
 							} catch (BopomofoException e) {
 								System.err.println(e.getMessage());
@@ -121,7 +121,7 @@ public class ConceptNetCrawler {
 	 *	[重要] 如果相關詞由多個英文單字組成，單字之間會以底線區隔，進行翻譯之前要把底線換成空白
 	 *	[重要] 中文翻成英文時第一個字母會是大寫，要把它轉換成小寫才可以順利在concept net上取得資料
 	 */
-	public ChineseWord[] GetWordList_EnlishSource(){
+	public ChineseWord[] getWordList_EnlishSource(){
 		String englishTopic;
 		HashMap<String, Boolean> isRecorded = new HashMap<String,Boolean>();
 		Translate.setClientId(MicrosoftTranslatorKey.ID);
@@ -133,14 +133,14 @@ public class ConceptNetCrawler {
 			e1.printStackTrace();
 		}
 		
-		String url = new String("http://conceptnet5.media.mit.edu/data/5.2/search?limit="+limit+"&nodes=/c/en/"+englishTopic);
+		String url = new String("http://conceptnet5.media.mit.edu/data/5.2/search?limit="+LIMIT+"&nodes=/c/en/"+englishTopic);
 		System.out.println(url);
-		JSONObject obj = ReadJsonFromURL(url);
+		JSONObject obj = readJsonFromURL(url);
 		
 		try {
 			JSONArray array = obj.getJSONArray("edges");
-			String[] englishInput = new String[limit];
-			SemiChineseWord[] semiWordData = new SemiChineseWord[limit];
+			String[] englishInput = new String[LIMIT];
+			SemiChineseWord[] semiWordData = new SemiChineseWord[LIMIT];
 			int countTranlation = 0;
 			
 			for (int i=0; i<array.length(); i++){
@@ -166,7 +166,7 @@ public class ConceptNetCrawler {
 					//System.err.println("warning : ConceptNet gives a json object without corresponding start wrod / end word ( "+startWord+" , "+endWord+" )");
 					continue;
 				}
-				wordType = GetWordType(jsonObj.getString("rel"),startOrEnd);
+				wordType = getWordType(jsonObj.getString("rel"),startOrEnd);
 				
 				if (word.split(" ").length <= 3 && relationID != -1){
 					if (!isRecorded.containsKey(word)){
@@ -182,8 +182,8 @@ public class ConceptNetCrawler {
 			}
 			
 			/*限制一次翻譯詞語數上限，避免太快把每個月的翻譯配額用完*/
-			if (countTranlation > maxTranslationTimes)
-				countTranlation = maxTranslationTimes;
+			if (countTranlation > MAX_TRANSLATION)
+				countTranlation = MAX_TRANSLATION;
 			
 			String[] chineseOutput = new String[countTranlation],tmp;
 			/*把大量的翻譯分成小份的分批執行，不然會有Error*/
@@ -201,7 +201,7 @@ public class ConceptNetCrawler {
 			}
 			
 			System.out.println("共翻譯了 "+chineseOutput.length+" 個詞");
-			ChineseWord[] tempWordList = new ChineseWord[limit]; 
+			ChineseWord[] tempWordList = new ChineseWord[LIMIT]; 
 			int count = 0;
 			for (int i = 0 ; i < countTranlation && i < chineseOutput.length ; i++){
 				if ( englishInput[i].equals(chineseOutput[i]) || chineseOutput[i].length() > 3)
@@ -210,7 +210,7 @@ public class ConceptNetCrawler {
 				if (!isRecorded.containsKey(word)){
 					try {
 						SemiChineseWord data = semiWordData[i];
-						tempWordList[count] =  new ChineseWord(word, BopomofoCrawler.GetBopomofo(word), data.wordType, data.relationID, data.startOrEnd);
+						tempWordList[count] =  new ChineseWord(word, BopomofoCrawler.getBopomofo(word), data.wordType, data.relationID, data.startOrEnd);
 						count += 1;
 					} catch (BopomofoException e) {
 						System.err.println(e.getMessage());
@@ -234,7 +234,7 @@ public class ConceptNetCrawler {
 	 * 	@param  url: json檔案的url (String)
 	 * 	@return JSONObject
 	 */
-	private static JSONObject ReadJsonFromURL(String url){
+	private static JSONObject readJsonFromURL(String url){
 		JSONObject json = null;
 		InputStream is = null;
 		try {
@@ -282,7 +282,7 @@ public class ConceptNetCrawler {
 	 *  
 	 *  如果遇到未知的 relation 則會回傳 0，表示沒有任何詞性
 	 */
-	private static int GetWordType(String relation, int startOrEnd){
+	private static int getWordType(String relation, int startOrEnd){
 		final String[] rel = new String[] {"/r/RelatedTo","/r/IsA","/r/PartOf","/r/HasA","/r/UsedFor","/r/CapableOf","/r/AtLocation","/r/Causes","/r/HasSubevent","/r/HasFirstSubevent","/r/HasPrerequisite","/r/HasProperty","/r/MotivatedByGoal","/r/Desires","/r/CreatedBy","/r/Synonym","/r/Antonym","/r/DerivedFrom","/r/MadeOf"};
 		final String[] start = new String[] {"名形動","名","名","名","名","名","名","名動","動","動","動","名","動","名","名","名","名","名","名"};
 		final String[] end = new String[] {"名形動","名","名","名","動","動","名","形動","動","動","動","形","名形動","名動","名","名","名","名","名"};
@@ -299,13 +299,13 @@ public class ConceptNetCrawler {
 		for (int i = 0 ; i < rel.length ; i++){
 			if (relation.equals(rel[i])){
 				if (type[i].indexOf("名") != -1){
-					wordType += ChineseWord.noun;
+					wordType += ChineseWord.NOUN;
 				}
 				if (type[i].indexOf("形") != -1){
-					wordType += ChineseWord.adj;	
+					wordType += ChineseWord.ADJ;	
 				}
 				if (type[i].indexOf("動") != -1){
-					wordType += ChineseWord.verb;
+					wordType += ChineseWord.VERB;
 				}
 				break;
 			}

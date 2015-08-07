@@ -4,9 +4,7 @@ public class Relation {
 	
 	public static final int START = 0;
 	public static final int END = 1;
-	/**
-	 * 務必確保 TOTAL_RELATION 的值是最大的，TOTAL_RELATION 決定了 WordPile 中要 new 幾個 ArrayList
-	 */
+	
 	public static final int TOPIC = -3;
 	public static final int PADDING = -2;
 	public static final int ELSE = -1;

@@ -11,10 +11,10 @@ import ai.word.WordPile;
 public class PoemTemplate implements Comparable<PoemTemplate>{
 	
 	private static final boolean DEBUG = false;
-	public final static int maxRhymeScore = 200;
-	public final static int maxToneScore = 200;
-	public final static int maxAntithesisScore = 100;
-	public final static int maxDiversityScore = 100;
+	public final static int MAX_RHYTHM_SCORE = 200;
+	public final static int MAX_TONE_SCORE = 200;
+	public final static int MAX_ANTITHESIS_SCORE = 100;
+	public final static int MAX_DIVERSITY_SCORE = 100;
 	
 	private int col, row;
 	private PoemSentence[] poem;
@@ -65,7 +65,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
      * @return PoemTemplate的object
 	 * @throws MakeSentenceException 
      */
-    public static PoemTemplate RandomPoem(int row,int col,WordPile wordPile,MakeSentence maker){
+    public static PoemTemplate getRandomPoem(int row,int col,WordPile wordPile,MakeSentence maker){
     	
     	PoemSentence[] poem = new PoemSentence[row];
     	for (int i = 0 ; i < row ; i++){
@@ -102,26 +102,26 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	public int getFitnessScore() {
 		if (modified){
 			modified = false;
-			FitnessFunction();
+			fitnessFunction();
 		}
 		return fitnessScore;
 	}
 	
-	private void FitnessFunction(){
-		rhythmScore = GetRhythmScore();
-		toneScore = GetToneScore();
-		antithesisScore = GetAntithesisScore();
-		diversityScore = GetDiversityScore();
+	private void fitnessFunction(){
+		rhythmScore = getRhythmScore();
+		toneScore = getToneScore();
+		antithesisScore = getAntithesisScore();
+		diversityScore = getDiversityScore();
 		fitnessScore = rhythmScore + toneScore + antithesisScore + diversityScore;
 		if (DEBUG) System.out.println(this.printScore());
 	}
 	
-	private int GetDiversityScore(){
+	private int getDiversityScore(){
 		int countUniqueChar = 0;
 		HashMap<Character, Boolean> map = new HashMap<Character, Boolean>();
 		char c;
 		for (int i = 1 ; i <= row*col ; i++){
-			c = GetCharAt(i);
+			c = getCharAt(i);
 			if (!map.containsKey(c)){
 				countUniqueChar += 1;
 				map.put(c, true);
@@ -129,10 +129,10 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 		}
 		
 		if (DEBUG) System.out.printf("不重複的字共有 %d / %d 個\n",countUniqueChar,maxDiversityMatch);
-		return maxDiversityScore*countUniqueChar/(row*col);
+		return MAX_DIVERSITY_SCORE*countUniqueChar/(row*col);
 	}
 	
-	private int GetAntithesisScore(){
+	private int getAntithesisScore(){
 		int countAntithesis = 0;
 		//System.out.println(this);
 		for ( int i = 0 ; i < row ; i += 2){
@@ -147,13 +147,13 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 				int len1 = poem[i].getWords()[index1].getLength();
 				int len2 = poem[i+1].getWords()[index2].getLength();
 				if ( (poem[i].getWords()[index1].getWordType() & poem[i+1].getWords()[index2].getWordType() ) > 0){
-					if (DEBUG) System.out.printf("%s (%s) = %s (%s)\n",poem[i].getWords()[index1].getWord(),ChineseWord.ReadableWordType(poem[i].getWords()[index1].getWordType()),poem[i+1].getWords()[index2].getWord(),ChineseWord.ReadableWordType(poem[i+1].getWords()[index2].getWordType()));
+					if (DEBUG) System.out.printf("%s (%s) = %s (%s)\n",poem[i].getWords()[index1].getWord(),ChineseWord.getReadableWordType(poem[i].getWords()[index1].getWordType()),poem[i+1].getWords()[index2].getWord(),ChineseWord.getReadableWordType(poem[i+1].getWords()[index2].getWordType()));
 					countAntithesis += Math.min(len1,len2);
 					countLetter1 += len1;
 					countLetter2 += len2;
-					if(index1 +1 < poem[i].length())
+					if(index1 +1 < poem[i].getLength())
 						index1 += 1;
-					if(index2 +1 < poem[i+1].length())
+					if(index2 +1 < poem[i+1].getLength())
 						index2 += 1;
 				}
 				else{
@@ -175,15 +175,15 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 			}
 		}
 		if (DEBUG) System.out.printf(">>對偶的詞共有  %d / %d 個\n",countAntithesis,maxAntithesisMatch);
-		return countAntithesis*maxAntithesisScore/maxAntithesisMatch;
+		return countAntithesis*MAX_ANTITHESIS_SCORE/maxAntithesisMatch;
 	}
 	
-	private int GetToneScore(){
+	private int getToneScore(){
 		final int[][] standardTone = new int[][]{{0,1,0},{1,0,1},{1,0,1},{0,1,0}};
 		int countMatchTone = 0;
 		int countMatchRhythmTone = 0;
 		int index;
-		if (GetToneAt(2) == 0){
+		if (getToneAt(2) == 0){
 			index = 0;  /*平起式*/
 		}
 		else{
@@ -194,8 +194,8 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 		for ( int i = 0 ; i < row ; i ++){
 			for ( int j = 2, k = 0 ; j <= col ; j+=2, k++){
 				int charIndex = i*col+j;
-				if (DEBUG) System.out.printf("%c(%d)",GetCharAt(charIndex),GetToneAt(charIndex));
-				if (GetToneAt(charIndex) == standardTone[index][k]){
+				if (DEBUG) System.out.printf("%c(%d)",getCharAt(charIndex),getToneAt(charIndex));
+				if (getToneAt(charIndex) == standardTone[index][k]){
 					countMatchTone += 1;
 					if (DEBUG) System.out.print("O ");
 				}
@@ -208,41 +208,41 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 		}
 		/*處理韻腳的平仄*/
 		if (DEBUG) System.out.println("===韻腳平仄===");
-		if (poem[0].getWords()[poem[0].length()-1].GetRythm() == poem[1].getWords()[poem[1].length()-1].GetRythm()){
-			if (GetToneAt(1*col) == 0){
+		if (poem[0].getWords()[poem[0].getLength()-1].getRythm() == poem[1].getWords()[poem[1].getLength()-1].getRythm()){
+			if (getToneAt(1*col) == 0){
 				countMatchRhythmTone += 1; /*首句押韻用平聲*/
-				if (DEBUG) System.out.printf("第1句 : 平 (%c,%c)\n",GetCharAt(col),GetCharAt(2*col));
+				if (DEBUG) System.out.printf("第1句 : 平 (%c,%c)\n",getCharAt(col),getCharAt(2*col));
 			}
 		}
 		else{
-			if (GetToneAt(1*col) == 1){
+			if (getToneAt(1*col) == 1){
 				countMatchRhythmTone += 1; /*首句不押韻用仄聲*/
 				if (DEBUG) System.out.println("第1句 : 仄");
 			}
 		}
-		if (GetToneAt(2*col) == 0){
+		if (getToneAt(2*col) == 0){
 			countMatchRhythmTone += 1;
 			if (DEBUG) System.out.println("第2句 : 平");
 		}
 		for (int i = 4 ; i <= row ; i += 2){
-			if ( GetToneAt((i-1)*col) == 1){
+			if ( getToneAt((i-1)*col) == 1){
 				countMatchRhythmTone += 1;
 				if (DEBUG) System.out.println("第"+(i-1)+"句 : 仄");
 			}
-			if ( GetToneAt(i*col) == 0){
+			if ( getToneAt(i*col) == 0){
 				countMatchRhythmTone += 1;
 				if (DEBUG) System.out.println("第"+i+"句 : 平");
 			}
 		}
 		if (DEBUG)System.out.printf(">>符合平仄的字有 (%d + %d(韻腳相關)) / %d 個\n",countMatchTone,countMatchRhythmTone,maxToneMatch);
-		return (countMatchTone+countMatchRhythmTone)*maxToneScore/maxToneMatch;
+		return (countMatchTone+countMatchRhythmTone)*MAX_TONE_SCORE/maxToneMatch;
 	}
 	/**
 	 * 取得整首詩中的某個字
 	 * @param index 從"1"開始算
 	 * @return 
 	 */
-	private char GetCharAt(int index){
+	private char getCharAt(int index){
 		if ( index > row*col){
 			System.err.println("error : index out of bound");
 			System.exit(1);
@@ -269,7 +269,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	 * @param index 從 "1" 開始算
 	 * @return 0:平, 1:仄
 	 */
-	private int GetToneAt(int index){
+	private int getToneAt(int index){
 		if ( index > row*col){
 			System.err.println("error : index out of bound");
 			System.exit(1);
@@ -292,12 +292,12 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 		return -1;
 	}
 	
-	private int GetRhythmScore(){
+	private int getRhythmScore(){
 		HashMap<Character,Integer> recordRhythm = new HashMap<Character,Integer>();
 		int maxCountSameRhytm = 0;
 		char mostRhythm='?';
 		for (int  i = 1 ; i < row ; i += 2){
-			char rhythm = poem[i].getWords()[poem[i].length()-1].GetRythm();
+			char rhythm = poem[i].getWords()[poem[i].getLength()-1].getRythm();
 			int temp;
 			if (recordRhythm.containsKey(rhythm)){
 				temp = recordRhythm.get(rhythm)+1;
@@ -312,16 +312,16 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 			}
 		}
 		for (int i = 1 ; i < row ; i+= 2){
-			if (DEBUG) System.out.print(" ("+poem[i].getWords()[poem[i].length()-1].getWord()+","+poem[i].getWords()[poem[i].length()-1].GetRythm()+")");
+			if (DEBUG) System.out.print(" ("+poem[i].getWords()[poem[i].getLength()-1].getWord()+","+poem[i].getWords()[poem[i].getLength()-1].getRythm()+")");
 		}
 		if (DEBUG) System.out.println();
 		if (DEBUG) System.out.printf(">>最多的韻腳是 \"%c\"，共有 %d / %d 個\n",mostRhythm,maxCountSameRhytm,maxRhythmMatch);
-		return maxCountSameRhytm*maxRhymeScore/maxRhythmMatch;
+		return maxCountSameRhytm*MAX_RHYTHM_SCORE/maxRhythmMatch;
 	}
 	
 	public String printScore(){
 		this.getFitnessScore();
-		return String.format("押韻: %d/%d, 平仄: %d/%d, 對偶:%d/%d, 多樣性:%d/%d",rhythmScore,maxRhymeScore,toneScore,maxToneScore,antithesisScore,maxAntithesisScore,diversityScore,maxAntithesisScore);
+		return String.format("押韻: %d/%d, 平仄: %d/%d, 對偶:%d/%d, 多樣性:%d/%d",rhythmScore,MAX_RHYTHM_SCORE,toneScore,MAX_TONE_SCORE,antithesisScore,MAX_ANTITHESIS_SCORE,diversityScore,MAX_ANTITHESIS_SCORE);
 	}
 	
 	@Override

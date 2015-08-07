@@ -34,7 +34,7 @@ public class PoemSentence {
 		return this.sentenceType;
 	}
 	
-	public int length() {
+	public int getLength() {
 		return words.length;
 	}
 	

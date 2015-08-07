@@ -23,9 +23,9 @@ public class BopomofoCrawler {
 	 *	查詢「風」時，第一個結果是「八面威風」，所以還必須從較長的單字中取出欲查詢的詞和對應的注音
 	 *	注意：html原始碼中有的空白是"全形"空白
 	 */
-	 static public String[] GetBopomofo(String target) throws BopomofoException{
+	 static public String[] getBopomofo(String target) throws BopomofoException{
 		
-		String data = GetHtml(target);
+		String data = getHtml(target);
 		String word = new String("");
 		String bopomofo = new String("");
 		int findTarget = 0;
@@ -65,7 +65,7 @@ public class BopomofoCrawler {
 				throw new BopomofoException(target);
 			}
 			else{
-				return GetSingleLetterBopoMofo(target);
+				return getSingleLetterBopoMofo(target);
 			}
 		}
 		
@@ -87,7 +87,7 @@ public class BopomofoCrawler {
 				throw new BopomofoException(word,bopomofoList);
 			}
 			else{
-				return GetSingleLetterBopoMofo(target);
+				return getSingleLetterBopoMofo(target);
 			}
 		}
 		int offset = word.indexOf(target);
@@ -96,7 +96,7 @@ public class BopomofoCrawler {
 		return letterBopomofo;
 	}
 	
-	 private static String GetHtml(String target){
+	 private static String getHtml(String target){
 		final int buffferSize = 4096;
 
 		BufferedInputStream in = null;
@@ -122,11 +122,11 @@ public class BopomofoCrawler {
 		return "";
 	 }	
 	 
-	 private static String[] GetSingleLetterBopoMofo(String target) throws BopomofoException{
+	 private static String[] getSingleLetterBopoMofo(String target) throws BopomofoException{
 		 
 		 String[] letterBopomofo = new String[target.length()];
 			for (int i = 0 ; i < target.length() ; i++){
-				letterBopomofo[i] = GetBopomofo(target.substring(i, i+1))[0];
+				letterBopomofo[i] = getBopomofo(target.substring(i, i+1))[0];
 			}
 		 
 		 return letterBopomofo;

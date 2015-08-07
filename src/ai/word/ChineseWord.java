@@ -2,7 +2,7 @@ package ai.word;
 
 public class ChineseWord {
 
-	public static final int padding = 8, noun = 1, adj = 2, verb = 4, all=7;
+	public static final int PADDING = 8, NOUN = 1, ADJ = 2, VERB = 4, ALL = 7;
 	
 	private int length;
 	private String word;
@@ -130,30 +130,30 @@ public class ChineseWord {
 	}
 	
 	/*取得韻腳*/
-	public char GetRythm(){
+	public char getRythm(){
 		return bopomofo[length-1];
 	}
 	/*取得詞性*/
 	public int getWordType() {
 		return wordType;
 	}
-	public static String ReadableWordType(int wordType){
+	public static String getReadableWordType(int wordType){
 		String type = new String();
 		if (wordType == 0)
 			return "填充詞";
-		if ((wordType & noun )> 0)
+		if ((wordType & NOUN )> 0)
 			type += "名";
-		if ((wordType & adj )> 0)
+		if ((wordType & ADJ )> 0)
 			type += "形";
-		if ((wordType & verb )> 0)
+		if ((wordType & VERB )> 0)
 			type += "動";
-		if ((wordType & padding )> 0)
+		if ((wordType & PADDING )> 0)
 			type += "填";
 		return type;
 	}
 	
-	public void PrintWord(){
-		System.out.println(word+" <"+ReadableWordType(wordType)+">");
+	public void printWord(){
+		System.out.println(word+" <"+getReadableWordType(wordType)+">");
 		for (int i = 0; i < this.length; i++) {
 			System.out.println(word.charAt(i)+", "+bopomofo[i]+", "+String.valueOf(tone[i]));
 		}
@@ -162,7 +162,7 @@ public class ChineseWord {
 	@Override
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
-		sb.append(word+" <"+ReadableWordType(wordType)+">\n");
+		sb.append(word+" <"+getReadableWordType(wordType)+">\n");
 		for (int i = 0; i < this.length; i++) {
 			sb.append(word.charAt(i)+", "+bopomofo[i]+", "+String.valueOf(tone[i])+"\n");
 		}

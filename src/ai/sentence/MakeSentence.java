@@ -39,8 +39,8 @@ public class MakeSentence {
 
 	public MakeSentence(WordPile wordPile) {
 		this.wordPile = wordPile;
-		int countType1 = LoadSentenceType();
-		int countType2 = LoadPaddingWord();
+		int countType1 = loadSentenceTypeFile();
+		int countType2 = loadPaddingWordFile();
 		if (countType1 != countType2 && countType1 != 0){
 			System.err.println(paddingWordFile+" 和 "+sentenceTypeFile+" 紀錄的模板數量不一樣");
 			System.exit(1);
@@ -50,7 +50,7 @@ public class MakeSentence {
 		}
 	}
 	
-	private int LoadSentenceType(){
+	private int loadSentenceTypeFile(){
 		try {
 			BufferedReader bufRead = new BufferedReader(new FileReader(sentenceTypeFile));
 			int countType = Integer.parseInt(bufRead.readLine());
@@ -72,7 +72,7 @@ public class MakeSentence {
 		}
 	}
 	
-	private int LoadPaddingWord(){
+	private int loadPaddingWordFile(){
 		String[] str;
 		try {
 			BufferedReader bufRead = new BufferedReader(new FileReader(paddingWordFile));
@@ -83,7 +83,7 @@ public class MakeSentence {
 				paddingWordList[i] = new ChineseWord[countWord];
 				for ( int j = 0 ; j < countWord ; j++){
 					str = bufRead.readLine().split(" +");
-					paddingWordList[i][j] = new ChineseWord(str[0],Arrays.copyOfRange(str, 1,str.length), ChineseWord.padding, Relation.PADDING, Relation.START);
+					paddingWordList[i][j] = new ChineseWord(str[0],Arrays.copyOfRange(str, 1,str.length), ChineseWord.PADDING, Relation.PADDING, Relation.START);
 				}
 			}
 			wordPile.setPaddindWordList(paddingWordList);
@@ -108,10 +108,10 @@ public class MakeSentence {
 		throw new MakeSentenceException(-1);
 	}
 	public PoemSentence makeSentence(int type) throws MakeSentenceException{
-		int index = rand.nextInt(LineComposition.fiveLetterComposition.length);
+		int index = rand.nextInt(LineComposition.FIVE_LETTER_COMPOSITION.length);
 		
-		for (int i = 0 ; i < LineComposition.fiveLetterComposition.length ; i++){
-			int[] composition = LineComposition.fiveLetterComposition[(i+index)%LineComposition.fiveLetterComposition.length];
+		for (int i = 0 ; i < LineComposition.FIVE_LETTER_COMPOSITION.length ; i++){
+			int[] composition = LineComposition.FIVE_LETTER_COMPOSITION[(i+index)%LineComposition.FIVE_LETTER_COMPOSITION.length];
 			for ( int j = 0 ; j < sentenceTemplate[type].length ; j++){
 				if ( sentenceTemplate[type][j].length != composition.length)
 					continue;
@@ -140,7 +140,7 @@ public class MakeSentence {
 						int relation = Relation.getRelationID(data[0]);
 						int startOrEnd = Integer.parseInt(data[1]);
 						try {
-							words[k] = wordPile.GetRlationWord(relation, startOrEnd, composition[k]);
+							words[k] = wordPile.getRlationWord(relation, startOrEnd, composition[k]);
 						} catch (RelationWordException e) {
 							isDone = false;
 							break;

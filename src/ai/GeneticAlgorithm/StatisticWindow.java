@@ -50,7 +50,7 @@ class StatisticWindow extends JFrame{
 		private int maxValue = dataSet.getMaxValue();
 		private int minValue = dataSet.getMinValue();
 		private int countPoint = dataSet.getMax().length;
-	
+		
 		public MyPanel (){
 			super();
 			setSize(width,height);
@@ -78,40 +78,40 @@ class StatisticWindow extends JFrame{
 			Stroke bs =   new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{16, 4}, 0);  
 			((Graphics2D)g).setStroke(bs);
 			g.setFont(new Font(Font.DIALOG,Font.BOLD,12));
-			DrawScale(g, minValue);
-			DrawScale(g, (minValue*3+maxValue)/4);
-			DrawScale(g, (minValue+maxValue)/2);
-			DrawScale(g, (minValue+maxValue*3)/4);
-			DrawScale(g, maxValue);
+			drawScale(g, minValue);
+			drawScale(g, (minValue*3+maxValue)/4);
+			drawScale(g, (minValue+maxValue)/2);
+			drawScale(g, (minValue+maxValue*3)/4);
+			drawScale(g, maxValue);
 			
 			bs =   new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{4, 6}, 0);  
 			((Graphics2D)g).setStroke(bs);
-			DrawXScale(g, 1);
+			drawXScale(g, 1);
 			for (int i = 10; i < countPoint ; i += 10){
-				DrawXScale(g, i);
+				drawXScale(g, i);
 			}
-			DrawXScale(g, countPoint);
+			drawXScale(g, countPoint);
 			
 			((Graphics2D)g).setStroke(new BasicStroke(3));
-			DrawLine(g, dataSet.getMax(),Color.red);
-			DrawLine(g, dataSet.getAverage(),new Color(0xAA, 0x00, 0xAA));
-			DrawLine(g, dataSet.getMin(), Color.blue);
+			drawLine(g, dataSet.getMax(),Color.red);
+			drawLine(g, dataSet.getAverage(),new Color(0xAA, 0x00, 0xAA));
+			drawLine(g, dataSet.getMin(), Color.blue);
 			
 		}
 		
-		private void DrawXScale(Graphics g, int index){
+		private void drawXScale(Graphics g, int index){
 			int x = offset+(int)(index*unitX);
 			g.drawString(String.valueOf(index),x, height - offset+15);
 			g.drawLine(x, height - offset + 5, x, offset);
 		}
 		
-		private void DrawScale(Graphics g, int scale){
+		private void drawScale(Graphics g, int scale){
 			int y = (int)(height-offset-(scale-minValue+1)*unitY);
 			g.drawString(String.valueOf(scale),5,y);
 			g.drawLine(offset-5, y, width - offset, y);
 		}
 		
-		private void DrawLine(Graphics g,int[] data,Color color){
+		private void drawLine(Graphics g,int[] data,Color color){
 			int preX = 0, preY = 0, x, y;
 			int countPoint = data.length;
 			
