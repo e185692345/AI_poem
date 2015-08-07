@@ -56,18 +56,22 @@ public class GeneticAlgorithm {
 		int[] maxScore = new int[maxGeneration];
 		int[] minScore = new int[maxGeneration];
 		int[] avgScore = new int[maxGeneration];
+		int[][] detailScore = new int[PoemTemplate.COUNT_FITNESS_TYPE][maxGeneration];
     	int sumScore;
     	int counPoint = 0;
     	
     	initPopulation();
     	if (DEBUG) printPoem();
-    	for ( int i = 0 ; i < maxGeneration ; i++, counPoint ++){
+    	for ( int i = 0; i < maxGeneration ; i++, counPoint ++){
     		if (DEBUG) System.out.println(" === 第"+i+"代 ===");
     		// TODO 使用 SelectedCrossover 效果較佳，最佳分數會遞增
     		//Crossover();
     		crossover();
 			mutation();
 			select();
+			for (int j = 0 ; j < PoemTemplate.COUNT_FITNESS_TYPE ; j++){
+				detailScore[j][i] = population[0].getDetailScore()[j];
+			}
 			maxScore[i] = 0; minScore[i] = 1000000; sumScore = 0;
 			for ( int j = 0 ; j < POPULATION_SIZE ; j++){
 				int score = population[j].getFitnessScore();
@@ -77,6 +81,7 @@ public class GeneticAlgorithm {
 					minScore[i] = score;
 				sumScore += score;
 			}
+			
 			avgScore[i] = sumScore/POPULATION_SIZE;
 			if (DEBUG) printPoem();
 			if (maxScore[i] >= targetScore)
@@ -87,8 +92,9 @@ public class GeneticAlgorithm {
         System.out.println(population[0].printScore());
         System.out.println(population[0].toString());
     	
-    	if (counPoint > 0)
-    		new StatisticWindow(new GenerationData(counPoint, maxScore, minScore, avgScore));
+    	if (counPoint > 0){
+    		new StatisticWindow(counPoint, maxScore, minScore, avgScore, detailScore);
+    	}
 	}
     /**
      * 初始化族群

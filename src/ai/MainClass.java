@@ -1,6 +1,5 @@
 package ai;
 
-import java.awt.event.FocusAdapter;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
