@@ -20,6 +20,7 @@ public class GeneticAlgorithm {
     private static final int POPULATION_SIZE = 100;
     /*交配機率*/
     private static final double CROSSOVER_RATE = 0.5;
+    private static final int SELECTED_GROUP_SIZE = 5;
     /*突變機率*/
     private static final double MUTATION_RATE = 0.1;
     
@@ -63,9 +64,7 @@ public class GeneticAlgorithm {
     	if (DEBUG) printPoem();
     	for ( int i = 0 ; i < maxGeneration ; i++, counPoint ++){
     		if (DEBUG) System.out.println(" === 第"+i+"代 ===");
-    		// TODO 使用 SelectedCrossover 效果較佳，最佳分數會遞增
-    		//Crossover();
-    		crossover();
+     		crossover();
 			mutation();
 			select();
 			maxScore[i] = 0; minScore[i] = 1000000; sumScore = 0;
@@ -102,31 +101,47 @@ public class GeneticAlgorithm {
 
     
     private void crossover(){
-    	boolean isFirst = true;
+    	
+    	final int crosoverTime = POPULATION_SIZE/SELECTED_GROUP_SIZE;
+    	
     	if (DEBUG) System.out.println("===Crossover===");
-    	for (int i = 0 ; i < POPULATION_SIZE/2 ; i++){
-    		if ( canHappen(CROSSOVER_RATE)){
-    			PoemTemplate poem1;
-    	    	PoemTemplate poem2;
-    			if (isFirst){
-    				poem1 = population[getRandomIndex(POPULATION_SIZE)];
-    				isFirst = false;
+    	for (int i = 0 ; i < crosoverTime ; i++){
+    		PoemTemplate poem1 = population[getRandomIndex(POPULATION_SIZE)];
+    	    PoemTemplate poem2 = population[getRandomIndex(0)];
+    	    PoemTemplate tempPoem;
+    	    
+    	    /*確保 poem1 分數大於等於 poem2 */
+    	    if (poem2.getFitnessScore() > poem1.getFitnessScore()){
+    	    	tempPoem = poem1;
+    	    	poem1 = poem2;
+    	    	poem2 = tempPoem;
+    	    }
+    	    if (DEBUG) System.out.printf("第 0 首 : %d 分\n",poem1.getFitnessScore());
+    	    if (DEBUG) System.out.printf("第 1 首 : %d 分\n",poem2.getFitnessScore());
+    		for ( int j = 0 ; j < SELECTED_GROUP_SIZE - 2 ; j++){
+    			tempPoem = population[getRandomIndex(0)];
+    			if (DEBUG) System.out.printf("第 %d 首 : %d 分\n",j+2,tempPoem.getFitnessScore());
+    			if ( tempPoem.getFitnessScore() >= poem1.getFitnessScore()){
+    				poem2 = poem1;
+    				poem1 = tempPoem;
     			}
-    			else
-    				poem1= population[getRandomIndex(0)];
-    			poem2 = population[getRandomIndex(0)];
-    			PoemSentence[] newSentenceList = new PoemSentence[row];
-    			newSentenceList[0] = chooseSentence(getRandomIndex(row*2), poem1, poem2);
-    			for ( int j = 1 ; j < row; j++){
-    				newSentenceList[j] = chooseSentence(getRandomIndex(0), poem1, poem2);
+    			else if ( tempPoem.getFitnessScore() > poem2.getFitnessScore()){
+    				poem2 = tempPoem;
     			}
-    			PoemTemplate newPoem = new PoemTemplate(row, col, newSentenceList);
-    			int newIndex = rand.nextInt(POPULATION_SIZE);
-    			PoemTemplate oldPoem = population[newIndex];
-    			if (newPoem.getFitnessScore() > oldPoem.getFitnessScore()){
-    				if (DEBUG) System.out.printf(" %d > %d ， 取代第 %d 首\n",newPoem.getFitnessScore(),oldPoem.getFitnessScore(),newIndex);
-    				oldPoem = newPoem;
-    			}
+    		}
+    		if (DEBUG) System.out.printf("final 第 0 首 : %d 分\n",poem1.getFitnessScore());
+    		if (DEBUG) System.out.printf("final 第 1 首 : %d 分\n",poem2.getFitnessScore());
+    		PoemSentence[] newSentenceList = new PoemSentence[row];
+    		newSentenceList[0] = chooseSentence(getRandomIndex(row*2), poem1, poem2);
+    		for ( int j = 1 ; j < row; j++){
+    			newSentenceList[j] = chooseSentence(getRandomIndex(0), poem1, poem2);
+    		}
+    		PoemTemplate newPoem = new PoemTemplate(row, col, newSentenceList);
+    		int newIndex = rand.nextInt(POPULATION_SIZE);
+    		PoemTemplate oldPoem = population[newIndex];
+    		if (newPoem.getFitnessScore() > oldPoem.getFitnessScore()){
+    			if (DEBUG) System.out.printf(" %d > %d ， 取代第 %d 首\n",newPoem.getFitnessScore(),oldPoem.getFitnessScore(),newIndex);
+    			oldPoem = newPoem;
     		}
     	}
     	
