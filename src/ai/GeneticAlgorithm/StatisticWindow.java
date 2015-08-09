@@ -107,7 +107,7 @@ class StatisticWindow extends JFrame{
 			drawLine(g, dataSet.max,Color.red);
 			drawLine(g, dataSet.average,new Color(0xAA, 0x00, 0xAA));
 			// TODO 不畫下限，因為下限目前都是0
-			//drawLine(g, dataSet.min, Color.blue);
+			drawLine(g, dataSet.min, Color.pink);
 			Color[] color = {Color.blue,Color.orange,Color.green,Color.gray};
 			String[] label = {"  押韻","  平仄","  對仗","  多樣性"};
 			for (int i = 0 ; i < PoemTemplate.COUNT_FITNESS_TYPE ; i++){
@@ -194,7 +194,7 @@ class StatisticWindow extends JFrame{
 				}
 			}
 			// TODO 因為樣詳細畫出各個fitnessScore，所以把下限拉到0
-			minValue = 25;
+			minValue = 0;
 		}
 	}
 }

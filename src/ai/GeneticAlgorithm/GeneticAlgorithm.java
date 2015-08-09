@@ -14,17 +14,19 @@ import ai.word.WordPile;
 
 public class GeneticAlgorithm {
 	private static final boolean DEBUG = false ;
-	 private final static Random rand = new Random();
-	 
-    /*族群大小*/
+	//======================參數設定======================
+    //族群大小
     private static final int POPULATION_SIZE = 100;
-    /*交配機率*/
-    private static final double CROSSOVER_RATE = 0.5;
+    //交配親代競爭群組大小
     private static final int SELECTED_GROUP_SIZE = 5;
-    /*突變機率*/
+    //突變機率
     private static final double MUTATION_RATE = 0.1;
+    //終止條件
+	private final int maxGeneration = 400;
+	private final int targetScore = PoemTemplate.MAX_ANTITHESIS_SCORE + PoemTemplate.MAX_DIVERSITY_SCORE + PoemTemplate.MAX_TONE_SCORE + PoemTemplate.MAX_RHYTHM_SCORE;
+	//===================================================
     
-    /*詞庫*/
+	/*詞庫*/
     private WordPile wordPile;
     private MakeSentence sentenceMaker;
     /*一個世代*/
@@ -33,12 +35,8 @@ public class GeneticAlgorithm {
     /*用於隨機產生不重複的數字*/
 	private ArrayList<Integer> indexList = new ArrayList<Integer>();
 	
-	/*終止條件*/
-	private final int maxGeneration = 400;
-	private final int targetScore = PoemTemplate.MAX_ANTITHESIS_SCORE + PoemTemplate.MAX_DIVERSITY_SCORE + PoemTemplate.MAX_TONE_SCORE + PoemTemplate.MAX_RHYTHM_SCORE;
-	
 	private int row, col;
-
+	private final static Random rand = new Random();
 	/**
 	 * 
 	 * @param row 詩有幾句
