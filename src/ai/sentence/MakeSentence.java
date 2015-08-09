@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 import ai.exception.MakeSentenceException;
+import ai.exception.RelationConvertException;
 import ai.exception.RelationWordException;
 import ai.word.ChineseWord;
 import ai.word.Relation;
@@ -137,14 +138,21 @@ public class MakeSentence {
 					}
 					else{
 						String[] data = sentenceTemplate[type][j][k].split("_");
-						int relation = Relation.getRelationID(data[0]);
-						int startOrEnd = Integer.parseInt(data[1]);
 						try {
-							words[k] = wordPile.getRlationWord(relation, startOrEnd, composition[k]);
-						} catch (RelationWordException e) {
-							isDone = false;
-							break;
+							Relation relation = Relation.getRelation(data[0]);
+							int startOrEnd = Integer.parseInt(data[1]);
+							try {
+								words[k] = wordPile.getRlationWord(relation, startOrEnd, composition[k]);
+							} catch (RelationWordException e) {
+								isDone = false;
+								break;
+							}
+						} catch (RelationConvertException e1) {
+							System.err.println(e1.getMessage());
+							e1.printStackTrace();
+							System.exit(1);
 						}
+						
 					}
 				}
 				if (isDone){

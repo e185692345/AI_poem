@@ -106,8 +106,8 @@ class StatisticWindow extends JFrame{
 			((Graphics2D)g).setStroke(new BasicStroke(3));
 			drawLine(g, dataSet.max,Color.red);
 			drawLine(g, dataSet.average,new Color(0xAA, 0x00, 0xAA));
-			// TODO 不畫下限，因為下限目前都是0
-			drawLine(g, dataSet.min, Color.pink);
+			// TODO 不畫下限，避免畫面雜亂
+			//drawLine(g, dataSet.min, Color.pink);
 			Color[] color = {Color.blue,Color.orange,Color.green,Color.gray};
 			String[] label = {"  押韻","  平仄","  對仗","  多樣性"};
 			for (int i = 0 ; i < PoemTemplate.COUNT_FITNESS_TYPE ; i++){

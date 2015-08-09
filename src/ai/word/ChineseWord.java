@@ -9,7 +9,7 @@ public class ChineseWord {
 	private char[] bopomofo;
 	private int[] tone;
 	private int wordType;
-	private int relation;
+	private Relation relation;
 	private int startOrEnd;
 	/**
 	 * 	建立一個詞，儲存詞性和每個字的平仄、韻腳
@@ -22,7 +22,7 @@ public class ChineseWord {
 	 * 	用二進位表示詞性需要3bit(van) 某個bit是1就表示具有該詞性 
 	 * 	例如: 詞性 = 5,van = 101, 表示是動詞和名詞
 	 */
-	public ChineseWord(String word, String[] letterBopomofo, int wordType, int relation, int startOrEnd){
+	public ChineseWord(String word, String[] letterBopomofo, int wordType, Relation relation, int startOrEnd){
 		String str;
 		
 		this.length = word.length();
@@ -59,7 +59,7 @@ public class ChineseWord {
 		}
 	}
 	
-	public ChineseWord(String word, char[] bopomofo, int[] tone, int wordType, int length, int relation, int startOrEnd) {
+	public ChineseWord(String word, char[] bopomofo, int[] tone, int wordType, int length, Relation relation, int startOrEnd) {
 		this.bopomofo = bopomofo;
 		this.length = length;
 		this.tone = tone;
@@ -73,7 +73,7 @@ public class ChineseWord {
 		return this.startOrEnd;
 	}
 	
-	public int getRelation(){
+	public Relation getRelation(){
 		return this.relation;
 	}
 	

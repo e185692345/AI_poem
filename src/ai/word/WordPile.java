@@ -9,6 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import ai.exception.BopomofoException;
+import ai.exception.RelationConvertException;
 import ai.exception.RelationWordException;
 import ai.net.BopomofoCrawler;
 
@@ -53,7 +54,7 @@ public class WordPile {
 		for (ChineseWord word : wordList){
 			if(!isRecord.containsKey(word.getWord())){
 				isRecord.put(word.getWord(), true);
-				relationPile.get(word.getRelation()).get(word.getStartOrEnd()).get(word.getLength()).add(word);
+				relationPile.get(word.getRelation().getIndex()).get(word.getStartOrEnd()).get(word.getLength()).add(word);
 				totalWord += 1;
 			}
 		}
@@ -72,11 +73,16 @@ public class WordPile {
 				JSONObject item;
 				try {
 					item = arr.getJSONObject(i);
+					int relationIndex = Integer.parseInt(item.optJSONObject("relation").optString("index"));
 					wordList[i] = new ChineseWord(item.optString("word"),getBopomofo(item.optJSONArray("bopomofo")), 
-							getTone(item.optJSONArray("tone")),item.optInt("wordType"),item.optInt("length"),item.optInt("relation"),item.optInt("startOrEnd"));
+							getTone(item.optJSONArray("tone")),item.optInt("wordType"),item.optInt("length"),Relation.getRelation(relationIndex),item.optInt("startOrEnd"));
 				} catch (JSONException e) {
 					e.printStackTrace();
 					continue;
+				} catch (RelationConvertException e) {
+					System.err.println(e.getMessage());
+					e.printStackTrace();
+					System.exit(1);
 				}
 				
 				
@@ -157,11 +163,11 @@ public class WordPile {
 	 * @return 若沒有符合的詞則會還傳null
 	 * @throws RelationWordException 
 	 */
-	public ChineseWord getRlationWord(int relation,int startOrEnd, int length) throws RelationWordException{
-		ArrayList<ChineseWord> list = relationPile.get(relation).get(startOrEnd).get(length);
+	public ChineseWord getRlationWord(Relation relation,int startOrEnd, int length) throws RelationWordException{
+		ArrayList<ChineseWord> list = relationPile.get(relation.getIndex()).get(startOrEnd).get(length);
 		
 		if (list.size() == 0){
-			throw new RelationWordException(relation,length);
+			throw new RelationWordException(relation.getIndex(),length);
 		}
 		else{
 			int index = rand.nextInt(list.size());
@@ -174,22 +180,28 @@ public class WordPile {
 		StringBuilder sb = new StringBuilder();
 		sb.append(String.format("詞庫中共有 %d 個詞\n",totalWord));
 		for (int i = 0 ; i < Relation.TOTAL_RELATION ; i++){
-			sb.append(Relation.getRelation(i)+"\n");
-			sb.append("start : ");
-			for ( int j = 1 ; j <= 3 ;j++){
-				sb.append(relationPile.get(i).get(0).get(j).size());
-				if ( j < 3)
-					sb.append(" ,");
+			try {
+				sb.append(Relation.getRelation(i).toString()+"\n");
+				sb.append("start : ");
+				for ( int j = 1 ; j <= 3 ;j++){
+					sb.append(relationPile.get(i).get(0).get(j).size());
+					if ( j < 3)
+						sb.append(" ,");
+				}
+				sb.append('\n');
+				sb.append("end : ");
+				for ( int j = 1 ; j <= 3 ;j++){
+					sb.append(relationPile.get(i).get(1).get(j).size());
+					if ( j < 3)
+						sb.append(" ,");
+				}
+				sb.append('\n');
+				sb.append('\n');
+			} catch (RelationConvertException e) {
+				System.err.println(e.getMessage());
+				e.printStackTrace();
+				System.exit(1);
 			}
-			sb.append('\n');
-			sb.append("end : ");
-			for ( int j = 1 ; j <= 3 ;j++){
-				sb.append(relationPile.get(i).get(1).get(j).size());
-				if ( j < 3)
-					sb.append(" ,");
-			}
-			sb.append('\n');
-			sb.append('\n');
 		}
 		return sb.toString();
 	}

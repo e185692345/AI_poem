@@ -24,13 +24,14 @@ public class MainClass {
 		/*選擇字詞來源 NET_SOURCE(從conceptnet) 或 FILE_SOURCE(wordPile.json)*/
 		final int SOURCE = FILE_SOURCE;
 		/*如果來源是NET_SOURCE則要指定主題*/
-		final String topic = new String("朋友");
+		final String topic = new String("狗");
 		/*=====================================*/
 		WordPile wordPile = new WordPile(topic,ChineseWord.NOUN);
 		switch (SOURCE){
 		case NET_SOURCE :
 			ConceptNetCrawler wordSource= new ConceptNetCrawler(topic);
 			wordPile.AddWords(wordSource.getWordList_ChineseSource());
+			// TODO 平常會關閉英文翻譯減少翻譯配額消耗
 			wordPile.AddWords(wordSource.getWordList_EnlishSource());
 			new GeneticAlgorithm(8, 5, wordPile, new MakeSentence(wordPile)).evole();
 			WriteToFile("wordPile.json", wordPile.getJSONString());
@@ -38,6 +39,7 @@ public class MainClass {
 		case FILE_SOURCE:
 			try {
 				wordPile.addWords(new JSONObject(ReadFile("wordPile.json")));
+				WriteToFile("wordPile.json", wordPile.getJSONString());
 				new GeneticAlgorithm(8, 5, wordPile, new MakeSentence(wordPile)).evole();
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block

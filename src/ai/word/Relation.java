@@ -1,53 +1,60 @@
 package ai.word;
 
-public class Relation {
+import ai.exception.RelationConvertException;
+
+public enum Relation {
+	TOPIC(-3,"/r/topic"),
+	PADDING(-2,"/r/padding"),
+	IsA(0,"/r/IsA"),
+	PartOf(1,"/r/PartOf"),
+	HasProperty(2,"/r/HasProperty"),
+	UsedFor(3,"/r/UsedFor"),
+	CapableOf(4,"/r/CapableOf"),
+	AtLocation(5,"/r/AtLocation"),
+	Causes(6,"/r/Causes"),
+	HasSubevent(7,"/r/HasSubevent"),
+	HasFirstSubevent(8,"/r/HasFirstSubevent"),
+	RelatedTo(9,"/r/RelatedTo"),
+	HasPrerequisite(10,"/r/HasPrerequisite"),
+	CreatedBy(11,"/r/CreatedBy"),
+	MotivatedByGoal(12,"/r/MotivatedByGoal"),
+	Desires(13,"/r/Desires"),
+	MadeOf(14,"/r/MadeOf"),
+	HasA(15,"/r/HasA");
 	
 	public static final int START = 0;
 	public static final int END = 1;
+	public static final int TOTAL_RELATION = Relation.values().length; 
 	
-	public static final int TOPIC = -3;
-	public static final int PADDING = -2;
-	public static final int ELSE = -1;
-	public static final int IsA = 0;
-	public static final int PartOf = 1;
-	public static final int HasProperty = 2;
-	public static final int UsedFor = 3;
-	public static final int CapableOf = 4;
-	public static final int AtLocation = 5;
-	public static final int Causes = 6;
-	public static final int HasSubevent = 7;
-	public static final int HasFirstSubevent = 8;
-	public static final int RelatedTo = 9;
-	public static final int HasPrerequisite = 10;
-	public static final int CreatedBy  = 11;
-	public static final int MotivatedByGoal = 12;
-	public static final int Desires = 13;
-	public static final int MadeOf = 14;
+	private int index;
+	private String str;
 	
+	private Relation(int index, String str) {
+		this.index = index;
+		this.str = str;
+	}
 	
-	private final static String[] relation = {"/r/IsA","/r/PartOf","/r/HasProperty","/r/UsedFor","/r/CapableOf",
-								 "/r/AtLocation","/r/Cause","/s/HasSubevent","/r/HasFirstSubevent",
-								 "/r/RelatedTo","/r/HasPrerequisite","/r/CreatedBy","/r/MotivatedByGoal",
-								 "/r/Desires","/r/MadeOf"};
-	public static final int TOTAL_RELATION = relation.length;
+	public int getIndex(){
+		return this.index;
+	}
 	
-	/**
-	 * 將relarion轉換成對應的數字，被排除的relation會回傳-1
-	 * // TODO 新增Exception
-	 * @param relation
-	 * @return 
-	 */
-	public static int getRelationID(String relation){
-		for ( int i = 0 ; i < TOTAL_RELATION ;i++){
-			if (relation.equals(Relation.relation[i]))
-				return i;
+	public String toString(){
+		return this.str;
+	}
+	
+	static public Relation getRelation(String str) throws RelationConvertException{
+		for (Relation relation : Relation.values()){
+			if ( relation.toString().equals(str))
+				return relation;
 		}
-		
-		return -1;
+		throw new RelationConvertException(str);
 	}
 	
-	public static String getRelation(int id){
-		return relation[id];
+	static public Relation getRelation(int index) throws RelationConvertException{
+		for (Relation relation : Relation.values()){
+			if ( relation.getIndex() == index)
+				return relation;
+		}
+		throw new RelationConvertException(index);
 	}
-	
 }

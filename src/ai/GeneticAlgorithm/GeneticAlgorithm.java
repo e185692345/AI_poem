@@ -173,10 +173,11 @@ public class GeneticAlgorithm {
 				chosenCol = rand.nextInt(population[i].getPoem()[chosenRow].getLength());
 				
 				ChineseWord word = population[i].getPoem()[chosenRow].getWords()[chosenCol];
-				int relation = word.getRelation();
+				Relation relation = word.getRelation();
 				int startOrEnd = word.getStartOrEnd();
 				int length = word.getLength();
-				if (relation >= 0){
+				/*比0小的是 padding 跟 topic*/
+				if (relation.getIndex() >= 0){
 					try {
 						population[i].getPoem()[chosenRow].getWords()[chosenCol] = wordPile.getRlationWord(relation, startOrEnd, length);
 						if (DEBUG) System.out.printf("Mutation(%d) at (%d,%d) : %s <=> %s\n",i,chosenRow,chosenCol,word.getWord(),population[i].getPoem()[chosenRow].getWords()[chosenCol].getWord());
