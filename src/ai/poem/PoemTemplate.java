@@ -118,7 +118,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	private void fitnessFunction(){
 		detailScore[0] = getRhythmScore();
 		detailScore[1] = getToneScore();
-		detailScore[2] = getAntithesisScore();
+		detailScore[2] = 0/*getAntithesisScore()*/;
 		detailScore[3] = getDiversityScore();
 		fitnessScore = 0;
 		for (int score : detailScore)
@@ -184,6 +184,8 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 		//System.out.println(this);
 		for ( int i = 0 ; i < row ; i += 2){
 			//System.out.println("比較第 "+i+" 和 "+(i+1)+" 句");
+			//System.out.println(poem[i].toString());
+			//System.out.println(poem[i+1].toString());
 			int index1 = 0, countLetter1 = 0;
 			int index2 = 0, countLetter2 = 0;
 			while (true){

@@ -83,7 +83,7 @@ public class ConceptNetCrawler {
 						if (word.length() <= 3){
 							if (!isRecorded.containsKey(word)){
 								isRecorded.put(word, true);
-								wordType = getWordType(jsonObj.getString("rel"),startOrEnd);
+								wordType = Relation.getWordType(relation,startOrEnd);
 								try {
 									tempWordList[count] =  new ChineseWord(word, BopomofoCrawler.getBopomofo(word), wordType, relation, startOrEnd);
 									count += 1;
@@ -175,7 +175,7 @@ public class ConceptNetCrawler {
 						//System.err.println("warning : ConceptNet gives a json object without corresponding start wrod / end word ( "+startWord+" , "+endWord+" )");
 						continue;
 					}
-					wordType = getWordType(jsonObj.getString("rel"),startOrEnd);
+					wordType = Relation.getWordType(relation,startOrEnd);
 					
 					if (word.split(" ").length <= 3){
 						if (!isRecorded.containsKey(word)){
@@ -281,46 +281,6 @@ public class ConceptNetCrawler {
 			}
 		}
 		return json;
-	}
-	
-	/**
-	 * 	利用relation推測詞的詞性
-	 * 	@param relation: concept net 上定義的 relation
-	 *  @param startOrEnd: 詞是在 start 還是 end
-	 *  @return 一個代表詞性的數字，參見ai.word.ChineseWord (int)
-	 *  
-	 *  如果遇到未知的 relation 則會回傳 0，表示沒有任何詞性
-	 */
-	private static int getWordType(String relation, int startOrEnd){
-		final String[] rel = new String[] {"/r/RelatedTo","/r/IsA","/r/PartOf","/r/HasA","/r/UsedFor","/r/CapableOf","/r/AtLocation","/r/Causes","/r/HasSubevent","/r/HasFirstSubevent","/r/HasPrerequisite","/r/HasProperty","/r/MotivatedByGoal","/r/Desires","/r/CreatedBy","/r/Synonym","/r/Antonym","/r/DerivedFrom","/r/MadeOf"};
-		final String[] start = new String[] {"名形動","名","名","名","名","名","名","名動","動","動","動","名","動","名","名","名","名","名","名"};
-		final String[] end = new String[] {"名形動","名","名","名","動","動","名","形動","動","動","動","形","名形動","名動","名","名","名","名","名"};
-		int wordType = 0;
-		String[] type = start;
-		
-		if (startOrEnd == Relation.START) // start : 0
-			type = start;
-		else if (startOrEnd == Relation.END) // end : 1
-			type = end;
-		else {
-			return 0;
-		}
-		for (int i = 0 ; i < rel.length ; i++){
-			if (relation.equals(rel[i])){
-				if (type[i].indexOf("名") != -1){
-					wordType += ChineseWord.NOUN;
-				}
-				if (type[i].indexOf("形") != -1){
-					wordType += ChineseWord.ADJ;	
-				}
-				if (type[i].indexOf("動") != -1){
-					wordType += ChineseWord.VERB;
-				}
-				break;
-			}
-		}
-		
-		return wordType;
 	}
 	
 	/**

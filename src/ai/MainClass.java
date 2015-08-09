@@ -39,7 +39,6 @@ public class MainClass {
 		case FILE_SOURCE:
 			try {
 				wordPile.addWords(new JSONObject(ReadFile("wordPile.json")));
-				WriteToFile("wordPile.json", wordPile.getJSONString());
 				new GeneticAlgorithm(8, 5, wordPile, new MakeSentence(wordPile)).evole();
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
