@@ -9,7 +9,7 @@ public class LineComposition {
 		{1,1,3}/*,{1,3,1},{3,1,1}*/,
 		{2,2,1},{2,1,2},/*{1,2,2},*/
 		{1,1,1,2},{1,1,2,1}/*,{1,2,1,1}*/,{2,1,1,1}};
-		
+
 	private static final Random rand = new Random();
 	public static int[] GetRandomComposition(int countLetter){
 		if (countLetter == 5){

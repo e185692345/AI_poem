@@ -20,7 +20,9 @@ public class GeneticAlgorithm {
     private static final int POPULATION_SIZE = 100;
     /*交配機率*/
     private static final double CROSSOVER_RATE = 0.5;
+
     private static final int SELECTED_GROUP_SIZE = 5;
+
     /*突變機率*/
     private static final double MUTATION_RATE = 0.1;
     
@@ -58,11 +60,13 @@ public class GeneticAlgorithm {
 		int[] minScore = new int[maxGeneration];
 		int[] avgScore = new int[maxGeneration];
 		int[][] detailScore = new int[PoemTemplate.COUNT_FITNESS_TYPE][maxGeneration];
+
     	int sumScore;
     	int counPoint = 0;
     	
     	initPopulation();
     	if (DEBUG) printPoem();
+
     	for ( int i = 0; i < maxGeneration ; i++, counPoint ++){
     		if (DEBUG) System.out.println(" === 第"+i+"代 ===");
      		crossover();
@@ -71,6 +75,7 @@ public class GeneticAlgorithm {
 			for (int j = 0 ; j < PoemTemplate.COUNT_FITNESS_TYPE ; j++){
 				detailScore[j][i] = population[0].getDetailScore()[j];
 			}
+
 			maxScore[i] = 0; minScore[i] = 1000000; sumScore = 0;
 			for ( int j = 0 ; j < POPULATION_SIZE ; j++){
 				int score = population[j].getFitnessScore();
@@ -80,7 +85,7 @@ public class GeneticAlgorithm {
 					minScore[i] = score;
 				sumScore += score;
 			}
-			
+
 			avgScore[i] = sumScore/POPULATION_SIZE;
 			if (DEBUG) printPoem();
 			if (maxScore[i] >= targetScore)
@@ -90,10 +95,11 @@ public class GeneticAlgorithm {
     	System.out.println("最好的詩");
         System.out.println(population[0].printScore());
         System.out.println(population[0].toString());
-    	
+
     	if (counPoint > 0){
     		new StatisticWindow(counPoint, maxScore, minScore, avgScore, detailScore);
     	}
+
 	}
     /**
      * 初始化族群
@@ -107,7 +113,6 @@ public class GeneticAlgorithm {
 
     
     private void crossover(){
-    	
     	final int crosoverTime = POPULATION_SIZE/SELECTED_GROUP_SIZE;
     	
     	if (DEBUG) System.out.println("===Crossover===");

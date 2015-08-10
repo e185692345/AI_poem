@@ -27,6 +27,7 @@ class StatisticWindow extends JFrame{
 	
 	public StatisticWindow(int countPoint,int[] max, int[] min, int[] average, int[][] detailScore){
 		this.dataSet = new GenerationData(countPoint, max, min, average,detailScore);
+
 		
 		DateFormat sdf = SimpleDateFormat.getDateTimeInstance();
 		Date date = new Date();
@@ -76,7 +77,6 @@ class StatisticWindow extends JFrame{
 			g.drawLine(BORDER_OFFSET, HEIGHT - BORDER_OFFSET, WIDTH - BORDER_OFFSET, HEIGHT - BORDER_OFFSET);
 			g.drawLine(BORDER_OFFSET, HEIGHT - BORDER_OFFSET, BORDER_OFFSET, BORDER_OFFSET);
 			
-			
 			/*畫刻度*/
 			Stroke bs =   new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{16, 4}, 0);  
 			((Graphics2D)g).setStroke(bs);
@@ -86,6 +86,7 @@ class StatisticWindow extends JFrame{
 			drawScale(g, (minValue+maxValue)/2);
 			drawScale(g, (minValue+maxValue*3)/4);
 			drawScale(g, maxValue);
+
 			if ( maxValue > PoemTemplate.MAX_ANTITHESIS_SCORE)
 				drawScale(g, PoemTemplate.MAX_ANTITHESIS_SCORE);
 			if ( maxValue > PoemTemplate.MAX_DIVERSITY_SCORE)
@@ -104,6 +105,7 @@ class StatisticWindow extends JFrame{
 			drawXScale(g, countPoint);
 			
 			((Graphics2D)g).setStroke(new BasicStroke(3));
+
 			drawLine(g, dataSet.max,Color.red);
 			drawLine(g, dataSet.average,new Color(0xAA, 0x00, 0xAA));
 			// TODO 不畫下限，因為下限目前都是0

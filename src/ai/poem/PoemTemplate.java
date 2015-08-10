@@ -23,7 +23,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	private PoemSentence[] poem;
 	private int fitnessScore;
 	private boolean modified;
-	//int rhythmScore, toneScore, antithesisScore, diversityScore;
+	
 	private int maxRhythmMatch, maxToneMatch, maxAntithesisMatch, maxDiversityMatch;
 	/**
 	 * 創建一首新的詩，每首詩可以有不同的模板
@@ -111,6 +111,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	}
 	
 	private void fitnessFunction(){
+
 		detailScore[0] = getRhythmScore();
 		detailScore[1] = getToneScore();
 		detailScore[2] = getAntithesisScore();
@@ -118,6 +119,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 		fitnessScore = 0;
 		for (int score : detailScore)
 			fitnessScore += score;
+
 		if (DEBUG) System.out.println(this.printScore());
 	}
 	
@@ -350,6 +352,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	public int[] getDetailScore(){
 		getFitnessScore();
 		return detailScore;
+
 	}
 	
 	@Override
