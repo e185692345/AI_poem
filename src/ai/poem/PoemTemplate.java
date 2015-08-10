@@ -11,16 +11,19 @@ import ai.word.WordPile;
 public class PoemTemplate implements Comparable<PoemTemplate>{
 	
 	private static final boolean DEBUG = false;
-	public final static int MAX_RHYTHM_SCORE = 200;
+	// TODO 新增分數種類時也要一並更改這個數值
+	public final static int COUNT_FITNESS_TYPE = 4;
+	private int[] detailScore = new int[COUNT_FITNESS_TYPE];
+	public final static int MAX_RHYTHM_SCORE = 100;
 	public final static int MAX_TONE_SCORE = 200;
-	public final static int MAX_ANTITHESIS_SCORE = 100;
+	public final static int MAX_ANTITHESIS_SCORE = 200;
 	public final static int MAX_DIVERSITY_SCORE = 100;
 	
 	private int col, row;
 	private PoemSentence[] poem;
 	private int fitnessScore;
 	private boolean modified;
-	int rhythmScore, toneScore, antithesisScore, diversityScore;
+	
 	private int maxRhythmMatch, maxToneMatch, maxAntithesisMatch, maxDiversityMatch;
 	/**
 	 * 創建一首新的詩，每首詩可以有不同的模板
@@ -108,11 +111,15 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	}
 	
 	private void fitnessFunction(){
-		rhythmScore = getRhythmScore();
-		toneScore = getToneScore();
-		antithesisScore = getAntithesisScore();
-		diversityScore = getDiversityScore();
-		fitnessScore = rhythmScore + toneScore + antithesisScore + diversityScore;
+
+		detailScore[0] = getRhythmScore();
+		detailScore[1] = getToneScore();
+		detailScore[2] = getAntithesisScore();
+		detailScore[3] = getDiversityScore();
+		fitnessScore = 0;
+		for (int score : detailScore)
+			fitnessScore += score;
+
 		if (DEBUG) System.out.println(this.printScore());
 	}
 	
@@ -179,33 +186,14 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	}
 	
 	private int getToneScore(){
-		final int[][] standardTone = new int[][]{{0,1,0},{1,0,1},{1,0,1},{0,1,0}};
-		int countMatchTone = 0;
+		
+		int countMatchTone;
 		int countMatchRhythmTone = 0;
-		int index;
-		if (getToneAt(2) == 0){
-			index = 0;  /*平起式*/
-		}
-		else{
-			index = 2;  /*仄起示*/
-		}
 		
 		if (DEBUG) System.out.println("===平仄===");
-		for ( int i = 0 ; i < row ; i ++){
-			for ( int j = 2, k = 0 ; j <= col ; j+=2, k++){
-				int charIndex = i*col+j;
-				if (DEBUG) System.out.printf("%c(%d)",getCharAt(charIndex),getToneAt(charIndex));
-				if (getToneAt(charIndex) == standardTone[index][k]){
-					countMatchTone += 1;
-					if (DEBUG) System.out.print("O ");
-				}
-				else{
-					if (DEBUG) System.out.print("X ");
-				}
-			}
-			if (DEBUG)  System.out.println();
-			index = (index+1)%4;
-		}
+		//分別用平起式 / 仄起式 模板去檢驗符合的字數，再取較高者
+		countMatchTone = Math.max(getMatchToneCount(0), getMatchToneCount(2));
+		
 		/*處理韻腳的平仄*/
 		if (DEBUG) System.out.println("===韻腳平仄===");
 		if (poem[0].getWords()[poem[0].getLength()-1].getRythm() == poem[1].getWords()[poem[1].getLength()-1].getRythm()){
@@ -237,6 +225,43 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 		if (DEBUG)System.out.printf(">>符合平仄的字有 (%d + %d(韻腳相關)) / %d 個\n",countMatchTone,countMatchRhythmTone,maxToneMatch);
 		return (countMatchTone+countMatchRhythmTone)*MAX_TONE_SCORE/maxToneMatch;
 	}
+	/**
+	 * 套用 平起式 或 仄起式 的模板來計算符合平仄的字數
+	 * @param type 0 : 平起式, 2 : 仄起式
+	 * @return 符合平仄的字數
+	 */
+	private int getMatchToneCount(int type){
+		final int[][] standardTone = new int[][]{{0,1,0},{1,0,1},{1,0,1},{0,1,0}};
+		int countMatchTone = 0;
+		
+		if (type == 0){
+			if (DEBUG) System.out.println("平起式");
+		}
+		else if (type == 2){
+			if (DEBUG)System.out.println("仄起式");
+		}
+		else{
+			System.err.println("error : invalid tone type");
+		}
+		
+		for ( int i = 0 ; i < row ; i ++){
+			for ( int j = 2, k = 0 ; j <= col ; j+=2, k++){
+				int charIndex = i*col+j;
+				if (DEBUG) System.out.printf("%c(%d)",getCharAt(charIndex),getToneAt(charIndex));
+				if (getToneAt(charIndex) == standardTone[type][k]){
+					countMatchTone += 1;
+					if (DEBUG) System.out.print("O ");
+				}
+				else{
+					if (DEBUG) System.out.print("X ");
+				}
+			}
+			if (DEBUG)  System.out.println();
+			type = (type+1)%4;
+		}
+		return countMatchTone;
+	}
+	
 	/**
 	 * 取得整首詩中的某個字
 	 * @param index 從"1"開始算
@@ -321,7 +346,13 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	
 	public String printScore(){
 		this.getFitnessScore();
-		return String.format("押韻: %d/%d, 平仄: %d/%d, 對偶:%d/%d, 多樣性:%d/%d",rhythmScore,MAX_RHYTHM_SCORE,toneScore,MAX_TONE_SCORE,antithesisScore,MAX_ANTITHESIS_SCORE,diversityScore,MAX_ANTITHESIS_SCORE);
+		return String.format("押韻: %d/%d, 平仄: %d/%d, 對偶:%d/%d, 多樣性:%d/%d",detailScore[0],MAX_RHYTHM_SCORE,detailScore[1],MAX_TONE_SCORE,detailScore[2],MAX_ANTITHESIS_SCORE,detailScore[3],MAX_ANTITHESIS_SCORE);
+	}
+	
+	public int[] getDetailScore(){
+		getFitnessScore();
+		return detailScore;
+
 	}
 	
 	@Override
