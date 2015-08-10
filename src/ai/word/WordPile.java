@@ -15,6 +15,8 @@ import ai.net.BopomofoCrawler;
 
 public class WordPile {
 	
+	/* relationPile 把詞依照 relation 分類。第一層 index 依照 relation 分類，
+	 * 第二層 index 依照詞是在 star/end 分類，第三層 index 依照詞的長度分類  */
 	private ArrayList<ArrayList<ArrayList<ArrayList<ChineseWord>>>>  relationPile = new ArrayList<ArrayList<ArrayList<ArrayList<ChineseWord>>>>();
 	private ArrayList<ChineseWord[]> wordListPile;
 	private int totalWord;

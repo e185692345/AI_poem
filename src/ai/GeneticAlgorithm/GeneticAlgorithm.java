@@ -2,6 +2,7 @@ package ai.GeneticAlgorithm;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Random;
 
 import ai.exception.RelationWordException;
@@ -63,8 +64,9 @@ public class GeneticAlgorithm {
     	if (DEBUG) printPoem();
     	for ( int i = 0; i < maxGeneration ; i++){
     		if (DEBUG) System.out.println(" === 第"+i+"代 ===");
-     		//crossover();
-			mutation();
+     		crossover();
+			//TODO
+     		//mutation();
 			select();
 			for (int j = 0 ; j < PoemTemplate.COUNT_FITNESS_TYPE ; j++){
 				detailScore[j][i] = population[0].getDetailScore()[j];
@@ -103,44 +105,48 @@ public class GeneticAlgorithm {
            population[i] = PoemTemplate.getRandomPoem(this.row, this.col,this.wordPile,this.sentenceMaker);
         }
     }
-
-    // TODO
     private void crossover(){
     	
     	final int crosoverTime = POPULATION_SIZE/SELECTED_GROUP_SIZE;
     	
     	if (DEBUG) System.out.println("===Crossover===");
+    	
     	for (int i = 0 ; i < crosoverTime ; i++){
-    		PoemTemplate poem1 = population[getRandomIndex(POPULATION_SIZE)];
-    	    PoemTemplate poem2 = population[getRandomIndex(0)];
-    	    PoemTemplate tempPoem;
-    	    
-    	    /*確保 poem1 分數大於等於 poem2 */
-    	    if (poem2.getFitnessScore() > poem1.getFitnessScore()){
-    	    	tempPoem = poem1;
-    	    	poem1 = poem2;
-    	    	poem2 = tempPoem;
-    	    }
-    	    if (DEBUG) System.out.printf("第 0 首 : %d 分\n",poem1.getFitnessScore());
-    	    if (DEBUG) System.out.printf("第 1 首 : %d 分\n",poem2.getFitnessScore());
-    		for ( int j = 0 ; j < SELECTED_GROUP_SIZE - 2 ; j++){
-    			tempPoem = population[getRandomIndex(0)];
-    			if (DEBUG) System.out.printf("第 %d 首 : %d 分\n",j+2,tempPoem.getFitnessScore());
-    			if ( tempPoem.getFitnessScore() >= poem1.getFitnessScore()){
-    				poem2 = poem1;
-    				poem1 = tempPoem;
-    			}
-    			else if ( tempPoem.getFitnessScore() > poem2.getFitnessScore()){
-    				poem2 = tempPoem;
-    			}
-    		}
-    		if (DEBUG) System.out.printf("final 第 0 首 : %d 分\n",poem1.getFitnessScore());
-    		if (DEBUG) System.out.printf("final 第 1 首 : %d 分\n",poem2.getFitnessScore());
+    		// ===== 第一部份 : 從 n 首詩取前2名 =====
+    	    ParentSet parentSet = SelectParent();
+    	    PoemTemplate poem1  = parentSet.poem1;
+    	    PoemTemplate poem2  = parentSet.poem2;
+    		// ===== 第二部份 : 用 16 句重組一首詩，注意相鄰兩句斷詞方式要相同 =====
     		PoemSentence[] newSentenceList = new PoemSentence[row];
-    		newSentenceList[0] = chooseSentence(getRandomIndex(row*2), poem1, poem2);
-    		for ( int j = 1 ; j < row; j++){
-    			newSentenceList[j] = chooseSentence(getRandomIndex(0), poem1, poem2);
+    		HashMap<Integer, ArrayList<PoemSentence>> lineCompositionToSentences = new HashMap<Integer,ArrayList<PoemSentence>>();
+    		ArrayList<PoemSentence> used = new ArrayList<PoemSentence>();
+    		for (int j = 0 ; j < row ; j++){
+    			int encode = poem1.getPoem()[j].getLineCompositionEncode();
+    			if (!lineCompositionToSentences.containsKey(encode)){
+    				lineCompositionToSentences.put(encode, new ArrayList<PoemSentence>());
+    			}
+				lineCompositionToSentences.get(encode).add(poem1.getPoem()[j]);
+				used.add(poem1.getPoem()[j]);
+    			
+    			encode = poem2.getPoem()[j].getLineCompositionEncode();
+    			if (!lineCompositionToSentences.containsKey(encode)){
+    				lineCompositionToSentences.put(encode, new ArrayList<PoemSentence>());
+    			}
+    			lineCompositionToSentences.get(encode).add(poem2.getPoem()[j]);
+				used.add(poem2.getPoem()[j]);
     		}
+    		
+    		for (int j = 0 ; j < row ; j += 2){
+    			PoemSentence sentence1 = used.get(rand.nextInt(used.size()));
+    			used.remove(sentence1);
+    			ArrayList<PoemSentence> availableCoice = lineCompositionToSentences.get(sentence1.getLineCompositionEncode());
+    			PoemSentence sentence2 = availableCoice.get(rand.nextInt(availableCoice.size()));
+    			
+    			used.remove(sentence2);
+    			newSentenceList[j] = sentence1;
+    			newSentenceList[j+1] = sentence2;
+    		}
+    		// ===== 第三部份 : 把新詩跟隨機一首舊詩比較，若分數較高就更新 =====
     		PoemTemplate newPoem = new PoemTemplate(row, col, newSentenceList);
     		int newIndex = rand.nextInt(POPULATION_SIZE);
     		PoemTemplate oldPoem = population[newIndex];
@@ -152,14 +158,38 @@ public class GeneticAlgorithm {
     	
     }
     
-    private PoemSentence chooseSentence(int index,PoemTemplate poem1, PoemTemplate poem2){
-    	if (index < row){
-    		return poem1.getPoem()[index];
-    	}
-    	else{
-    		return poem2.getPoem()[index-row];
-    	}
+    private class ParentSet{
+    	PoemTemplate poem1,poem2;
+    	public ParentSet(PoemTemplate poem1,PoemTemplate poem2) {
+			this.poem1 = poem1;
+			this.poem2 = poem2;
+		}
     }
+    
+    private ParentSet SelectParent(){
+    	// ===== 第一部份 : 從 n 首詩取前2名 =====
+    	PoemTemplate poem1 = population[getRandomIndex(POPULATION_SIZE)];
+        PoemTemplate poem2 = population[getRandomIndex(0)];
+        PoemTemplate tempPoem;
+        
+        if (poem2.getFitnessScore() > poem1.getFitnessScore()){
+        	tempPoem = poem1;
+        	poem1 = poem2;
+        	poem2 = tempPoem;
+        }
+        for ( int j = 0 ; j < SELECTED_GROUP_SIZE - 2 ; j++){
+    		tempPoem = population[getRandomIndex(0)];
+    		if ( tempPoem.getFitnessScore() >= poem1.getFitnessScore()){
+    			poem2 = poem1;
+    			poem1 = tempPoem;
+    		}
+    		else if ( tempPoem.getFitnessScore() > poem2.getFitnessScore()){
+    			poem2 = tempPoem;
+    		}
+    	}
+        return new ParentSet(poem1, poem2);
+    }
+    
 	/**
 	 * 	將一個隨機位置的詞替換掉
 	 */

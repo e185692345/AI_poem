@@ -5,6 +5,7 @@ import ai.word.ChineseWord;
 public class PoemSentence {
 	
 	private int sentenceType;
+	private int lineCompositionEncode;
 	private ChineseWord[] words;
 	
 	public PoemSentence(int sentenceType) {
@@ -24,6 +25,15 @@ public class PoemSentence {
 		for (int i = 0 ; i < sentence.length ; i++){
 			words[i] = sentence[i];
 		}
+		
+		lineCompositionEncode = 0;
+		for (int i = sentence.length - 1 ; i >= 0 ; i--){
+			lineCompositionEncode = lineCompositionEncode*10 + sentence[i].getLength();
+		}
+	}
+	
+	public int getLineCompositionEncode(){
+		return this.lineCompositionEncode;
 	}
 	
 	public ChineseWord[] getWords() {
