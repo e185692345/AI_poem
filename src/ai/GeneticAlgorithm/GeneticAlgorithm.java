@@ -61,9 +61,9 @@ public class GeneticAlgorithm {
     	
     	initPopulation();
     	if (DEBUG) printPoem();
-    	for ( int i = 0; i < maxGeneration ; i++, counPoint ++){
+    	for ( int i = 0; i < maxGeneration ; i++){
     		if (DEBUG) System.out.println(" === 第"+i+"代 ===");
-     		crossover();
+     		//crossover();
 			mutation();
 			select();
 			for (int j = 0 ; j < PoemTemplate.COUNT_FITNESS_TYPE ; j++){
@@ -80,6 +80,7 @@ public class GeneticAlgorithm {
 			}
 			
 			avgScore[i] = sumScore/POPULATION_SIZE;
+			counPoint += 1;
 			if (DEBUG) printPoem();
 			if (maxScore[i] >= targetScore)
 				break;
@@ -103,7 +104,7 @@ public class GeneticAlgorithm {
         }
     }
 
-    
+    // TODO
     private void crossover(){
     	
     	final int crosoverTime = POPULATION_SIZE/SELECTED_GROUP_SIZE;
@@ -188,7 +189,13 @@ public class GeneticAlgorithm {
 					}
 				}
 				else if (relation == Relation.PADDING){
-					word = wordPile.getAPaddingWord(population[i].getPoem()[chosenRow].getSentenceType());
+					try {
+						population[i].getPoem()[chosenRow].getWords()[chosenCol] = sentenceMaker.getAPaddingWord(population[i].getPoem()[chosenRow].getSentenceType(),chosenCol);
+					} catch (Exception e) {
+						System.err.println(e.getMessage());
+						e.printStackTrace();
+						System.exit(1);
+					}
 				}
 			}
 		}

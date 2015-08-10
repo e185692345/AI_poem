@@ -1,32 +1,20 @@
-12
-2
-/r/HasProperty_1 /r/IsA_1
-/r/HasProperty_1 PADDING_1 /r/IsA_1
-2
-/r/AtLocation_1 PADDING_1 /r/CapableOf_1
-/r/AtLocation_1 /r/CapableOf_1
-2
-TOPIC /r/CapableOf_1
-TOPIC PADDING_1 /r/CapableOf_1
-1
-TOPIC PADDING_1 /r/IsA_1
-2
-PADDING_2 /r/CapableOf_1
-PADDING_2 /r/UsedFor_1
-1
-PADDING_2 /r/Desires_1
-1
-/r/Desires_0 PADDING_3
-1
-/r/MadeOf_1 PADDING_3
-1
-/r/MadeOf_0 PADDING_3
-1
-TOPIC PADDING_1 /r/MotivatedByGoal_0
-4
-TOPIC PADDING_1 /r/RelatedTo_0
-/r/RelatedTo_0 PADDING_1 TOPIC
-TOPIC PADDING_1 /r/RelatedTo_1
-/r/RelatedTo_1 PADDING_1 TOPIC
-1
-PADDING_2 /r/Causes_1
+19
+/r/HasProperty_END /r/IsA_END
+/r/HasProperty_END (的) /r/IsA_END
+/r/AtLocation_END (裡/中) /r/CapableOf_END
+/r/AtLocation_END /r/CapableOf_END
+(在) /r/AtLocation_END /r/CapableOf_END
+TOPIC /r/CapableOf_END
+TOPIC (會/想) /r/CapableOf_END
+TOPIC (是) /r/IsA_END
+(可以/用來) /r/CapableOf_END
+(可以/用來) /r/UsedFor_END
+(渴望/想要) /r/Desires_END
+/r/MadeOf_END (打造成/所組成)
+/r/MadeOf_START (的) (基礎/原料)
+TOPIC (須/想) /r/MotivatedByGoal_START
+TOPIC (與/和) /r/RelatedTo_START
+/r/RelatedTo_START (與/和) TOPIC
+TOPIC (與/和) /r/RelatedTo_END
+/r/RelatedTo_END (與/和) TOPIC
+(造成/導致) /r/Causes_END

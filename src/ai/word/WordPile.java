@@ -19,7 +19,6 @@ public class WordPile {
 	private ArrayList<ChineseWord[]> wordListPile;
 	private int totalWord;
 	private ChineseWord topic;
-	private ChineseWord[][] paddingWordList;
 	private Random rand = new Random();
 	private HashMap<String, Boolean> isRecord;
 	
@@ -43,11 +42,6 @@ public class WordPile {
 		return topic;
 	}
 	
-	public ChineseWord getAPaddingWord(int sentenceType){
-		int index = rand.nextInt(paddingWordList[sentenceType].length);
-		return paddingWordList[sentenceType][index];
-	}
-	
 	public void AddWords(ChineseWord[] wordList){
 		wordListPile.add(wordList);
 		
@@ -61,10 +55,6 @@ public class WordPile {
 		System.out.printf("詞庫中新增了 %d 個詞 ， 目前共有 %d 個詞\n",wordList.length,totalWord);
 	}
 	
-	public void  setPaddindWordList(ChineseWord[][] paddingWordList) {
-		this.paddingWordList = paddingWordList;
-	}
-		
 	public void addWords(JSONObject json){
 		JSONArray arr = json.optJSONArray("wordPile");
 		ChineseWord[] wordList = new ChineseWord[arr.length()];

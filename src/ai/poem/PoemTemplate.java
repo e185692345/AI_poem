@@ -3,6 +3,7 @@ package ai.poem;
 import java.util.HashMap;
 
 import ai.exception.MakeSentenceException;
+import ai.sentence.LineComposition;
 import ai.sentence.MakeSentence;
 import ai.sentence.PoemSentence;
 import ai.word.ChineseWord;
@@ -57,7 +58,8 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 		else{
 			maxToneMatch = 4*row;
 		}
-		maxAntithesisMatch= row*col/2;
+		
+		maxAntithesisMatch = col*row/2;
 		
 		modified = true;
 	}
@@ -74,19 +76,30 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	 * @throws MakeSentenceException 
      */
     public static PoemTemplate getRandomPoem(int row,int col,WordPile wordPile,MakeSentence maker){
-    	
+    	int maxTry = 100;
     	PoemSentence[] poem = new PoemSentence[row];
-    	for (int i = 0 ; i < row ; i++){
-    		try {
-				poem[i]  = maker.makeRandomSentence();
-			} catch (MakeSentenceException e) {
-				System.err.println(e.getMessage());
-				System.err.println("error : 無法隨機產生一首詩");
-				System.exit(1);
+    	boolean isDone;
+    	
+    	for (int i = 0 ; i < row ; i+=2){
+    		isDone = false;
+    		while (maxTry > 0) {
+    			try {
+    				int[] lineComposition = LineComposition.getRandomComposition(col);
+        			poem[i]  = maker.makeSentence(lineComposition);
+					poem[i+1]  = maker.makeSentence(lineComposition);
+					isDone = true;
+					break;
+				} catch (MakeSentenceException e) {
+					maxTry -= 1;
+				}
 			}
+    		if (!isDone){
+    			System.err.println("error : 造詩失敗，句型模板太少");
+    	    	System.exit(1);
+    		}
     	}
-
     	return new PoemTemplate(row, col, poem);
+    	
     }
     
 	public PoemSentence[] getPoem() {
@@ -118,7 +131,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	private void fitnessFunction(){
 		detailScore[0] = getRhythmScore();
 		detailScore[1] = getToneScore();
-		detailScore[2] = 0/*getAntithesisScore()*/;
+		detailScore[2] = getAntithesisScore();
 		detailScore[3] = getDiversityScore();
 		fitnessScore = 0;
 		for (int score : detailScore)
@@ -183,44 +196,9 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 		int countAntithesis = 0;
 		//System.out.println(this);
 		for ( int i = 0 ; i < row ; i += 2){
-			//System.out.println("比較第 "+i+" 和 "+(i+1)+" 句");
-			//System.out.println(poem[i].toString());
-			//System.out.println(poem[i+1].toString());
-			int index1 = 0, countLetter1 = 0;
-			int index2 = 0, countLetter2 = 0;
-			while (true){
-				if (countLetter1 == col && countLetter2 == col)
-					break;
-				//System.out.printf("index1 = %d, #letter1 = %d\n",index1,countLetter1);
-				//System.out.printf("index2 = %d, #letter2 = %d\n\n",index2,countLetter2);
-				int len1 = poem[i].getWords()[index1].getLength();
-				int len2 = poem[i+1].getWords()[index2].getLength();
-				if ( (poem[i].getWords()[index1].getWordType() & poem[i+1].getWords()[index2].getWordType() ) > 0){
-					if (DEBUG) System.out.printf("%s (%s) = %s (%s)\n",poem[i].getWords()[index1].getWord(),ChineseWord.getReadableWordType(poem[i].getWords()[index1].getWordType()),poem[i+1].getWords()[index2].getWord(),ChineseWord.getReadableWordType(poem[i+1].getWords()[index2].getWordType()));
-					countAntithesis += Math.min(len1,len2);
-					countLetter1 += len1;
-					countLetter2 += len2;
-					if(index1 +1 < poem[i].getLength())
-						index1 += 1;
-					if(index2 +1 < poem[i+1].getLength())
-						index2 += 1;
-				}
-				else{
-					if ( countLetter1 + len1 > countLetter2 + len2){
-						countLetter2 += len2;
-						index2 +=1;
-					}
-					else if (countLetter2 + len2> countLetter1 + len1){
-						countLetter1 += len1;
-						index1 += 1;
-					}
-					else{
-						countLetter1 += len1;
-						countLetter2 += len2;
-						index1 += 1;
-						index2 += 1;
-					}
-				}
+			for ( int j = 0 ; j < poem[i].getLength() ; j++){
+				if ( (poem[i].getWords()[j].getWordType() & poem[i+1].getWords()[j].getWordType() )> 0)
+					countAntithesis += poem[i].getWords()[j].getLength();
 			}
 		}
 		if (DEBUG) System.out.printf(">>對偶的詞共有  %d / %d 個\n",countAntithesis,maxAntithesisMatch);

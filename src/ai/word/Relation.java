@@ -34,26 +34,8 @@ public enum Relation {
 		this.index = index;
 		this.str = str;
 		
-		this.startWordType = convertWordType(startWordType);
-		this.endWordType =  convertWordType(endWordType);
-	}
-	/**
-	 * 把中文的詞性轉換成數字
-	 * @param wordType 
-	 * @return 
-	 */
-	private int convertWordType(String wordType){
-		int value = 0;
-		if (wordType.indexOf("名") != -1){
-			value += ChineseWord.NOUN;
-		}
-		if (wordType.indexOf("形") != -1){
-			value += ChineseWord.ADJ;	
-		}
-		if (wordType.indexOf("動") != -1){
-			value += ChineseWord.VERB;
-		}
-		return value;
+		this.startWordType = ChineseWord.convertWordType(startWordType);
+		this.endWordType =  ChineseWord.convertWordType(endWordType);
 	}
 	
 	public int getIndex(){

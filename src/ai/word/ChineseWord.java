@@ -2,7 +2,7 @@ package ai.word;
 
 public class ChineseWord {
 
-	public static final int PADDING = 8, NOUN = 1, ADJ = 2, VERB = 4, ALL = 7;
+	public static final int PREP = 16, CONJ = 8, NOUN = 1, ADJ = 2, VERB = 4;
 	
 	private int length;
 	private String word;
@@ -137,18 +137,44 @@ public class ChineseWord {
 	public int getWordType() {
 		return wordType;
 	}
+	
+	/**
+	 * 把中文的詞性轉換成數字
+	 * @param wordType 
+	 * @return 
+	 */
+	public static int convertWordType(String wordType){
+		int value = 0;
+		if (wordType.indexOf("名") != -1){
+			value += ChineseWord.NOUN;
+		}
+		if (wordType.indexOf("形") != -1){
+			value += ChineseWord.ADJ;	
+		}
+		if (wordType.indexOf("動") != -1){
+			value += ChineseWord.VERB;
+		}
+		if (wordType.indexOf("介") != -1){
+			value += ChineseWord.PREP;
+		}
+		if (wordType.indexOf("連") != -1){
+			value += ChineseWord.CONJ;
+		}
+		return value;
+	}
+	
 	public static String getReadableWordType(int wordType){
 		String type = new String();
-		if (wordType == 0)
-			return "填充詞";
 		if ((wordType & NOUN )> 0)
 			type += "名";
 		if ((wordType & ADJ )> 0)
 			type += "形";
 		if ((wordType & VERB )> 0)
 			type += "動";
-		if ((wordType & PADDING )> 0)
-			type += "填";
+		if ((wordType & PREP )> 0)
+			type += "介";
+		if ((wordType & CONJ )> 0)
+			type += "連";
 		return type;
 	}
 	
