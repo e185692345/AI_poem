@@ -1,0 +1,9 @@
+*.txt
+*.log
+.project
+.classpath
+
+bin/
+CKIPClient/
+src/ai/net/MicrosoftTranslatorKey.java
+src/Config/Translator.properties

@@ -1,0 +1,32 @@
+12
+2
+/r/HasProperty_1 /r/IsA_1
+/r/HasProperty_1 PADDING_1 /r/IsA_1
+2
+/r/AtLocation_1 PADDING_1 /r/CapableOf_1
+/r/AtLocation_1 /r/CapableOf_1
+2
+TOPIC /r/CapableOf_1
+TOPIC PADDING_1 /r/CapableOf_1
+1
+TOPIC PADDING_1 /r/IsA_1
+2
+PADDING_2 /r/CapableOf_1
+PADDING_2 /r/UsedFor_1
+1
+PADDING_2 /r/Desires_1
+1
+/r/Desires_0 PADDING_3
+1
+/r/MadeOf_1 PADDING_3
+1
+/r/MadeOf_0 PADDING_3
+1
+TOPIC PADDING_1 /r/MotivatedByGoal_0
+4
+TOPIC PADDING_1 /r/RelatedTo_0
+/r/RelatedTo_0 PADDING_1 TOPIC
+TOPIC PADDING_1 /r/RelatedTo_1
+/r/RelatedTo_1 PADDING_1 TOPIC
+1
+PADDING_2 /r/Cause_1
