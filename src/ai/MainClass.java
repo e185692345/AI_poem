@@ -23,7 +23,7 @@ public class MainClass {
 		/*=====================================*/
 		/*選擇字詞來源 NET_SOURCE(從conceptnet) 或 FILE_SOURCE(wordPile.json)*/
 		final int SOURCE = FILE_SOURCE;
-		final String fileName = "friend_zh.json";
+		final String fileName = "dog_zh.json";
 		/*如果來源是NET_SOURCE則要指定主題*/
 		final String topic = new String("朋友");
 		/*=====================================*/

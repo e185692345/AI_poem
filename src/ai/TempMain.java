@@ -3,9 +3,6 @@ package ai;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import ai.exception.MakeSentenceException;
-import ai.sentence.LineComposition;
-import ai.sentence.MakeSentence;
 import ai.word.ChineseWord;
 import ai.word.WordPile;
 

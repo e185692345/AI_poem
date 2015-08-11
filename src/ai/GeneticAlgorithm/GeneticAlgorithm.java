@@ -64,6 +64,7 @@ public class GeneticAlgorithm {
     	
     	initPopulation();
     	if (DEBUG) printPoem();
+    	if (!DEBUG) System.out.println("演化進度");
     	for ( int i = 0; i < maxGeneration ; i++){
     		if (DEBUG) System.out.println(" === 第"+i+"代 ===");
      		crossover();
@@ -90,10 +91,13 @@ public class GeneticAlgorithm {
 			}
 			counPoint += 1;
 			if (DEBUG) printPoem();
+			
+			if (!DEBUG)
+				System.out.print(getProgressBar(i*100/maxGeneration));
 			if (maxScore[i] >= targetScore)
 				break;
     	}
-    	
+    	if (!DEBUG) System.out.println();
     	
     	int percentage = 10;
     	int numberToPrint = (POPULATION_SIZE/percentage < 10) ? 10 : POPULATION_SIZE/percentage;
@@ -108,6 +112,25 @@ public class GeneticAlgorithm {
     		new StatisticWindow(counPoint, maxScore, minScore, avgScore, detailScore);
     	}
 	}
+    
+    private String getProgressBar(int percent){
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("\r[");
+    	for (int i = 0 ; i < 50 ; i++){
+    		if (i==24){
+    			sb.append(String.format("%2d%%", percent));
+    		}
+    		else if ( i != 25 && i != 26){
+	    		if (i*2<=percent)
+	    			sb.append('=');
+	    		else
+	    			sb.append(' ');
+    		}
+    	}
+    	sb.append(']');
+    	
+    	return sb.toString();
+    }
     /**
      * 初始化族群
      */
@@ -262,7 +285,7 @@ public class GeneticAlgorithm {
 		int[] cumulativeSum = new int[POPULATION_SIZE];
 		
 		int totalSum = 0;
-		final int head = 1;
+		final int head = 0;
 		final int tail = POPULATION_SIZE/4;
 		final int middle = POPULATION_SIZE - head - tail;
 		
