@@ -19,6 +19,7 @@ public class GeneticAlgorithm {
 	//======================參數設定======================
     //族群大小
     private static final int POPULATION_SIZE = 100;
+
     //交配親代競爭群組大小
     private static final int SELECTED_GROUP_SIZE = 5;
     //突變機率
@@ -27,6 +28,7 @@ public class GeneticAlgorithm {
 	private final int maxGeneration = 400;
 	private final int targetScore = PoemTemplate.MAX_ANTITHESIS_SCORE + PoemTemplate.MAX_DIVERSITY_SCORE + PoemTemplate.MAX_TONE_SCORE + PoemTemplate.MAX_RHYTHM_SCORE;
 	//===================================================
+
     
 	/*詞庫*/
     private WordPile wordPile;
@@ -58,6 +60,7 @@ public class GeneticAlgorithm {
 		int[] minScore = new int[maxGeneration];
 		int[] avgScore = new int[maxGeneration];
 		int[][] detailScore = new int[PoemTemplate.COUNT_FITNESS_TYPE][maxGeneration];
+
     	int sumScore;
     	int[] sumDetailScore = new int[PoemTemplate.COUNT_FITNESS_TYPE];
     	int counPoint = 0;
@@ -70,7 +73,6 @@ public class GeneticAlgorithm {
      		crossover();
 			mutation();
 			select();
-			
 			maxScore[i] = 0; minScore[i] = 1000000; sumScore = 0;
 			for (int j = 0 ; j < PoemTemplate.COUNT_FITNESS_TYPE ; j++)
 				sumDetailScore[j] = 0;
@@ -85,6 +87,7 @@ public class GeneticAlgorithm {
 				for (int k = 0 ; k < PoemTemplate.COUNT_FITNESS_TYPE ; k++)
 					sumDetailScore[k] += population[j].getDetailScore()[k];
 			}
+
 			avgScore[i] = sumScore/POPULATION_SIZE;
 			for (int j = 0 ; j < PoemTemplate.COUNT_FITNESS_TYPE ; j++){
 				detailScore[j][i] = sumDetailScore[j]/POPULATION_SIZE;
@@ -111,6 +114,7 @@ public class GeneticAlgorithm {
     	if (counPoint > 0){
     		new StatisticWindow(counPoint, maxScore, minScore, avgScore, detailScore);
     	}
+
 	}
     
     private String getProgressBar(int percent){
@@ -141,7 +145,6 @@ public class GeneticAlgorithm {
         }
     }
     private void crossover(){
-    	
     	final int crosoverTime = POPULATION_SIZE/SELECTED_GROUP_SIZE;
     	
     	if (DEBUG) System.out.println("===Crossover===");

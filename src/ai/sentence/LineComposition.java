@@ -5,6 +5,7 @@ import java.util.Random;
 public final class LineComposition {
 	
 	public final static int[][] FIVE_LETTER_COMPOSITION 
+
 	= new int[][]{{2,3},{3,2},/*{1,1,1,1,1},*/
 		{1,1,3},{1,3,1},{3,1,1},
 		{2,2,1},{2,1,2},{1,2,2}/*,
