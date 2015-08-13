@@ -10,6 +10,7 @@ TOPIC (是) /r/IsA_END
 (可以/用來) /r/CapableOf_END
 (可以/用來) /r/UsedFor_END
 (渴望/想要) /r/Desires_END
+(渴望/想要) /r/CausesDesire_END
 /r/MadeOf_END (打造成/所組成)
 /r/MadeOf_START (的) (基礎/原料)
 TOPIC (須/想) /r/MotivatedByGoal_START
@@ -18,3 +19,5 @@ TOPIC (與/和) /r/RelatedTo_START
 TOPIC (與/和) /r/RelatedTo_END
 /r/RelatedTo_END (與/和) TOPIC
 (造成/導致) /r/Causes_END
+/r/SymbolOf_END (的) (象徵)
+(代表) /r/SymbolOf_END

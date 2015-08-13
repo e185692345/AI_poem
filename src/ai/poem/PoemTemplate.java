@@ -21,7 +21,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	public final static int MAX_ANTITHESIS_SCORE = 200;
 	public final static int MAX_DIVERSITY_SCORE = 100;
 	// 設定個分數的最低門檻，不足的項目分數會直接變成1分，確保詩在每個項目都有一定的品質
-	public final static int MIN_RHYTHM_SCORE = 26;
+	public final static int MIN_RHYTHM_SCORE = 50;
 	public final static int MIN_TONE_SCORE = 51;
 	public final static int MIN_ANTITHESIS_SCORE = 51;
 	public final static int MIN_DIVERSITY_SCORE = 51;
@@ -173,7 +173,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 				if (repeatedWord.containsKey(word)){
 					int times = repeatedWord.get(word);
 					if (times >= MAX_WORD_REPEATED_TIME){
-						
+						return 1;
 					}
 					else{
 						countWords += 1;

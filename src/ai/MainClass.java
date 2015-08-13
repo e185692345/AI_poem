@@ -22,8 +22,8 @@ public class MainClass {
 		
 		/*=====================================*/
 		/*選擇字詞來源 NET_SOURCE(從conceptnet) 或 FILE_SOURCE(wordPile.json)*/
-		final int SOURCE = FILE_SOURCE;
-		final String fileName = "dog_zh.json";
+		final int SOURCE = NET_SOURCE;
+		final String fileName = "wordPile.json";
 		/*如果來源是NET_SOURCE則要指定主題*/
 		final String topic = new String("狗");
 		/*=====================================*/
@@ -33,9 +33,9 @@ public class MainClass {
 			ConceptNetCrawler wordSource= new ConceptNetCrawler(topic);
 			wordPile.AddWords(wordSource.getWordList_ChineseSource());
 			// TODO 平常會關閉英文翻譯減少翻譯配額消耗
-			wordPile.AddWords(wordSource.getWordList_EnlishSource());
+			//wordPile.AddWords(wordSource.getWordList_EnlishSource());
 			new GeneticAlgorithm(8, 5, wordPile, new MakeSentence(wordPile)).evole();
-			WriteToFile("wordPile.json", wordPile.getJSONString());
+			WriteToFile(fileName, wordPile.getJSONString());
 			break;
 		case FILE_SOURCE:
 			try {

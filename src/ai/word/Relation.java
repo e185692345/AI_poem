@@ -20,7 +20,9 @@ public enum Relation {
 	MotivatedByGoal(12,"/r/MotivatedByGoal","動","名形動"),
 	Desires(13,"/r/Desires","名","名動"),
 	MadeOf(14,"/r/MadeOf","名","名"),
-	HasA(15,"/r/HasA","名","名");
+	HasA(15,"/r/HasA","名","名"),
+	CausesDesire(16,"/r/CausesDesire","名","動"),
+	SymbolOf(17,"/r/SymbolOf","名","名");
 	
 	public static final int START = 0;
 	public static final int END = 1;
