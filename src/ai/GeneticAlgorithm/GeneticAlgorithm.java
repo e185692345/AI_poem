@@ -18,8 +18,7 @@ public class GeneticAlgorithm {
 	private static final boolean DEBUG = false ;
 	//======================參數設定======================
     //族群大小
-    private static final int POPULATION_SIZE = 1000;
-
+    private static final int POPULATION_SIZE = 100;
     //交配親代競爭群組大小
     private static final int SELECTED_GROUP_SIZE = 5;
     //突變機率
@@ -237,7 +236,6 @@ public class GeneticAlgorithm {
 	    		if (canHappen(MUTATION_RATE)){
 	    			try {
 						population[i].getPoem()[j] = sentenceMaker.makeSentence(population[i].getPoem()[j].getLineComposition());
-						break;
 	    			} catch (MakeSentenceException e) {
 						System.err.println(e.getMessage());
 						continue;
@@ -304,11 +302,22 @@ public class GeneticAlgorithm {
 		int[] cumulativeSum = new int[POPULATION_SIZE];
 		
 		int totalSum = 0;
-		final int head = 0;
-		final int tail = POPULATION_SIZE/10;
-		final int middle = POPULATION_SIZE - head - tail;
+		int head ,tail,middle ;
 		
 		Arrays.sort(population);
+		tail = POPULATION_SIZE/10;
+		/*for (int i = 0 ; i < POPULATION_SIZE ; i++){
+			for (int detailScore : population[i].getDetailScore()){
+				if (detailScore <= 1){
+					tail = POPULATION_SIZE -1 - i;
+					break;
+				}
+			}
+			if (tail != -1)
+				break;
+		}*/
+		head = 0;
+		middle = POPULATION_SIZE - head - tail;
 		
 		PoemTemplate[] populationCopy = new PoemTemplate[POPULATION_SIZE];
 		for (int i = 0 ; i < POPULATION_SIZE ; i++){

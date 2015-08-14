@@ -43,90 +43,89 @@ public class ConceptNetCrawler {
 	 * 
 	 * 	處理json的library要另外去下載，請參考 http://www.ewdna.com/2008/10/jsonjar.html
 	 */
-	public ChineseWord[] getWordList_ChineseSource(){
+	public ChineseWord[] getWordList_ChineseSource() {
+		try {
+			String url = new String("http://conceptnet5.media.mit.edu/data/5.2/search?limit="+LIMIT+"&nodes=/c/zh_TW/"+URLEncoder.encode(topic,"UTF-8"));
+			System.out.println(url);
+			JSONObject obj = readJsonFromURL(url);
+			return getWordList_ChineseSource(obj);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		return null;
+	}
+	public ChineseWord[] getWordList_ChineseSource(JSONObject obj){
 		ChineseWord[] tempWordList = new ChineseWord[LIMIT];
 		int wordType,count = 0;
 		Relation relation;
 		HashMap<String, Boolean> isRecorded = new HashMap<String,Boolean>();
+		String word;
+		int startOrEnd;
+				
 		try {
-			String word;
-			int startOrEnd;
-			//String url = new String("http://conceptnet5.media.mit.edu/data/5.3/c/zh/"+URLEncoder.encode(topic,"UTF-8")+"?limit="+limit);
-			JSONObject obj, jsonObj;
-			
-			String url = new String("http://conceptnet5.media.mit.edu/data/5.2/search?limit="+LIMIT+"&nodes=/c/zh_TW/"+URLEncoder.encode(topic,"UTF-8"));
-			System.out.println(url);
-			obj = readJsonFromURL(url);
-			
-			try {
-				JSONArray array = obj.getJSONArray("edges");
-				for (int i=0; i<array.length(); i++){
-					jsonObj  = ((JSONObject)array.getJSONObject(i));
-					try {
-						relation = Relation.getRelation(jsonObj.getString("rel"));
-						String startWord = jsonObj.getString("start").split("/")[3];
-						String endWord = jsonObj.getString("end").split("/")[3];
-						String extraData;
-						
-						/* TODO 修正某些relation*/
-						relation = fixRelation(relation, jsonObj.getString("surfaceText"));
-						
-						if (startWord.equals(topic)){
-							word = endWord;
-							startOrEnd = Relation.END;
-						}
-						else if (endWord.equals(topic)){
-							word = startWord;
-							startOrEnd = Relation.START;
-						}
-						else{
-							//System.err.println("warning : ConceptNet gives a json object without corresponding start wrod / end word ( "+startWord+" , "+endWord+" )");
-							continue;
-						}
-						
-						/* TODO 把特定的介係詞加入word尾端*/
-						final String[] detailLocation = {"下","外","裡"};
-						if(relation == Relation.AtLocation){
-							extraData = jsonObj.getString("surfaceText");
-							extraData = extraData.substring(extraData.length()-2, extraData.length()-1);
-							for (String temp : detailLocation){
-								if (extraData.equals(temp) && !word.substring(word.length()-1, word.length()).equals(temp)){
-									word = word+temp;
-								}
-							}
-						}
-						
-						if (word.length() <= 3){
-							if (!isRecorded.containsKey(word)){
-								isRecorded.put(word, true);
-								wordType = Relation.getWordType(relation,startOrEnd);
-								try {
-									tempWordList[count] =  new ChineseWord(word, BopomofoCrawler.getBopomofo(word), wordType, relation, startOrEnd);
-									count += 1;
-								} catch (BopomofoException e) {
-									System.err.println(e.getMessage());
-									continue;	
-								}
-							}
-							else{
-								//System.out.println(word + " 已經出現過");
-							}
-						}
-					} catch (RelationConvertException e1) {
-						System.err.println(e1.getMessage());
-						//e1.printStackTrace();
+			JSONArray array = obj.getJSONArray("edges");
+			for (int i=0; i<array.length(); i++){
+				JSONObject jsonObj  = ((JSONObject)array.getJSONObject(i));
+				try {
+					relation = Relation.getRelation(jsonObj.getString("rel"));
+					String startWord = jsonObj.getString("start").split("/")[3];
+					String endWord = jsonObj.getString("end").split("/")[3];
+					String extraData;
+					/* TODO 修正某些relation*/
+					relation = fixRelation(relation, jsonObj.getString("surfaceText"));
+					
+					if (startWord.equals(topic)){
+						word = endWord;
+						startOrEnd = Relation.END;
+					}
+					else if (endWord.equals(topic)){
+						word = startWord;
+						startOrEnd = Relation.START;
+					}
+					else{
+						//System.err.println("warning : ConceptNet gives a json object without corresponding start wrod / end word ( "+startWord+" , "+endWord+" )");
 						continue;
 					}
 					
+					/* TODO 把特定的介係詞加入word尾端*/
+					final String[] detailLocation = {"下","外","裡"};
+					if(relation == Relation.AtLocation){
+						extraData = jsonObj.getString("surfaceText");
+						extraData = extraData.substring(extraData.length()-2, extraData.length()-1);
+						for (String temp : detailLocation){
+							if (extraData.equals(temp) && !word.substring(word.length()-1, word.length()).equals(temp)){
+								word = word+temp;
+							}
+						}
+					}
+					
+					if (word.length() <= 3){
+						if (!isRecorded.containsKey(word)){
+								isRecorded.put(word, true);
+							wordType = Relation.getWordType(relation,startOrEnd);
+							try {
+								tempWordList[count] =  new ChineseWord(word, BopomofoCrawler.getBopomofo(word), wordType, relation, startOrEnd);
+								count += 1;
+							} catch (BopomofoException e) {
+									System.err.println(e.getMessage());
+								continue;	
+							}
+						}
+						else{
+							//System.out.println(word + " 已經出現過");
+						}
+					}
+					
+				} catch (RelationConvertException e1) {
+					System.err.println(e1.getMessage());
+					continue;
 				}
-			} catch (JSONException e1) {
-				e1.printStackTrace();
+				
 			}
-			
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+		} catch (JSONException e1) {
+			e1.printStackTrace();
 		}
-		
 		return Arrays.copyOf(tempWordList, count);
 	}
 	

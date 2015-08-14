@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Random;
 
+import ai.TempMain;
 import ai.exception.MakeSentenceException;
 import ai.exception.RelationConvertException;
 import ai.exception.RelationWordException;
@@ -196,6 +197,17 @@ public class MakeSentence {
 			}
 		}
 		throw new MakeSentenceException(sentenceTemplate[type]);
+	}
+	
+	public int getCountType(){
+		return this.countType;
+	}
+	
+	public String getSentenceTemplate(int index){
+		StringBuilder sb = new StringBuilder();
+		for (String str : sentenceTemplate[index])
+			sb.append(str+" ");
+		return sb.toString();
 	}
 	
 	public ChineseWord getAPaddingWord(int sentenceType, int elementIndex) throws Exception{

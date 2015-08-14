@@ -21,7 +21,7 @@ public enum Relation {
 	  HasSubevent0(13,"/r/HasSubevent0","動","動"),	// E 可能代表 S 
 	  HasSubevent1(14,"/r/HasSubevent1","動","動"),	// S 的時候可以 E
 	HasFirstSubevent(15,"/r/HasFirstSubevent","動","動"),
-	MotivatedByGoal(16,"/r/MotivatedByGoal","動","名形動"),
+	//MotivatedByGoal(16,"/r/MotivatedByGoal","動","名形動"),
 	Desires(17,"/r/Desires","名","名動"),
 	  NotDesires(18,"/r/NotDesires","名","名動"),			// S 不想要/痛恨/懼怕 E
 	MadeOf(19,"/r/MadeOf","名","名"),

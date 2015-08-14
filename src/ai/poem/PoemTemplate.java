@@ -21,9 +21,9 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	public final static int COUNT_FITNESS_TYPE = 4;
 	// ===============================================================
 	public final static int MAX_RHYTHM_SCORE = 100;
-	public final static int MAX_TONE_SCORE = 200;
+	public final static int MAX_TONE_SCORE = 100;
 	public final static int MAX_ANTITHESIS_SCORE = 200;
-	public final static int MAX_DIVERSITY_SCORE = 100;
+	public final static int MAX_DIVERSITY_SCORE = 200;
 	// 設定個分數的最低門檻，不足的項目分數會直接變成1分，確保詩在每個項目都有一定的品質
 	public final static int MIN_RHYTHM_SCORE = 50;
 	public final static int MIN_TONE_SCORE = 51;
@@ -84,6 +84,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
     	int maxTry = 100;
     	PoemSentence[] poem = new PoemSentence[row];
     	boolean isDone;
+    	HashMap<String, Boolean> repeatSentence = new HashMap<String, Boolean>();
     	
     	for (int i = 0 ; i < row ; i+=2){
     		isDone = false;
@@ -91,7 +92,20 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
     			try {
     				int[] lineComposition = LineComposition.getRandomComposition(col);
         			poem[i]  = maker.makeSentence(lineComposition);
-					poem[i+1]  = maker.makeSentence(lineComposition);
+        			if (repeatSentence.containsKey(poem[i].toString())){
+						continue;
+					}
+					else{
+						repeatSentence.put(poem[i].toString(), true);
+					}
+					
+        			poem[i+1]  = maker.makeSentence(lineComposition);
+        			if (repeatSentence.containsKey(poem[i+1].toString())){
+						continue;
+					}
+					else{
+						repeatSentence.put(poem[i+1].toString(), true);
+					}
 					isDone = true;
 					break;
 				} catch (MakeSentenceException e) {

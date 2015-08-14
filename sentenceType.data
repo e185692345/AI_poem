@@ -1,4 +1,3 @@
-TOPIC (是) /r/IsA_END
 (是) (一種) /r/IsA_END
 (一種) /r/IsA_END
 /r/PartOf_END (的) (部分)
@@ -11,8 +10,6 @@ TOPIC (是) /r/IsA_END
 (有) (能力/辦法) /r/CapableOf_END
 (能夠/可以) /r/CapableOf0_END
 (有) (能力/辦法) /r/CapableOf0_END
-TOPIC (會) /r/CapableOf0_END
-TOPIC (能) /r/CapableOf_END
 /r/AtLocation_END /r/CapableOf_END
 (在) /r/AtLocation_END /r/CapableOf_END
 (所以會) /r/Causes0_END
@@ -32,15 +29,17 @@ TOPIC (能) /r/CapableOf_END
 (使你) /r/CausesDesire_END
 /r/SymbolOf_END (的) (象徵)
 (代表) /r/SymbolOf_END
-(渴望/想要) /r/Desires_END
+(很渴望/很想要/很喜歡) /r/Desires_END
+(渴望/想要/喜歡) /r/Desires_END
 (不想要/不喜歡) /r/NotDesires_END
 (痛恨/懼怕/討厭) /r/NotDesires_END
 /r/HasProperty_END /r/IsA_END
 /r/HasProperty_END (的) /r/IsA_END
-TOPIC /r/CapableOf_END
 (首先要) /r/HasFirstSubevent_END
 (要先) /r/HasFirstSubevent_END
 (你會) /r/HasSubevent_END
 (你會想) /r/HasSubevent_END
 (代表) /r/HasSubevent0_START
 (可以/能夠) /r/HasSubevent1_END
+TOPIC (會) /r/CapableOf0_END
+TOPIC (能) /r/CapableOf_END
