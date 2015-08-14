@@ -152,7 +152,14 @@ public class MakeSentence {
 			}
 		}
 		if (isDone){
-			return new PoemSentence(type,words);
+			int compositionIndex= -1;
+			for (int i = 0 ; i < LineComposition.FIVE_LETTER_COMPOSITION.length ; i++){
+				if (LineComposition.FIVE_LETTER_COMPOSITION[i].equals(composition)){
+					compositionIndex = i;
+					break;
+				}
+			}
+			return new PoemSentence(type,words,composition);
 		}
 		else
 			throw new MakeSentenceException(composition,sentenceTemplate[type]);

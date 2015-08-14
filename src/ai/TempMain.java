@@ -3,7 +3,6 @@ package ai;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import Concept.Main;
 import ai.exception.MakeSentenceException;
 import ai.net.ConceptNetCrawler;
 import ai.sentence.MakeSentence;
@@ -13,7 +12,6 @@ import ai.word.WordPile;
 public class TempMain {
 	
 	public static void main(String[] argv){
-		
 		String topic = "狗";
 		WordPile wordPile = new WordPile(topic, ChineseWord.NOUN);
 		ConceptNetCrawler wordSource= new ConceptNetCrawler(topic);

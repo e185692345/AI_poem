@@ -13,10 +13,13 @@ import ai.word.WordPile;
 public class PoemTemplate implements Comparable<PoemTemplate>{
 	
 	private static final boolean DEBUG = false;
-	// TODO 新增分數種類時也要一並更改這個數值
-	public final static int COUNT_FITNESS_TYPE = 4;
+	
 	private int[] detailScore = new int[COUNT_FITNESS_TYPE];
 	
+	// ===============================================================
+	// TODO 新增分數種類時也要一並更改這個數值
+	public final static int COUNT_FITNESS_TYPE = 4;
+	// ===============================================================
 	public final static int MAX_RHYTHM_SCORE = 100;
 	public final static int MAX_TONE_SCORE = 200;
 	public final static int MAX_ANTITHESIS_SCORE = 200;
@@ -50,7 +53,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 		/*錯誤的複製 : this.poem = poem;*/
 		this.poem = new PoemSentence[row];
 		for ( int i = 0 ; i < row ; i++){
-			this.poem[i] = new PoemSentence(poem[i].getSentenceType(), poem[i].getWords());
+			this.poem[i] = new PoemSentence(poem[i].getSentenceType(), poem[i].getWords(),poem[i].getLineComposition());
 		}
 		
 		maxRhythmMatch = row/2;
@@ -146,10 +149,11 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	private int getDiversityScore(){
 		final int MAX_WORD_REPEATED_TIME = 2;
 		final int MAX_SENTENCE_REPEAT_TIME = 1;
+		final int MAX_SENTENCE_TYPE_REPEAT_TIME = 2;
 		int countWords, totalWords;
 		HashMap<String, Integer> repeatedWord = new HashMap<String, Integer>();
 		HashMap<String, Integer> repeatedSentence = new HashMap<String, Integer>();
-
+		HashMap<Integer,Integer> recordSentenceType = new HashMap<Integer,Integer>();
 		for ( int i = 0 ; i < row ; i++){
 			String sentence = poem[i].toString();
 			if (repeatedSentence.containsKey(sentence)){
@@ -163,6 +167,24 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 			}
 			else{
 				repeatedSentence.put(sentence, 1);
+			}
+			
+			int type = poem[i].getSentenceType();
+			if (recordSentenceType.containsKey(type)){
+				int time = recordSentenceType.get(type);
+				if (time >= MAX_SENTENCE_TYPE_REPEAT_TIME)
+					return 0;
+				else
+					recordSentenceType.put(type,time+1);
+			}
+			else{
+				recordSentenceType.put(type, 1);
+			}
+		}
+		
+		for (PoemSentence sentence : poem){
+			if (recordSentenceType.containsKey(sentence.getSentenceType())){
+				
 			}
 		}
 		
@@ -392,6 +414,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 		else
 			return score;
 	}
+
 	
 	public String printScore(){
 		this.getFitnessScore();

@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Random;
 
-
+import ai.exception.MakeSentenceException;
 import ai.exception.RelationWordException;
 import ai.poem.PoemTemplate;
 import ai.sentence.MakeSentence;
@@ -18,12 +18,12 @@ public class GeneticAlgorithm {
 	private static final boolean DEBUG = false ;
 	//======================參數設定======================
     //族群大小
-    private static final int POPULATION_SIZE = 100;
+    private static final int POPULATION_SIZE = 1000;
 
     //交配親代競爭群組大小
     private static final int SELECTED_GROUP_SIZE = 5;
     //突變機率
-    private static final double MUTATION_RATE = 1;
+    private static final double MUTATION_RATE = 0.1;
     //終止條件
 	private final int maxGeneration = 400;
 	private final int targetScore = PoemTemplate.MAX_ANTITHESIS_SCORE + PoemTemplate.MAX_DIVERSITY_SCORE + PoemTemplate.MAX_TONE_SCORE + PoemTemplate.MAX_RHYTHM_SCORE;
@@ -71,7 +71,8 @@ public class GeneticAlgorithm {
     	for ( int i = 0; i < maxGeneration ; i++){
     		if (DEBUG) System.out.println(" === 第"+i+"代 ===");
      		crossover();
-			mutation();
+     		mutation();
+			polish();
 			select();
 			maxScore[i] = 0; minScore[i] = 1000000; sumScore = 0;
 			for (int j = 0 ; j < PoemTemplate.COUNT_FITNESS_TYPE ; j++)
@@ -102,8 +103,8 @@ public class GeneticAlgorithm {
     	}
     	if (!DEBUG) System.out.println();
     	
-    	int percentage = 10;
-    	int numberToPrint = (POPULATION_SIZE/percentage < 10) ? 10 : POPULATION_SIZE/percentage;
+    	int numberToPrint = 10;
+    	Arrays.sort(population);
     	System.out.println("較好的詩");
     	for ( int i = 0 ; i < numberToPrint ; i++){
         	System.out.println("=== 第"+i+"首 ===");
@@ -228,15 +229,30 @@ public class GeneticAlgorithm {
         return new ParentSet(poem1, poem2);
     }
     
+    
+    private void mutation(){
+    	
+    	for (int i = 0 ; i < POPULATION_SIZE ; i++){
+    		for (int j = 0 ; j < row ; j++){
+	    		if (canHappen(MUTATION_RATE)){
+	    			try {
+						population[i].getPoem()[j] = sentenceMaker.makeSentence(population[i].getPoem()[j].getLineComposition());
+						break;
+	    			} catch (MakeSentenceException e) {
+						System.err.println(e.getMessage());
+						continue;
+					}
+	    		}
+    		}
+    	}
+    }
 	/**
 	 * 	逐一替換每個詞，若替換後分數較低則把詩復原
 	 */
-    private void mutation(){
+    private void polish(){
 		if (DEBUG) System.out.println("===Mutation===");
 		
 		for(int i = 0 ; i < POPULATION_SIZE ; i ++){
-			if (!canHappen(MUTATION_RATE))
-				continue;
 			for (int j = 0 ; j < row ; j++){
 				for (int k = 0; k < population[i].getPoem()[j].getLength() ; k++){
 					int oldScore = population[i].getFitnessScore();
@@ -289,7 +305,7 @@ public class GeneticAlgorithm {
 		
 		int totalSum = 0;
 		final int head = 0;
-		final int tail = POPULATION_SIZE/4;
+		final int tail = POPULATION_SIZE/10;
 		final int middle = POPULATION_SIZE - head - tail;
 		
 		Arrays.sort(population);
