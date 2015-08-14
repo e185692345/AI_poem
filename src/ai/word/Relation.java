@@ -9,20 +9,24 @@ public enum Relation {
 	PartOf(1,"/r/PartOf","名","名"),
 	HasProperty(2,"/r/HasProperty","名","形"),
 	UsedFor(3,"/r/UsedFor","名","動"),
-	CapableOf(4,"/r/CapableOf","名","動"),
-	AtLocation(5,"/r/AtLocation","名","名"),
-	Causes(6,"/r/Causes","名動","形動"),
-	HasSubevent(7,"/r/HasSubevent","動","動"),
-	HasFirstSubevent(8,"/r/HasFirstSubevent","動","動"),
-	RelatedTo(9,"/r/RelatedTo","名形動","名形動"),
-	HasPrerequisite(10,"/r/HasPrerequisite","動","動"),
-	CreatedBy(11,"/r/CreatedBy","名","名"),
-	MotivatedByGoal(12,"/r/MotivatedByGoal","動","名形動"),
-	Desires(13,"/r/Desires","名","名動"),
-	MadeOf(14,"/r/MadeOf","名","名"),
-	HasA(15,"/r/HasA","名","名"),
-	CausesDesire(16,"/r/CausesDesire","名","動"),
-	SymbolOf(17,"/r/SymbolOf","名","名");
+	CapableOf(4,"/r/CapableOf","名","動"),			// S能做的事情有E
+	  CapableOf0(5,"/r/CapableOf0","名","動"), 		// S會E
+	AtLocation(6,"/r/AtLocation","名","名"),
+	Causes(7,"/r/Causes","名動","形動"), 				// S之後可能會發生的事情是E
+	  Causes0(8,"/r/Causes0","名動","形動"),			// 因為S所以E
+	  Causes1(9,"/r/Causes1","名動","形動"),			// S可能會帶來E
+	  Causes2(10,"/r/Causes2","名動","形動"), 		// S可能會引起E
+	  Causes3(11,"/r/Causes3","名動","形動"),			// S會讓你E
+	HasSubevent(12,"/r/HasSubevent","動","動"),		// 在S你會E / S的時候你會E
+	  HasSubevent0(13,"/r/HasSubevent0","動","動"),	// E 可能代表 S 
+	  HasSubevent1(14,"/r/HasSubevent1","動","動"),	// S 的時候可以 E
+	HasFirstSubevent(15,"/r/HasFirstSubevent","動","動"),
+	MotivatedByGoal(16,"/r/MotivatedByGoal","動","名形動"),
+	Desires(17,"/r/Desires","名","名動"),
+	  NotDesires(18,"/r/NotDesires","名","名動"),			// S 不想要/痛恨/懼怕 E
+	MadeOf(19,"/r/MadeOf","名","名"),
+	CausesDesire(20,"/r/CausesDesire","名","動"),
+	SymbolOf(21,"/r/SymbolOf","名","名");
 	
 	public static final int START = 0;
 	public static final int END = 1;

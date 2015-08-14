@@ -15,13 +15,6 @@ import ai.word.Relation;
 import ai.word.WordPile;
 
 public class MakeSentence {
-	// TODO 補齊所有句型， data檔要增加格式說明
-	public static final int sentenceType0 = 0;	// /r/HasProperty + 的 + /r/IsA
-	public static final int sentenceType1 = 1;	// 在 + /r/AtLocation + /r/CapableOf
-	public static final int sentenceType2 = 2;	// TOPIC + 會/想 + /r/CapableOf
-	public static final int sentenceType3 = 3;	// TOPIC + 是 + /r/IsA
-	public static final int sentenceType4 = 4;	// 可以 + /r/CapableOf
-	
 	private final static String paddingWordFile = "paddingWord.data";
 	private final static String sentenceTypeFile = "sentenceType.data";
 	
@@ -45,8 +38,9 @@ public class MakeSentence {
 	
 	private void loadSentenceTypeFile(){
 		try {
+			countType = getFileLines(sentenceTypeFile);
+			System.out.println("總共有 "+countType+" 個句型模板");
 			BufferedReader bufRead = new BufferedReader(new FileReader(sentenceTypeFile));
-			countType = Integer.parseInt(bufRead.readLine());
 			
 			sentenceTemplate = new String[countType][];
 			for (int i = 0 ; i < countType ; i++){
@@ -57,6 +51,21 @@ public class MakeSentence {
 			sentenceTemplate = null;
 			e.printStackTrace();
 		}
+	}
+	
+	private int getFileLines(String fileName){
+		int count = 0;
+		try {
+			BufferedReader bufRead = new BufferedReader(new FileReader(fileName));
+			while (bufRead.readLine() != null){
+				count += 1;
+			}
+			bufRead.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return count;
 	}
 	
 	private void loadPaddingWordFile(){
@@ -86,74 +95,100 @@ public class MakeSentence {
 		}*/
 	}
 	
-	public PoemSentence makeSentence(int[] composition) throws MakeSentenceException{
+	public PoemSentence makeSentence(int[] composition, int type) throws MakeSentenceException {
 		final String TOPIC = "TOPIC";
-		
+		boolean isDone = true;
+		ChineseWord[] words = new ChineseWord[composition.length];
+		for ( int k = 0 ; k < sentenceTemplate[type].length ; k++){
+			String element = sentenceTemplate[type][k];
+			/*填入主題*/
+			if (element.equals(TOPIC)){
+				words[k] = wordPile.getTopic();
+				if ( composition[k] != words[k].getLength()){
+					isDone = false;
+					break;
+				}
+			}
+			/*填入padding word*/
+			else if (element.charAt(0) == '('){
+				try {
+					words[k] = getAPaddingWord(type,k);
+					if ( composition[k] != words[k].getLength()){
+						isDone = false;
+						break;
+					}
+				} catch (Exception e) {
+					System.err.println(e.getMessage());
+					e.printStackTrace();
+					System.exit(1);
+				}
+				
+			}
+			/*填入relation word*/
+			else{
+				String[] data = element.split("_");
+				try {
+					Relation relation = Relation.getRelation(data[0]);
+					int startOrEnd = Relation.START;
+					if (data[1].equals("START"))
+						startOrEnd = Relation.START;
+					else if (data[1].equals("END"))
+						startOrEnd = Relation.END;
+					else{
+						System.err.println(data[1]+" 不是 \"START\" 也不是 \"END\"");
+						System.exit(1);
+					}
+					try {
+						words[k] = wordPile.getRlationWord(relation, startOrEnd, composition[k]);
+					} catch (RelationWordException e) {
+						isDone = false;
+						break;
+					}
+				} catch (RelationConvertException e1) {
+					System.err.println(e1.getMessage());
+					e1.printStackTrace();
+					System.exit(1);
+				}	
+			}
+		}
+		if (isDone){
+			return new PoemSentence(type,words);
+		}
+		else
+			throw new MakeSentenceException(composition,sentenceTemplate[type]);
+	}
+	
+	public PoemSentence makeSentence(int[] composition) throws MakeSentenceException{
 		int index = rand.nextInt(countType);
 		
 		for (int i = 0 ; i < countType ; i++){
 			int type = (index+i)%countType;
 			if ( sentenceTemplate[type].length != composition.length)
 				continue;
-			ChineseWord[] words = new ChineseWord[composition.length];
-			boolean isDone = true;
-			for ( int k = 0 ; k < sentenceTemplate[type].length ; k++){
-				String element = sentenceTemplate[type][k];
-				/*填入主題*/
-				if (element.equals(TOPIC)){
-					words[k] = wordPile.getTopic();
-					if ( composition[k] != words[k].getLength()){
-						isDone = false;
-						break;
-					}
-				}
-				/*填入padding word*/
-				else if (element.charAt(0) == '('){
-					try {
-						words[k] = getAPaddingWord(type,k);
-						if ( composition[k] != words[k].getLength()){
-							isDone = false;
-							break;
-						}
-					} catch (Exception e) {
-						System.err.println(e.getMessage());
-						e.printStackTrace();
-						System.exit(1);
-					}
-					
-				}
-				/*填入relation word*/
-				else{
-					String[] data = element.split("_");
-					try {
-						Relation relation = Relation.getRelation(data[0]);
-						int startOrEnd = Relation.START;
-						if (data[1].equals("START"))
-							startOrEnd = Relation.START;
-						else if (data[1].equals("END"))
-							startOrEnd = Relation.END;
-						else{
-							System.err.println(data[1]+" 不是 \"START\" 也不是 \"END\"");
-							System.exit(1);
-						}
-						try {
-							words[k] = wordPile.getRlationWord(relation, startOrEnd, composition[k]);
-						} catch (RelationWordException e) {
-							isDone = false;
-							break;
-						}
-					} catch (RelationConvertException e1) {
-						System.err.println(e1.getMessage());
-						e1.printStackTrace();
-						System.exit(1);
-					}	
-				}
-			}
-			if (isDone){
-				return new PoemSentence(type,words);
+			try {
+				return makeSentence(composition, type);
+			} catch (MakeSentenceException e) {
+				continue;
 			}
 		}
 		throw new MakeSentenceException(composition);
+	}
+	
+	public PoemSentence makeSentence(int type) throws MakeSentenceException{
+		int length = LineComposition.FIVE_LETTER_COMPOSITION.length;
+		int index = rand.nextInt(length);
+		
+		for (int i = 0 ; i < length; i++){
+			int[] composition = LineComposition.FIVE_LETTER_COMPOSITION[(index+i)%length];
+			if ( sentenceTemplate[type].length != composition.length)
+				continue;
+			try {
+				return makeSentence(composition, type);
+			} catch (MakeSentenceException e) {
+				continue;
+			}
+		}
+		throw new MakeSentenceException(sentenceTemplate[type]);
 	}
 	
 	public ChineseWord getAPaddingWord(int sentenceType, int elementIndex) throws Exception{
@@ -166,6 +201,14 @@ public class MakeSentence {
 		else{
 			// TODO 事先檢查檔案格式
 			throw new Exception(word+"沒有出現在 "+paddingWordFile+" 裡面");
+		}
+	}
+	
+	public ChineseWord getAPaddingWord(String word) throws Exception{
+		if (paddingWordList.containsKey(word))
+			return paddingWordList.get(word);
+		else {
+			throw new Exception("沒有 \""+word+"\" 這個paddingWord");
 		}
 	}
 }

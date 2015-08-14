@@ -7,6 +7,7 @@ import ai.sentence.LineComposition;
 import ai.sentence.MakeSentence;
 import ai.sentence.PoemSentence;
 import ai.word.ChineseWord;
+import ai.word.Relation;
 import ai.word.WordPile;
 
 public class PoemTemplate implements Comparable<PoemTemplate>{
@@ -143,7 +144,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	}
 	
 	private int getDiversityScore(){
-		final int MAX_WORD_REPEATED_TIME = 3;
+		final int MAX_WORD_REPEATED_TIME = 2;
 		final int MAX_SENTENCE_REPEAT_TIME = 1;
 		int countWords, totalWords;
 		HashMap<String, Integer> repeatedWord = new HashMap<String, Integer>();
@@ -164,6 +165,19 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 				repeatedSentence.put(sentence, 1);
 			}
 		}
+		
+		/*相鄰兩句若是相同的句型，不允許重複出現相同的詞(填充詞除外)*/
+		for (int i = 0 ; i < row ; i += 2){
+			if ( poem[i].getSentenceType() != poem[i+1].getSentenceType())
+				continue;
+			for (int j = 0 ; j < poem[i].getLength() ; j++){
+				if(poem[i].getWords()[j].getWord().equals(poem[i+1].getWords()[j].getWord())
+						&& poem[i].getWords()[j].getRelation() != Relation.PADDING){
+					return 0;
+				}
+			}
+		}
+		
 		totalWords = 0;
 		countWords = 0;
 		for (int i = 0 ; i < row ; i++){

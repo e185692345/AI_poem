@@ -28,7 +28,6 @@ public class ConceptNetCrawler {
 	private static final int LIMIT = 9999;
 	private static final int MAX_TRANSLATION = 1000;
 	
-	
 	private String topic;
 	
 	public ConceptNetCrawler(String topic) {
@@ -67,6 +66,11 @@ public class ConceptNetCrawler {
 						relation = Relation.getRelation(jsonObj.getString("rel"));
 						String startWord = jsonObj.getString("start").split("/")[3];
 						String endWord = jsonObj.getString("end").split("/")[3];
+						String extraData;
+						
+						/* TODO 修正某些relation*/
+						relation = fixRelation(relation, jsonObj.getString("surfaceText"));
+						
 						if (startWord.equals(topic)){
 							word = endWord;
 							startOrEnd = Relation.END;
@@ -78,6 +82,18 @@ public class ConceptNetCrawler {
 						else{
 							//System.err.println("warning : ConceptNet gives a json object without corresponding start wrod / end word ( "+startWord+" , "+endWord+" )");
 							continue;
+						}
+						
+						/* TODO 把特定的介係詞加入word尾端*/
+						final String[] detailLocation = {"下","外","裡"};
+						if(relation == Relation.AtLocation){
+							extraData = jsonObj.getString("surfaceText");
+							extraData = extraData.substring(extraData.length()-2, extraData.length()-1);
+							for (String temp : detailLocation){
+								if (extraData.equals(temp) && !word.substring(word.length()-1, word.length()).equals(temp)){
+									word = word+temp;
+								}
+							}
 						}
 						
 						if (word.length() <= 3){
@@ -112,6 +128,49 @@ public class ConceptNetCrawler {
 		}
 		
 		return Arrays.copyOf(tempWordList, count);
+	}
+	
+	private Relation fixRelation(Relation relation,String surfaceText) {
+		//NotDesire 較特殊
+		final String[] negativeDesire = {"不想要","痛恨","懼怕"};
+		
+		final String[] detailCauses = {"所以","帶來","引起","讓你"};
+		final String[] detailCapableOf = {"會"};
+		final String[] detailHasSubevent = {"代表","可以"};
+		HashMap<Relation, String[]> detailData = new HashMap<Relation, String[]>();
+		
+		detailData.put(Relation.Causes, detailCauses);
+		detailData.put(Relation.CapableOf, detailCapableOf);
+		detailData.put(Relation.HasSubevent, detailHasSubevent);
+		
+		surfaceText = surfaceText.replaceAll("\\[\\[.*?\\]\\]", "");
+		switch (relation){
+		case Desires:
+			for (String temp : negativeDesire){
+				if (surfaceText.indexOf(temp) != -1){
+					return Relation.NotDesires;
+				}
+			}
+			return relation;
+		
+		case Causes:
+		case CapableOf :
+		case HasSubevent :
+			String[] keywords = detailData.get(relation);
+			for (int i = 0 ; i < keywords.length ; i++){
+				if (surfaceText.indexOf(keywords[i]) != -1){
+					try {
+						return Relation.getRelation(relation.toString()+i);
+					} catch (RelationConvertException e) {
+						e.printStackTrace();
+						System.exit(1);
+					}
+				}
+			}
+			return relation;
+		default:
+			return relation;
+		}
 	}
 	
 	/**
