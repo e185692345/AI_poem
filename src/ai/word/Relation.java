@@ -1,53 +1,84 @@
 package ai.word;
 
-public class Relation {
+import ai.exception.RelationConvertException;
+
+public enum Relation {
+	TOPIC(-3,"/r/topic","",""),
+	PADDING(-2,"/r/padding","",""),
+	IsA(0,"/r/IsA","名","名"),
+	PartOf(1,"/r/PartOf","名","名"),
+	HasProperty(2,"/r/HasProperty","名","形"),
+	UsedFor(3,"/r/UsedFor","名","動"),
+	CapableOf(4,"/r/CapableOf","名","動"),			// S能做的事情有E
+	  CapableOf0(5,"/r/CapableOf0","名","動"), 		// S會E
+	AtLocation(6,"/r/AtLocation","名","名"),
+	Causes(7,"/r/Causes","名動","形動"), 				// S之後可能會發生的事情是E
+	  Causes0(8,"/r/Causes0","名動","形動"),			// 因為S所以E
+	  Causes1(9,"/r/Causes1","名動","形動"),			// S可能會帶來E
+	  Causes2(10,"/r/Causes2","名動","形動"), 		// S可能會引起E
+	  Causes3(11,"/r/Causes3","名動","形動"),			// S會讓你E
+	HasSubevent(12,"/r/HasSubevent","動","動"),		// 在S你會E / S的時候你會E
+	  HasSubevent0(13,"/r/HasSubevent0","動","動"),	// E 可能代表 S 
+	  HasSubevent1(14,"/r/HasSubevent1","動","動"),	// S 的時候可以 E
+	HasFirstSubevent(15,"/r/HasFirstSubevent","動","動"),
+	//MotivatedByGoal(16,"/r/MotivatedByGoal","動","名形動"),
+	Desires(17,"/r/Desires","名","名動"),
+	  NotDesires(18,"/r/NotDesires","名","名動"),			// S 不想要/痛恨/懼怕 E
+	MadeOf(19,"/r/MadeOf","名","名"),
+	CausesDesire(20,"/r/CausesDesire","名","動"),
+	SymbolOf(21,"/r/SymbolOf","名","名");
 	
 	public static final int START = 0;
 	public static final int END = 1;
+	public static final int TOTAL_RELATION = Relation.values().length; 
 	
-	public static final int TOPIC = -3;
-	public static final int PADDING = -2;
-	public static final int ELSE = -1;
-	public static final int IsA = 0;
-	public static final int PartOf = 1;
-	public static final int HasProperty = 2;
-	public static final int UsedFor = 3;
-	public static final int CapableOf = 4;
-	public static final int AtLocation = 5;
-	public static final int Causes = 6;
-	public static final int HasSubevent = 7;
-	public static final int HasFirstSubevent = 8;
-	public static final int RelatedTo = 9;
-	public static final int HasPrerequisite = 10;
-	public static final int CreatedBy  = 11;
-	public static final int MotivatedByGoal = 12;
-	public static final int Desires = 13;
-	public static final int MadeOf = 14;
+	private int index;
+	private String str;
+	int startWordType,endWordType;
 	
-	
-	private final static String[] relation = {"/r/IsA","/r/PartOf","/r/HasProperty","/r/UsedFor","/r/CapableOf",
-								 "/r/AtLocation","/r/Cause","/s/HasSubevent","/r/HasFirstSubevent",
-								 "/r/RelatedTo","/r/HasPrerequisite","/r/CreatedBy","/r/MotivatedByGoal",
-								 "/r/Desires","/r/MadeOf"};
-	public static final int TOTAL_RELATION = relation.length;
-	
-	/**
-	 * 將relarion轉換成對應的數字，被排除的relation會回傳-1
-	 * // TODO 新增Exception
-	 * @param relation
-	 * @return 
-	 */
-	public static int getRelationID(String relation){
-		for ( int i = 0 ; i < TOTAL_RELATION ;i++){
-			if (relation.equals(Relation.relation[i]))
-				return i;
-		}
+	private Relation(int index, String str, String startWordType, String endWordType) {
+		this.index = index;
+		this.str = str;
 		
-		return -1;
+		this.startWordType = ChineseWord.convertWordType(startWordType);
+		this.endWordType =  ChineseWord.convertWordType(endWordType);
 	}
 	
-	public static String getRelation(int id){
-		return relation[id];
+	public int getIndex(){
+		return this.index;
 	}
 	
+	public String toString(){
+		return this.str;
+	}
+	
+	public static int getWordType(Relation relation,int startOrEnd){
+		if (startOrEnd == START){
+			return relation.startWordType;
+		}
+		else if (startOrEnd == END){
+			return relation.endWordType;
+		}
+		else{
+			System.err.println("error : the second parameter can either be 0 (START) or 1 (END)");
+			System.exit(1);
+			return -1;
+		}
+	}
+	
+	static public Relation getRelation(String str) throws RelationConvertException{
+		for (Relation relation : Relation.values()){
+			if ( relation.toString().equals(str))
+				return relation;
+		}
+		throw new RelationConvertException(str);
+	}
+	
+	static public Relation getRelation(int index) throws RelationConvertException{
+		for (Relation relation : Relation.values()){
+			if ( relation.getIndex() == index)
+				return relation;
+		}
+		throw new RelationConvertException(index);
+	}
 }

@@ -1,8 +1,6 @@
 package ai.net;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -21,6 +19,7 @@ import com.memetix.mst.language.Language;
 import com.memetix.mst.translate.Translate;
 
 import ai.exception.BopomofoException;
+import ai.exception.RelationConvertException;
 import ai.word.ChineseWord;
 import ai.word.Relation;
 
@@ -28,7 +27,6 @@ public class ConceptNetCrawler {
 	
 	private static final int LIMIT = 9999;
 	private static final int MAX_TRANSLATION = 1000;
-	
 	
 	private String topic;
 	
@@ -45,27 +43,38 @@ public class ConceptNetCrawler {
 	 * 
 	 * 	處理json的library要另外去下載，請參考 http://www.ewdna.com/2008/10/jsonjar.html
 	 */
-	public ChineseWord[] getWordList_ChineseSource(){
-		ChineseWord[] tempWordList = new ChineseWord[LIMIT];
-		int wordType,count = 0, relationID;
-		HashMap<String, Boolean> isRecorded = new HashMap<String,Boolean>();
+	public ChineseWord[] getWordList_ChineseSource() {
 		try {
-			String word;
-			int startOrEnd;
-			//String url = new String("http://conceptnet5.media.mit.edu/data/5.3/c/zh/"+URLEncoder.encode(topic,"UTF-8")+"?limit="+limit);
-			JSONObject obj, jsonObj;
-			
 			String url = new String("http://conceptnet5.media.mit.edu/data/5.2/search?limit="+LIMIT+"&nodes=/c/zh_TW/"+URLEncoder.encode(topic,"UTF-8"));
 			System.out.println(url);
-			obj = readJsonFromURL(url);
-			
-			try {
-				JSONArray array = obj.getJSONArray("edges");
-				for (int i=0; i<array.length(); i++){
-					jsonObj  = ((JSONObject)array.getJSONObject(i));
-					relationID = Relation.getRelationID(jsonObj.getString("rel"));
+			JSONObject obj = readJsonFromURL(url);
+			return getWordList_ChineseSource(obj);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		return null;
+	}
+	public ChineseWord[] getWordList_ChineseSource(JSONObject obj){
+		ChineseWord[] tempWordList = new ChineseWord[LIMIT];
+		int wordType,count = 0;
+		Relation relation;
+		HashMap<String, Boolean> isRecorded = new HashMap<String,Boolean>();
+		String word;
+		int startOrEnd;
+				
+		try {
+			JSONArray array = obj.getJSONArray("edges");
+			for (int i=0; i<array.length(); i++){
+				JSONObject jsonObj  = ((JSONObject)array.getJSONObject(i));
+				try {
+					relation = Relation.getRelation(jsonObj.getString("rel"));
 					String startWord = jsonObj.getString("start").split("/")[3];
 					String endWord = jsonObj.getString("end").split("/")[3];
+					String extraData;
+					/* TODO 修正某些relation*/
+					relation = fixRelation(relation, jsonObj.getString("surfaceText"));
+					
 					if (startWord.equals(topic)){
 						word = endWord;
 						startOrEnd = Relation.END;
@@ -79,15 +88,27 @@ public class ConceptNetCrawler {
 						continue;
 					}
 					
-					if (word.length() <= 3 && relationID != -1){
+					/* TODO 把特定的介係詞加入word尾端*/
+					final String[] detailLocation = {"下","外","裡"};
+					if(relation == Relation.AtLocation){
+						extraData = jsonObj.getString("surfaceText");
+						extraData = extraData.substring(extraData.length()-2, extraData.length()-1);
+						for (String temp : detailLocation){
+							if (extraData.equals(temp) && !word.substring(word.length()-1, word.length()).equals(temp)){
+								word = word+temp;
+							}
+						}
+					}
+					
+					if (word.length() <= 3){
 						if (!isRecorded.containsKey(word)){
-							isRecorded.put(word, true);
-							wordType = getWordType(jsonObj.getString("rel"),startOrEnd);
+								isRecorded.put(word, true);
+							wordType = Relation.getWordType(relation,startOrEnd);
 							try {
-								tempWordList[count] =  new ChineseWord(word, BopomofoCrawler.getBopomofo(word), wordType, relationID, startOrEnd);
+								tempWordList[count] =  new ChineseWord(word, BopomofoCrawler.getBopomofo(word), wordType, relation, startOrEnd);
 								count += 1;
 							} catch (BopomofoException e) {
-								System.err.println(e.getMessage());
+									System.err.println(e.getMessage());
 								continue;	
 							}
 						}
@@ -95,16 +116,60 @@ public class ConceptNetCrawler {
 							//System.out.println(word + " 已經出現過");
 						}
 					}
+					
+				} catch (RelationConvertException e1) {
+					System.err.println(e1.getMessage());
+					continue;
 				}
-			} catch (JSONException e1) {
-				e1.printStackTrace();
+				
 			}
-			
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+		} catch (JSONException e1) {
+			e1.printStackTrace();
 		}
-		
 		return Arrays.copyOf(tempWordList, count);
+	}
+	
+	private Relation fixRelation(Relation relation,String surfaceText) {
+		//NotDesire 較特殊
+		final String[] negativeDesire = {"不想要","痛恨","懼怕"};
+		
+		final String[] detailCauses = {"所以","帶來","引起","讓你"};
+		final String[] detailCapableOf = {"會"};
+		final String[] detailHasSubevent = {"代表","可以"};
+		HashMap<Relation, String[]> detailData = new HashMap<Relation, String[]>();
+		
+		detailData.put(Relation.Causes, detailCauses);
+		detailData.put(Relation.CapableOf, detailCapableOf);
+		detailData.put(Relation.HasSubevent, detailHasSubevent);
+		
+		surfaceText = surfaceText.replaceAll("\\[\\[.*?\\]\\]", "");
+		switch (relation){
+		case Desires:
+			for (String temp : negativeDesire){
+				if (surfaceText.indexOf(temp) != -1){
+					return Relation.NotDesires;
+				}
+			}
+			return relation;
+		
+		case Causes:
+		case CapableOf :
+		case HasSubevent :
+			String[] keywords = detailData.get(relation);
+			for (int i = 0 ; i < keywords.length ; i++){
+				if (surfaceText.indexOf(keywords[i]) != -1){
+					try {
+						return Relation.getRelation(relation.toString()+i);
+					} catch (RelationConvertException e) {
+						e.printStackTrace();
+						System.exit(1);
+					}
+				}
+			}
+			return relation;
+		default:
+			return relation;
+		}
 	}
 	
 	/**
@@ -145,40 +210,48 @@ public class ConceptNetCrawler {
 			
 			for (int i=0; i<array.length(); i++){
 				JSONObject jsonObj  = ((JSONObject)array.getJSONObject(i));
-				String word;
-				int startOrEnd;
-				int relationID = Relation.getRelationID(jsonObj.getString("rel"));
-				int wordType;
-				String startWord = jsonObj.get("start").toString().substring(6);
-				String endWord = jsonObj.getString("end").toString().substring(6);
 				
-				startWord = startWord.replace('_', ' ');
-				endWord = endWord.replace('_', ' ');
-				if (startWord.equals(englishTopic)){
-					word = endWord;
-					startOrEnd = Relation.END;
-				}
-				else if (endWord.equals(englishTopic)){
-					word = startWord;
-					startOrEnd = Relation.START;
-				}
-				else{
-					//System.err.println("warning : ConceptNet gives a json object without corresponding start wrod / end word ( "+startWord+" , "+endWord+" )");
-					continue;
-				}
-				wordType = getWordType(jsonObj.getString("rel"),startOrEnd);
-				
-				if (word.split(" ").length <= 3 && relationID != -1){
-					if (!isRecorded.containsKey(word)){
-						isRecorded.put(word, true);
-						englishInput[countTranlation] = word;
-						semiWordData[countTranlation] = new SemiChineseWord(wordType, relationID, startOrEnd);
-						countTranlation += 1;
+				try {
+					String word;
+					int startOrEnd;
+					Relation relation = Relation.getRelation(jsonObj.getString("rel"));
+					int wordType;
+					String startWord = jsonObj.get("start").toString().substring(6);
+					String endWord = jsonObj.getString("end").toString().substring(6);
+					
+					startWord = startWord.replace('_', ' ');
+					endWord = endWord.replace('_', ' ');
+					if (startWord.equals(englishTopic)){
+						word = endWord;
+						startOrEnd = Relation.END;
+					}
+					else if (endWord.equals(englishTopic)){
+						word = startWord;
+						startOrEnd = Relation.START;
 					}
 					else{
-						//System.out.println(word + " 已經出現過");
+						//System.err.println("warning : ConceptNet gives a json object without corresponding start wrod / end word ( "+startWord+" , "+endWord+" )");
+						continue;
 					}
-				}		
+					wordType = Relation.getWordType(relation,startOrEnd);
+					
+					if (word.split(" ").length <= 3){
+						if (!isRecorded.containsKey(word)){
+							isRecorded.put(word, true);
+							englishInput[countTranlation] = word;
+							semiWordData[countTranlation] = new SemiChineseWord(wordType, relation, startOrEnd);
+							countTranlation += 1;
+						}
+						else{
+							//System.out.println(word + " 已經出現過");
+						}
+					}	
+				} catch (RelationConvertException e) {
+					System.err.println(e.getMessage());
+					//e.printStackTrace();
+					continue;
+				}
+					
 			}
 			
 			/*限制一次翻譯詞語數上限，避免太快把每個月的翻譯配額用完*/
@@ -190,8 +263,10 @@ public class ConceptNetCrawler {
 			final int slice = 200;
 			try {
 				int offset = countTranlation % slice;
-				tmp = Translate.execute(Arrays.copyOf(englishInput, offset),Language.ENGLISH,Language.CHINESE_TRADITIONAL);
-				System.arraycopy(tmp, 0, chineseOutput, 0, offset);
+				if (offset > 0){
+					tmp = Translate.execute(Arrays.copyOf(englishInput, offset),Language.ENGLISH,Language.CHINESE_TRADITIONAL);
+					System.arraycopy(tmp, 0, chineseOutput, 0, offset);
+				}
 				for (int i = offset ; i < countTranlation ; i += slice){
 					tmp = Translate.execute(Arrays.copyOfRange(englishInput, i, i+slice), Language.ENGLISH,Language.CHINESE_TRADITIONAL);
 					System.arraycopy(tmp, 0, chineseOutput, i, slice);
@@ -210,7 +285,7 @@ public class ConceptNetCrawler {
 				if (!isRecorded.containsKey(word)){
 					try {
 						SemiChineseWord data = semiWordData[i];
-						tempWordList[count] =  new ChineseWord(word, BopomofoCrawler.getBopomofo(word), data.wordType, data.relationID, data.startOrEnd);
+						tempWordList[count] =  new ChineseWord(word, BopomofoCrawler.getBopomofo(word), data.wordType, data.relation, data.startOrEnd);
 						count += 1;
 					} catch (BopomofoException e) {
 						System.err.println(e.getMessage());
@@ -251,14 +326,6 @@ public class ConceptNetCrawler {
 			} catch (JSONException e1) {
 				e1.printStackTrace();
 			}
-			try {
-				FileOutputStream fout = new FileOutputStream("json.txt");
-				BufferedOutputStream bufferFout = new BufferedOutputStream(fout);
-				bufferFout.write(jsonStr.getBytes());
-				fout.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -275,56 +342,16 @@ public class ConceptNetCrawler {
 	}
 	
 	/**
-	 * 	利用relation推測詞的詞性
-	 * 	@param relation: concept net 上定義的 relation
-	 *  @param startOrEnd: 詞是在 start 還是 end
-	 *  @return 一個代表詞性的數字，參見ai.word.ChineseWord (int)
-	 *  
-	 *  如果遇到未知的 relation 則會回傳 0，表示沒有任何詞性
-	 */
-	private static int getWordType(String relation, int startOrEnd){
-		final String[] rel = new String[] {"/r/RelatedTo","/r/IsA","/r/PartOf","/r/HasA","/r/UsedFor","/r/CapableOf","/r/AtLocation","/r/Causes","/r/HasSubevent","/r/HasFirstSubevent","/r/HasPrerequisite","/r/HasProperty","/r/MotivatedByGoal","/r/Desires","/r/CreatedBy","/r/Synonym","/r/Antonym","/r/DerivedFrom","/r/MadeOf"};
-		final String[] start = new String[] {"名形動","名","名","名","名","名","名","名動","動","動","動","名","動","名","名","名","名","名","名"};
-		final String[] end = new String[] {"名形動","名","名","名","動","動","名","形動","動","動","動","形","名形動","名動","名","名","名","名","名"};
-		int wordType = 0;
-		String[] type = start;
-		
-		if (startOrEnd == Relation.START) // start : 0
-			type = start;
-		else if (startOrEnd == Relation.END) // end : 1
-			type = end;
-		else {
-			return 0;
-		}
-		for (int i = 0 ; i < rel.length ; i++){
-			if (relation.equals(rel[i])){
-				if (type[i].indexOf("名") != -1){
-					wordType += ChineseWord.NOUN;
-				}
-				if (type[i].indexOf("形") != -1){
-					wordType += ChineseWord.ADJ;	
-				}
-				if (type[i].indexOf("動") != -1){
-					wordType += ChineseWord.VERB;
-				}
-				break;
-			}
-		}
-		
-		return wordType;
-	}
-	
-	/**
 	 * 儲存除了 word 和 bopomofo 以外其他 ChineseWord的必要元素
 	 */
 	private class SemiChineseWord{
 		int wordType;
-		int relationID;
+		Relation relation;
 		int startOrEnd;
 		
-		public SemiChineseWord(int wordType, int relationID, int startOrEnd) {
+		public SemiChineseWord(int wordType, Relation relation, int startOrEnd) {
 			this.wordType = wordType;
-			this.relationID = relationID;
+			this.relation = relation;
 			this.startOrEnd = startOrEnd;
 		}
 	}

@@ -1,39 +1,48 @@
 package ai.exception;
 
-import ai.sentence.MakeSentence;
-
 public class MakeSentenceException extends Exception{
 	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -5622193619489341012L;
-	String type;
-	public MakeSentenceException(int sentenceType) {
-		// TODO 補齊句型
-		switch (sentenceType) {
-		case MakeSentence.sentenceType0:
-			type = "/r/HasProperty + 的 + /r/IsA";
-			break;
-		case MakeSentence.sentenceType1:
-			type = "在 + /r/AtLocation + /r/CapableOf";
-			break;
-		case MakeSentence.sentenceType2:
-			type = "TOPIC + 會/想 + /r/CapableOf";
-			break;
-		case MakeSentence.sentenceType3:
-			type = "TOPIC + 是 + /r/IsA";
-			break;
-		case MakeSentence.sentenceType4:
-			type = "可以 + /r/CapableOf";
-			break;
-		default:
-			type="任何句型";
-			break;
+	String message;
+	
+	public MakeSentenceException(int[] lineComposition) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("無法用 [");
+		for ( int element : lineComposition){
+			sb.append(" "+String.valueOf(element));
 		}
+		sb.append(" ] 來造句");
+		message = sb.toString();
+	}
+	
+	public MakeSentenceException(String[] sentenceTemplate){
+		StringBuilder sb = new StringBuilder();
+		sb.append("無法造(");
+		for (String str : sentenceTemplate){
+			sb.append(" "+str);
+		}
+		sb.append(" )的句型");
+		message = sb.toString();
+	}
+	
+	public MakeSentenceException(int[] lineComposition,String[] sentenceTemplate) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("無法用 [");
+		for ( int element : lineComposition){
+			sb.append(" "+String.valueOf(element));
+		}
+		sb.append(" ] 來造(");
+		for (String str : sentenceTemplate){
+			sb.append(" "+str);
+		}
+		sb.append(" )的句型");
+		message = sb.toString();
 	}
 	
 	public String getMessage(){
-		return "無法產生 ( "+type+" ) 的句子";
+		return message;
 	}
 }

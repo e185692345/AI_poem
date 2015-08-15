@@ -2,7 +2,6 @@
 *.log
 .project
 .classpath
-
 bin/
 CKIPClient/
 src/ai/net/MicrosoftTranslatorKey.java

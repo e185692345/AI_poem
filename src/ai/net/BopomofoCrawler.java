@@ -69,7 +69,7 @@ public class BopomofoCrawler {
 			}
 		}
 		
-		String[] bopomofoList,letterBopomofo;
+		String[] bopomofoList;
 		bopomofo = bopomofo.replace("ㄦ","　ㄦ");
 		bopomofoList = bopomofo.split("　+");
 		
@@ -91,9 +91,10 @@ public class BopomofoCrawler {
 			}
 		}
 		int offset = word.indexOf(target);
-		letterBopomofo = Arrays.copyOfRange(bopomofoList, offset, offset+target.length());
+		if (offset == -1)
+			throw new BopomofoException(target);
+		return Arrays.copyOfRange(bopomofoList, offset, offset+target.length());
 		
-		return letterBopomofo;
 	}
 	
 	 private static String getHtml(String target){

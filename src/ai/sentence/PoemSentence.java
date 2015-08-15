@@ -5,15 +5,16 @@ import ai.word.ChineseWord;
 public class PoemSentence {
 	
 	private int sentenceType;
+	private int[] lineComposition;
 	private ChineseWord[] words;
+	private int lineCompositionEncode;
 	
-	public PoemSentence(int sentenceType) {
-		this.sentenceType = sentenceType;
-		words = new ChineseWord[0];
-	}
-	
-	public PoemSentence(int sentenceType,ChineseWord[] sentence){
-		words = new ChineseWord[0];
+	public PoemSentence(int sentenceType,ChineseWord[] sentence, int[] lineComposition){
+		this.lineComposition = lineComposition;
+		lineCompositionEncode = 0;
+		for (int element : lineComposition){
+			lineCompositionEncode = lineCompositionEncode*10 + element;
+		}
 		this.setSentence(sentenceType,sentence);
 	}
 	
@@ -23,7 +24,15 @@ public class PoemSentence {
 		this.words = new ChineseWord[sentence.length];
 		for (int i = 0 ; i < sentence.length ; i++){
 			words[i] = sentence[i];
-		}
+		}	
+	}
+	
+	public int getLineCompositionEncode() {
+		return this.lineCompositionEncode;
+	}
+	
+	public int[] getLineComposition(){
+		return this.lineComposition;
 	}
 	
 	public ChineseWord[] getWords() {

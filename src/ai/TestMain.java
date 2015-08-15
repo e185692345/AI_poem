@@ -26,7 +26,7 @@ public class TestMain {
 				wordPile= new WordPile(topic, ChineseWord.NOUN);
 				wordPile.addWords(new JSONObject(MainClass.ReadFile(file)));
 				MakeSentence maker = new MakeSentence(wordPile);
-				for ( int i = 0 ; i < 3 ; i++){
+				for ( int i = 0 ; i < 1 ; i++){
 					new GeneticAlgorithm(8, 5, wordPile, maker).evole();
 				}
 			} catch (JSONException e) {

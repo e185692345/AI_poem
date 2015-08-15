@@ -2,14 +2,14 @@ package ai.word;
 
 public class ChineseWord {
 
-	public static final int PADDING = 8, NOUN = 1, ADJ = 2, VERB = 4, ALL = 7;
+	public static final int SINGLE = 8, NOUN = 1, ADJ = 2, VERB = 4, EMPTY = 0;;
 	
 	private int length;
 	private String word;
 	private char[] bopomofo;
 	private int[] tone;
 	private int wordType;
-	private int relation;
+	private Relation relation;
 	private int startOrEnd;
 	/**
 	 * 	建立一個詞，儲存詞性和每個字的平仄、韻腳
@@ -22,7 +22,7 @@ public class ChineseWord {
 	 * 	用二進位表示詞性需要3bit(van) 某個bit是1就表示具有該詞性 
 	 * 	例如: 詞性 = 5,van = 101, 表示是動詞和名詞
 	 */
-	public ChineseWord(String word, String[] letterBopomofo, int wordType, int relation, int startOrEnd){
+	public ChineseWord(String word, String[] letterBopomofo, int wordType, Relation relation, int startOrEnd){
 		String str;
 		
 		this.length = word.length();
@@ -59,7 +59,7 @@ public class ChineseWord {
 		}
 	}
 	
-	public ChineseWord(String word, char[] bopomofo, int[] tone, int wordType, int length, int relation, int startOrEnd) {
+	public ChineseWord(String word, char[] bopomofo, int[] tone, int wordType, int length, Relation relation, int startOrEnd) {
 		this.bopomofo = bopomofo;
 		this.length = length;
 		this.tone = tone;
@@ -73,7 +73,7 @@ public class ChineseWord {
 		return this.startOrEnd;
 	}
 	
-	public int getRelation(){
+	public Relation getRelation(){
 		return this.relation;
 	}
 	
@@ -137,18 +137,40 @@ public class ChineseWord {
 	public int getWordType() {
 		return wordType;
 	}
+	
+	/**
+	 * 把中文的詞性轉換成數字
+	 * @param wordType 
+	 * @return 
+	 */
+	public static int convertWordType(String wordType){
+		int value = EMPTY;
+		if (wordType.indexOf("名") != -1){
+			value += ChineseWord.NOUN;
+		}
+		if (wordType.indexOf("形") != -1){
+			value += ChineseWord.ADJ;	
+		}
+		if (wordType.indexOf("動") != -1){
+			value += ChineseWord.VERB;
+		}
+		if (wordType.indexOf("單") != -1){
+			value += ChineseWord.SINGLE;
+		}
+		
+		return value;
+	}
+	
 	public static String getReadableWordType(int wordType){
 		String type = new String();
-		if (wordType == 0)
-			return "填充詞";
 		if ((wordType & NOUN )> 0)
 			type += "名";
 		if ((wordType & ADJ )> 0)
 			type += "形";
 		if ((wordType & VERB )> 0)
 			type += "動";
-		if ((wordType & PADDING )> 0)
-			type += "填";
+		if ((wordType & SINGLE )> 0)
+			type += "單";
 		return type;
 	}
 	
