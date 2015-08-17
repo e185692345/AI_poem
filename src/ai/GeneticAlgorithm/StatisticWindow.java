@@ -25,16 +25,16 @@ class StatisticWindow extends JFrame{
 	MyPanel panel;
 	GenerationData dataSet;
 	
-	public StatisticWindow(int countPoint,int[] max, int[] min, int[] average, int[][] detailScore){
+	public StatisticWindow(String title,int countPoint,int[] max, int[] min, int[] average, int[][] detailScore){
 		this.dataSet = new GenerationData(countPoint, max, min, average,detailScore);
 
 		
 		DateFormat sdf = SimpleDateFormat.getDateTimeInstance();
 		Date date = new Date();
-		this.setTitle(sdf.format(date)+" ("+date.getTime()+")");
+		this.setTitle(title+" "+sdf.format(date)+" ("+date.getTime()+")");
 		this.setLayout(null);
 		this.setBounds(0,0,1320,730);
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		
 		panel = new MyPanel();
 		panel.setBackground(Color.WHITE);
@@ -85,6 +85,7 @@ class StatisticWindow extends JFrame{
 			drawScale(g, (minValue*3+maxValue)/4);
 			drawScale(g, (minValue+maxValue)/2);
 			drawScale(g, (minValue+maxValue*3)/4);
+			drawScale(g, dataSet.bestPoemValue);
 			drawScale(g, maxValue);
 
 			if ( maxValue > PoemTemplate.MAX_ANTITHESIS_SCORE)
@@ -162,7 +163,7 @@ class StatisticWindow extends JFrame{
 		private static final int MAX_POINT = 400;
 		private int[] max, min, average;
 		private int[][] detailScore;
-		private int maxValue,minValue;
+		private int maxValue,minValue,bestPoemValue;
 		private int ignorePoint;
 		private int countPoint;
 		public GenerationData(int countPoint,int[] max, int[] min, int[] average, int[][] detailScore){
@@ -197,6 +198,8 @@ class StatisticWindow extends JFrame{
 			}
 			// TODO 因為樣詳細畫出各個fitnessScore，所以把下限拉到0
 			minValue = 0;
+			bestPoemValue = maxValue;
+			maxValue = 600;
 		}
 	}
 }

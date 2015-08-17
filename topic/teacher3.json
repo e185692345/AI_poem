@@ -463,12 +463,6 @@ edges:[
 "rel": "/r/Causes"
 },
 {
-"surfaceText": "[[老師]] 會讓你 [[寫書法]]。",
-"start": "/c/zh_TW/老師",
-"end": "/c/zh_TW/寫書法",
-"rel": "/r/Causes"
-},
-{
 "surfaceText": "[[老師]] 會讓你 [[寫論文]]。",
 "start": "/c/zh_TW/老師",
 "end": "/c/zh_TW/寫論文",
@@ -557,12 +551,6 @@ edges:[
 "rel": "/r/IsA",
 "end": "/c/zh_TW/老師",
 "surfaceText": "[[教授]] 是一種 [[老師]]。"
-},
-{
-"start": "/c/zh_TW/老師",
-"rel": "/r/IsA",
-"end": "/c/zh_TW/稱謂",
-"surfaceText": "[[老師]] 是一種 [[稱謂]]。"
 },
 {
 "start": "/c/zh_TW/學校",

@@ -22,11 +22,14 @@ public enum Relation {
 	  HasSubevent1(14,"/r/HasSubevent1","動","動"),	// S 的時候可以 E
 	HasFirstSubevent(15,"/r/HasFirstSubevent","動","動"),
 	//MotivatedByGoal(16,"/r/MotivatedByGoal","動","名形動"),
-	Desires(17,"/r/Desires","名","名動"),
-	  NotDesires(18,"/r/NotDesires","名","名動"),			// S 不想要/痛恨/懼怕 E
-	MadeOf(19,"/r/MadeOf","名","名"),
-	CausesDesire(20,"/r/CausesDesire","名","動"),
-	SymbolOf(21,"/r/SymbolOf","名","名");
+	  MotivatedByGoal0(17,"/r/MotivatedByGoal0","動","名形動"),
+	  MotivatedByGoal1(18,"/r/MotivatedByGoal1","動","名形動"),
+	  MotivatedByGoal2(19,"/r/MotivatedByGoal2","動","名形動"),
+	Desires(20,"/r/Desires","名","名動"),
+	  NotDesires(21,"/r/NotDesires","名","名動"),			// S 不想要/痛恨/懼怕 E
+	MadeOf(22,"/r/MadeOf","名","名"),
+	CausesDesire(23,"/r/CausesDesire","名","動"),
+	SymbolOf(24,"/r/SymbolOf","名","名");
 	
 	public static final int START = 0;
 	public static final int END = 1;

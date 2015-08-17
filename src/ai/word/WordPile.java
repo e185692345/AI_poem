@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import ai.exception.BopomofoException;
 import ai.exception.RelationConvertException;
 import ai.exception.RelationWordException;
+import ai.exception.TopicWordException;
 import ai.net.BopomofoCrawler;
 
 public class WordPile {
@@ -18,30 +19,53 @@ public class WordPile {
 	/* relationPile 把詞依照 relation 分類。第一層 index 依照 relation 分類，
 	 * 第二層 index 依照詞是在 star/end 分類，第三層 index 依照詞的長度分類  */
 	private ArrayList<ArrayList<ArrayList<ArrayList<ChineseWord>>>>  relationPile = new ArrayList<ArrayList<ArrayList<ArrayList<ChineseWord>>>>();
+	private ArrayList<ArrayList<ChineseWord>> topicWord = new ArrayList<ArrayList<ChineseWord>>();
 	private ArrayList<ChineseWord[]> wordListPile;
-	private int totalWord;
+	private int totalWordCount;
 	private ChineseWord topic;
+	private int topicWordType;
 	private Random rand = new Random();
 	private HashMap<String, Boolean> isRecord;
 	
 	public WordPile(String topic, int wordType) {
 		initLsit();
 		wordListPile = new ArrayList<ChineseWord[]>();
-		totalWord = 0;
+		totalWordCount = 0;
 		isRecord = new HashMap<String, Boolean>();
 		SetTopic(topic, wordType);
 	}
 	private void SetTopic(String topic, int wordType){
 		try {
+			this.topicWordType = wordType;
 			this.topic = new ChineseWord(topic, BopomofoCrawler.getBopomofo(topic), wordType, Relation.TOPIC,Relation.START);
+			topicWord.get(this.topic.getLength()).add(this.topic);
 		} catch (BopomofoException e) {
-			this.topic = null;
 			e.printStackTrace();
+			System.exit(1);
 		}
 	}
 	
 	public ChineseWord getTopic(){
 		return topic;
+	}
+	
+	public ChineseWord getTopicWord(int length) throws TopicWordException{
+		if (length > 3 || topicWord.get(length).isEmpty()){
+			throw new TopicWordException(length);
+		}
+		else{
+			int index = rand.nextInt(topicWord.get(length).size());
+			return topicWord.get(length).get(index);
+		}
+	}
+	
+	public void addTopicWord(String topic){
+		try {
+			ChineseWord word = new ChineseWord(topic, BopomofoCrawler.getBopomofo(topic), topicWordType, Relation.TOPIC,Relation.START);
+			topicWord.get(word.getLength()).add(word);
+		} catch (BopomofoException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void AddWords(ChineseWord[] wordList){
@@ -51,10 +75,10 @@ public class WordPile {
 			if(!isRecord.containsKey(word.getWord())){
 				isRecord.put(word.getWord(), true);
 				relationPile.get(word.getRelation().getIndex()).get(word.getStartOrEnd()).get(word.getLength()).add(word);
-				totalWord += 1;
+				totalWordCount += 1;
 			}
 		}
-		System.out.printf("詞庫中新增了 %d 個詞 ， 目前共有 %d 個詞\n",wordList.length,totalWord);
+		System.out.printf("詞庫中新增了 %d 個詞 ， 目前共有 %d 個詞\n",wordList.length,totalWordCount);
 	}
 	
 	public void addWords(JSONObject json){
@@ -83,6 +107,10 @@ public class WordPile {
 		AddWords(wordList);
 	}
 	
+	public int getTotalWordCount() {
+		return totalWordCount;
+	}
+	
 	/**
 	 * nounWord 儲存名詞，第 i 個 list 儲存長度是 i+1 的詞
 	 * adjWord 是名詞，verbWord 存動詞，結構和 nounWord 相同
@@ -104,9 +132,10 @@ public class WordPile {
 			relationPile.get(i).get(1).add(new ArrayList<ChineseWord>());
 			relationPile.get(i).get(1).add(new ArrayList<ChineseWord>());
 			relationPile.get(i).get(1).add(new ArrayList<ChineseWord>());
-			relationPile.get(i).get(1).add(new ArrayList<ChineseWord>());
-			
+			relationPile.get(i).get(1).add(new ArrayList<ChineseWord>());	
 		}
+		for (int i = 0 ; i <= 3 ; i++)
+			topicWord.add(new ArrayList<ChineseWord>());
 	}
 	
 	private int[] getTone(JSONArray arr){
@@ -136,7 +165,7 @@ public class WordPile {
 		}
 		
 		try {
-			json.put("totalWord", totalWord);
+			json.put("totalWord", totalWordCount);
 			json.put("wordPile",arr);
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -170,7 +199,7 @@ public class WordPile {
 	
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
-		sb.append(String.format("詞庫中共有 %d 個詞\n",totalWord));
+		sb.append(String.format("詞庫中共有 %d 個詞\n",totalWordCount));
 		for (int i = 0 ; i < Relation.TOTAL_RELATION ; i++){
 			try {
 				sb.append(Relation.getRelation(i).toString()+"\n");

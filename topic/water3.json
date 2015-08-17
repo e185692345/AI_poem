@@ -68,12 +68,6 @@ edges:[
 },
 {
 "start": "/c/zh_TW/水",
-"surfaceText": "[[水]] 在 [[馬桶]]裡。",
-"rel": "/r/AtLocation",
-"end": "/c/zh_TW/馬桶"
-},
-{
-"start": "/c/zh_TW/水",
 "surfaceText": "[[魚池]] 有 [[水]]。",
 "rel": "/r/AtLocation",
 "end": "/c/zh_TW/魚池"
@@ -122,9 +116,9 @@ edges:[
 },
 {
 "start": "/c/zh_TW/水",
-"surfaceText": "[[先洗手]] 的時候可能會用到 [[水]]。",
+"surfaceText": "[[洗手]] 的時候可能會用到 [[水]]。",
 "rel": "/r/UsedFor",
-"end": "/c/zh_TW/先洗手"
+"end": "/c/zh_TW/洗手"
 },
 {
 "start": "/c/zh_TW/水",
@@ -254,21 +248,9 @@ edges:[
 },
 {
 "start": "/c/zh_TW/水",
-"end": "/c/zh_TW/沖馬桶",
-"surfaceText": "[[沖馬桶]] 的時候可能會用到 [[水]]。",
-"rel": "/r/UsedFor"
-},
-{
-"start": "/c/zh_TW/水",
 "rel": "/r/AtLocation",
 "end": "/c/zh_TW/馬桶裡",
 "surfaceText": "[[馬桶裡]] 有 [[水]]。"
-},
-{
-"start": "/c/zh_TW/水",
-"rel": "/r/CapableOf",
-"end": "/c/zh_TW/洗米",
-"surfaceText": "[[水]] 能做的事情有 [[洗米]]。"
 },
 {
 "start": "/c/zh_TW/水",
@@ -317,12 +299,6 @@ edges:[
 "rel": "/r/SymbolOf",
 "end": "/c/zh_TW/溶劑",
 "surfaceText": "[[水]] 代表 [[溶劑]]。"
-},
-{
-"start": "/c/zh_TW/水",
-"rel": "/r/UsedFor",
-"end": "/c/zh_TW/先洗米",
-"surfaceText": "[[先洗米]] 的時候可能會用到 [[水]]。"
 },
 {
 "start": "/c/zh_TW/水",
@@ -379,9 +355,9 @@ edges:[
 "rel": "/r/CapableOf"
 },
 {
-"surfaceText": "[[水]] 是 [[會折射]] 的。",
+"surfaceText": "[[水]] 是 會[[折射]] 的。",
 "start": "/c/zh_TW/水",
-"end": "/c/zh_TW/會折射",
+"end": "/c/zh_TW/折射",
 "rel": "/r/HasProperty"
 },
 {

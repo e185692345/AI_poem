@@ -55,12 +55,6 @@ edges:[
 "end": "/c/zh_TW/錢"
 },
 {
-"rel": "/r/PartOf",
-"start": "/c/zh_TW/錢",
-"surfaceText": "[[錢]] 是 [[萬能]] 的一部分。",
-"end": "/c/zh_TW/萬能"
-},
-{
 "rel": "/r/UsedFor",
 "start": "/c/zh_TW/錢",
 "surfaceText": "[[看電影]] 的時候可能會用到 [[錢]]。",
@@ -397,12 +391,6 @@ edges:[
 "rel": "/r/MadeOf"
 },
 {
-"surfaceText": "[[錢]] 可以用 [[紙類]] 製成。",
-"start": "/c/zh_TW/錢",
-"end": "/c/zh_TW/紙類",
-"rel": "/r/MadeOf"
-},
-{
 "surfaceText": "想要有 [[錢]] 應該要 [[少花錢]]。",
 "start": "/c/zh_TW/少花錢",
 "end": "/c/zh_TW/錢",
@@ -421,9 +409,9 @@ edges:[
 "rel": "/r/MotivatedByGoal"
 },
 {
-"surfaceText": "[[錢]] 的時候可能會用到 [[吃飯]]。",
-"start": "/c/zh_TW/吃飯",
-"end": "/c/zh_TW/錢",
+"surfaceText": " [[買飯]]的時候可能會用到[[錢]] 。",
+"start": "/c/zh_TW/錢",
+"end": "/c/zh_TW/買飯",
 "rel": "/r/UsedFor"
 },
 {

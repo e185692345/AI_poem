@@ -3,14 +3,15 @@ package ai.sentence;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Random;
 
-import ai.TempMain;
+import ai.GeneticAlgorithm.MyRandom;
 import ai.exception.MakeSentenceException;
 import ai.exception.RelationConvertException;
 import ai.exception.RelationWordException;
+import ai.exception.TopicWordException;
 import ai.word.ChineseWord;
 import ai.word.Relation;
 import ai.word.WordPile;
@@ -19,12 +20,14 @@ public class MakeSentence {
 	private final static String paddingWordFile = "paddingWord.data";
 	private final static String sentenceTypeFile = "sentenceType.data";
 	
-	private Random rand = new Random();
+	private MyRandom rand = new MyRandom();
 	private WordPile wordPile;
 	/*第一層: 第幾個句型, 第二層:第幾個element*/
 	private String[][] sentenceTemplate;
 	private int countType = 0;
 	private HashMap<String, ChineseWord> paddingWordList = new HashMap<String, ChineseWord>();
+	private ArrayList<Integer> availabelSentenceTemplate;
+	private int[] statistic;
 	/**
 	 * 從 paddingWordFile 和 sentenceTypeFile 分別載入
 	 * @param wordPile
@@ -35,12 +38,43 @@ public class MakeSentence {
 		this.wordPile = wordPile;
 		loadSentenceTypeFile();
 		loadPaddingWordFile();
+		getAvailableSentenceTemplate();
+		/*for (int i = 0 ; i < countType ; i++){
+			if (availabelSentenceTemplate.contains(i))
+				continue;
+			System.out.println(getPrintableTemoplate(i));
+		}*/
+	}
+	
+	private void getAvailableSentenceTemplate(){
+		availabelSentenceTemplate = new ArrayList<>();
+		for (int i = 0 ; i < countType ; i++){
+			HashMap<String,Boolean> countSentence = new HashMap<String,Boolean>();
+			int count = 0;
+			for (int j = 0 ; j < 100 ; j++){
+				String sentence;
+				try {
+					sentence = this.makeSentence(i).toString();
+					if ( !countSentence.containsKey(sentence)){
+						countSentence.put(sentence, true);
+						count += 1;
+					}
+				} catch (MakeSentenceException e) {
+					break;
+				}
+			}
+			if (count > 0){
+				availabelSentenceTemplate.add(i);
+			}
+		}
+		
 	}
 	
 	private void loadSentenceTypeFile(){
 		try {
 			countType = getFileLines(sentenceTypeFile);
 			System.out.println("總共有 "+countType+" 個句型模板");
+			statistic = new int[countType];
 			BufferedReader bufRead = new BufferedReader(new FileReader(sentenceTypeFile));
 			
 			sentenceTemplate = new String[countType][];
@@ -63,8 +97,8 @@ public class MakeSentence {
 			}
 			bufRead.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			System.exit(1);
 		}
 		return count;
 	}
@@ -104,8 +138,10 @@ public class MakeSentence {
 			String element = sentenceTemplate[type][k];
 			/*填入主題*/
 			if (element.equals(TOPIC)){
-				words[k] = wordPile.getTopic();
-				if ( composition[k] != words[k].getLength()){
+				try {
+					words[k] = wordPile.getTopicWord(composition[k]);
+				} catch (TopicWordException e) {
+					//System.err.println(e.getMessage());
 					isDone = false;
 					break;
 				}
@@ -153,13 +189,12 @@ public class MakeSentence {
 			}
 		}
 		if (isDone){
-			int compositionIndex= -1;
 			for (int i = 0 ; i < LineComposition.FIVE_LETTER_COMPOSITION.length ; i++){
 				if (LineComposition.FIVE_LETTER_COMPOSITION[i].equals(composition)){
-					compositionIndex = i;
 					break;
 				}
 			}
+			statistic[type] += 1;
 			return new PoemSentence(type,words,composition);
 		}
 		else
@@ -167,10 +202,10 @@ public class MakeSentence {
 	}
 	
 	public PoemSentence makeSentence(int[] composition) throws MakeSentenceException{
-		int index = rand.nextInt(countType);
 		
-		for (int i = 0 ; i < countType ; i++){
-			int type = (index+i)%countType;
+		ArrayList<Integer> copyAvailableSentenceTemplate = new ArrayList<>(availabelSentenceTemplate);
+		while(!copyAvailableSentenceTemplate.isEmpty()){
+			int type = (int)rand.getRandomObject(copyAvailableSentenceTemplate);
 			if ( sentenceTemplate[type].length != composition.length)
 				continue;
 			try {
@@ -183,11 +218,10 @@ public class MakeSentence {
 	}
 	
 	public PoemSentence makeSentence(int type) throws MakeSentenceException{
-		int length = LineComposition.FIVE_LETTER_COMPOSITION.length;
-		int index = rand.nextInt(length);
+		ArrayList<int[]> compositionList = new ArrayList<>(Arrays.asList(LineComposition.FIVE_LETTER_COMPOSITION));
 		
-		for (int i = 0 ; i < length; i++){
-			int[] composition = LineComposition.FIVE_LETTER_COMPOSITION[(index+i)%length];
+		while(!compositionList.isEmpty()){
+			int[] composition =(int[]) rand.getRandomObject(compositionList);
 			if ( sentenceTemplate[type].length != composition.length)
 				continue;
 			try {
@@ -219,7 +253,7 @@ public class MakeSentence {
 		}
 		else{
 			// TODO 事先檢查檔案格式
-			throw new Exception(word+"沒有出現在 "+paddingWordFile+" 裡面");
+			throw new Exception("\""+word+"\" 沒有出現在 "+paddingWordFile+" 裡面");
 		}
 	}
 	
@@ -229,5 +263,20 @@ public class MakeSentence {
 		else {
 			throw new Exception("沒有 \""+word+"\" 這個paddingWord");
 		}
+	}
+	
+	public void printStatistic() {
+		for (int i = 0 ; i < countType ; i++){
+			if (!availabelSentenceTemplate.contains(i))
+				continue;
+			System.out.println(getPrintableTemoplate(i)+" : "+statistic[i]);
+		}
+	}
+	
+	public String getPrintableTemoplate(int index){
+		StringBuilder sb = new StringBuilder();
+		for (String str : sentenceTemplate[index])
+			sb.append(" "+str);
+		return sb.toString();
 	}
 }

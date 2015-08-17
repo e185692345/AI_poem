@@ -25,7 +25,7 @@ public class MainClass {
 		final int SOURCE = NET_SOURCE;
 		final String fileName = "wordPile.json";
 		/*如果來源是NET_SOURCE則要指定主題*/
-		final String topic = new String("朋友");
+		final String topic = new String("水");
 		/*=====================================*/
 		WordPile wordPile = new WordPile(topic,ChineseWord.NOUN);
 		switch (SOURCE){

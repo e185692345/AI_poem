@@ -157,12 +157,6 @@ edges:[
 "surfaceText": "想要有 [[健康]] 應該要 [[跑步]]。"
 },
 {
-"rel": "/r/MotivatedByGoal",
-"start": "/c/zh_TW/跑步",
-"end": "/c/zh_TW/運動",
-"surfaceText": "[[運動]] 的時候會想要 [[跑步]]。"
-},
-{
 "rel": "/r/UsedFor",
 "start": "/c/zh_TW/足部",
 "end": "/c/zh_TW/跑步",
