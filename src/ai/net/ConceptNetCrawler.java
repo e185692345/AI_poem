@@ -29,9 +29,11 @@ public class ConceptNetCrawler {
 	private static final int MAX_TRANSLATION = 1000;
 	
 	private String topic;
+	private int wordType;
 	
-	public ConceptNetCrawler(String topic) {
+	public ConceptNetCrawler(String topic, int wordType) {
 		this.topic = topic;
+		this.wordType = wordType;
 	}
 	/**
 	 * 	利用concept net的API尋找和某個中文主題相關的詞，並且利用rel來推測詞的詞性
@@ -136,12 +138,14 @@ public class ConceptNetCrawler {
 		final String[] detailCauses = {"所以","帶來","引起","讓你"};
 		final String[] detailCapableOf = {"會"};
 		final String[] detailHasSubevent = {"代表","可以"};
+		final String[] detailMotivatedByGoal = {"因為你","是為了","時候會"};
+		String[] keywords;
 		HashMap<Relation, String[]> detailData = new HashMap<Relation, String[]>();
 		
 		detailData.put(Relation.Causes, detailCauses);
 		detailData.put(Relation.CapableOf, detailCapableOf);
 		detailData.put(Relation.HasSubevent, detailHasSubevent);
-		
+		detailData.put(Relation.MotivatedByGoal, detailMotivatedByGoal);
 		surfaceText = surfaceText.replaceAll("\\[\\[.*?\\]\\]", "");
 		switch (relation){
 		case Desires:
@@ -155,7 +159,7 @@ public class ConceptNetCrawler {
 		case Causes:
 		case CapableOf :
 		case HasSubevent :
-			String[] keywords = detailData.get(relation);
+			keywords = detailData.get(relation);
 			for (int i = 0 ; i < keywords.length ; i++){
 				if (surfaceText.indexOf(keywords[i]) != -1){
 					try {
@@ -167,6 +171,20 @@ public class ConceptNetCrawler {
 				}
 			}
 			return relation;
+		case MotivatedByGoal :
+			keywords = detailData.get(relation);
+			for (int i = 0 ; i < keywords.length ; i++){
+				if (surfaceText.indexOf(keywords[i]) != -1){
+					if (!keywords[i].equals("時候會") || keywords[i].equals("時候會") && (wordType&ChineseWord.VERB) > 0){
+						try {
+							return Relation.getRelation(relation.toString()+i);
+						} catch (RelationConvertException e) {
+							e.printStackTrace();
+							System.exit(1);
+						}
+					}
+				}
+			}
 		default:
 			return relation;
 		}

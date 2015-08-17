@@ -27,7 +27,7 @@ public class TempMain {
 		String file[] ={"computer3","cry3","dog3","food3","friend3","hand3","money3","run3","teacher3","water3"};
 		JSONObject obj = null;
 		
-		for (int k = 0 ; k < topic.length ; k++){
+		for (int k = 9 ; k < 10 ; k++){
 			
 			try {
 				obj = new JSONObject(MainClass.ReadFile("topic/"+file[k]+".json"));
@@ -38,7 +38,7 @@ public class TempMain {
 			WordPile wordPile = new WordPile(topic[k], wordType[k]);
 			for (String str : topicWord[k])
 				wordPile.addTopicWord(str);
-			ConceptNetCrawler wordSource= new ConceptNetCrawler(topic[k]);
+			ConceptNetCrawler wordSource= new ConceptNetCrawler(topic[k],wordType[k]);
 			wordPile.AddWords(wordSource.getWordList_ChineseSource(obj));
 			MakeSentence maker = new MakeSentence(wordPile);
 			new GeneticAlgorithm(8, 5, wordPile, maker).evole();

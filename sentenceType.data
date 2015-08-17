@@ -38,7 +38,7 @@
 (首先要) /r/HasFirstSubevent_END
 (要先) /r/HasFirstSubevent_END
 (你會) /r/HasSubevent_END
-(你會想) /r/HasSubevent_END
+(你將會) /r/HasSubevent_END
 (代表) /r/HasSubevent0_START
 (可以/能夠) /r/HasSubevent1_END
 TOPIC (會) /r/CapableOf0_END
@@ -46,9 +46,9 @@ TOPIC (能) /r/CapableOf_END
 (是為了) /r/MotivatedByGoal1_END
 (目的) (是) /r/MotivatedByGoal1_END
 (為了) /r/MotivatedByGoal1_END
-(會想要) /r/MotivatedByGoal2_END
-(想要/會想) /r/MotivatedByGoal2_END
-/r/MotivatedByGoal2_START (所造成/所引起/所釀成/所導致)
-/r/MotivatedByGoal2_START (造成/引起/釀成/導致)
+(會想要) /r/MotivatedByGoal2_START
+(想要/會想) /r/MotivatedByGoal2_START
+/r/MotivatedByGoal2_END (所造成/所引起/所釀成/所導致)
+/r/MotivatedByGoal2_END (造成/引起/釀成/導致)
 /r/MotivatedByGoal0_END (所造成/所引起/所釀成/所導致)
 /r/MotivatedByGoal0_END (造成/引起/釀成/導致)

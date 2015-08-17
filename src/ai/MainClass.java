@@ -30,7 +30,7 @@ public class MainClass {
 		WordPile wordPile = new WordPile(topic,ChineseWord.NOUN);
 		switch (SOURCE){
 		case NET_SOURCE :
-			ConceptNetCrawler wordSource= new ConceptNetCrawler(topic);
+			ConceptNetCrawler wordSource= new ConceptNetCrawler(topic,ChineseWord.NOUN);
 			wordPile.AddWords(wordSource.getWordList_ChineseSource());
 			// TODO 平常會關閉英文翻譯減少翻譯配額消耗
 			//wordPile.AddWords(wordSource.getWordList_EnlishSource());
