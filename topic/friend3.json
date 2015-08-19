@@ -544,9 +544,9 @@ edges:[
 },
 {
 "start": "/c/zh_TW/朋友",
-"end": "/c/zh_TW/有情",
+"end": "/c/zh_TW/友情",
 "rel": "/r/Desires",
-"surfaceText": "[[朋友]] 想要 [[有情]]。"
+"surfaceText": "[[朋友]] 想要 [[友情]]。"
 },
 {
 "start": "/c/zh_TW/朋友",

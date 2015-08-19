@@ -86,9 +86,9 @@ edges:[
 },
 {
 "start": "/c/zh_TW/老師",
-"surfaceText": "[[教室裏]] 有 [[老師]]。",
+"surfaceText": "[[教室裡]] 有 [[老師]]。",
 "rel": "/r/AtLocation",
-"end": "/c/zh_TW/教室裏"
+"end": "/c/zh_TW/教室裡"
 },
 {
 "start": "/c/zh_TW/老師",

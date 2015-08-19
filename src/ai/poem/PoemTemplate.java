@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
+
 import ai.GeneticAlgorithm.MyRandom;
 import ai.exception.MakeSentenceException;
 import ai.sentence.LineComposition;
@@ -24,21 +26,21 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	public final static int COUNT_FITNESS_TYPE = 4;
 	// ===============================================================
 	public final static int MAX_RHYTHM_SCORE = 100;
-	public final static int MAX_TONE_SCORE = 100;
+	public final static int MAX_TONE_SCORE = 200;
 	public final static int MAX_ANTITHESIS_SCORE = 200;
-	public final static int MAX_DIVERSITY_SCORE = 200;
+	public final static int MAX_DIVERSITY_SCORE = 100;
 	// 設定個分數的最低門檻，不足的項目分數會直接變成1分，確保詩在每個項目都有一定的品質
 	public final static int MIN_RHYTHM_SCORE = 50;
-	public final static int MIN_TONE_SCORE = 51;
-	public final static int MIN_ANTITHESIS_SCORE = 51;
-	public final static int MIN_DIVERSITY_SCORE = 51;
+	public final static int MIN_TONE_SCORE = 50;
+	public final static int MIN_ANTITHESIS_SCORE = 50;
+	public final static int MIN_DIVERSITY_SCORE = 50;
 	
 	private int col, row;
 	private PoemSentence[] poem;
 	private int fitnessScore;
 	private boolean modified;
 	private static MyRandom rand = new MyRandom();
-	private int maxRhythmMatch, maxToneMatch,maxDiversityMatch, maxAntithesisMatch;
+	private int maxRhythmMatch, maxToneMatch, maxAntithesisMatch;
 
 	/**
 	 * 創建一首新的詩，每首詩可以有不同的模板
@@ -68,7 +70,6 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 		}
 		
 		maxAntithesisMatch = col*row/2;
-		maxDiversityMatch = col*row;
 		modified = true;
 	}
 	
@@ -104,6 +105,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
     	    	System.exit(1);
     		}
     	}
+    	
     	return new PoemTemplate(row, col, poem);
     }
     
@@ -174,8 +176,17 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	 */
 	private int getDiversityScore(){
 		final int MAX_WORD_REPEATED_TIME = 2;
-		int countLetter;
 		HashMap<String, Integer> repeatedWord = new HashMap<String, Integer>();
+		HashMap<String, Boolean> repeatedSentence = new HashMap<String,Boolean>();
+		
+		for (PoemSentence sentence : poem){
+			if (repeatedSentence.containsKey(sentence.toString())){
+				return 0;
+			}
+			else{
+				repeatedSentence.put(sentence.toString(), true);
+			}
+		}
 		
 		/*相鄰兩句若是相同的句型，不允許重複出現相同的詞(填充詞除外)*/
 		for (int i = 0 ; i < row ; i += 2){
@@ -189,7 +200,6 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 			}
 		}
 		
-		countLetter = 0;
 		for (int i = 0 ; i < row ; i++){
 			for (int j = 0 ; j < poem[i].getLength() ; j++){
 				String word = poem[i].getWords()[j].getWord();
@@ -203,18 +213,12 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 					}
 				}
 				else{
-					countLetter += word.length();
 					repeatedWord.put(word, 1);
 				}
 			}
 		}
 		
-		if (DEBUG) System.out.printf("出現 %d 次以下的詞共有 %d / %d 個\n",MAX_WORD_REPEATED_TIME,countLetter,maxDiversityMatch);
-		int score = MAX_DIVERSITY_SCORE*countLetter/maxDiversityMatch;
-		if (score < MIN_DIVERSITY_SCORE)
-			return 0;
-		else
-			return score;
+		return MAX_DIVERSITY_SCORE;
 	}
 	/**
 	 * 計算相鄰兩句詞性相同的詞的字數有幾個
@@ -224,11 +228,13 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 		int countAntithesis = 0;
 		for ( int i = 0 ; i < row ; i += 2){
 			for ( int j = 0 ; j < poem[i].getLength() ; j++){
-				if ( (poem[i].getWords()[j].getWordType() & poem[i+1].getWords()[j].getWordType() )> 0)
+				if ( (poem[i].getWords()[j].getWordType() & poem[i+1].getWords()[j].getWordType() )> 0){
 					countAntithesis += poem[i].getWords()[j].getLength();
+					if (DEBUG) System.out.println(poem[i].getWords()[j].getWord()+" = "+poem[i+1].getWords()[j].getWord());
+				}
 			}
 		}
-		if (DEBUG) System.out.printf(">>對偶的詞共有  %d / %d 個\n",countAntithesis,maxAntithesisMatch);
+		if (DEBUG) System.out.printf(">>對偶的字共有  %d / %d 個\n",countAntithesis,maxAntithesisMatch);
 		int score = countAntithesis*MAX_ANTITHESIS_SCORE/maxAntithesisMatch;
 		if (score < MIN_ANTITHESIS_SCORE)
 			return 0;

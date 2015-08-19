@@ -86,6 +86,8 @@ class StatisticWindow extends JFrame{
 			drawScale(g, (minValue+maxValue)/2);
 			drawScale(g, (minValue+maxValue*3)/4);
 			drawScale(g, dataSet.bestPoemValue);
+			drawScale(g, dataSet.max[dataSet.countPoint-1]);
+			drawScale(g, dataSet.average[dataSet.countPoint-1]);
 			drawScale(g, maxValue);
 
 			if ( maxValue > PoemTemplate.MAX_ANTITHESIS_SCORE)

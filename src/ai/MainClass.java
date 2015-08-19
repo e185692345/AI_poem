@@ -22,15 +22,16 @@ public class MainClass {
 		
 		/*=====================================*/
 		/*選擇字詞來源 NET_SOURCE(從conceptnet) 或 FILE_SOURCE(wordPile.json)*/
-		final int SOURCE = NET_SOURCE;
+		final int SOURCE = FILE_SOURCE;
 		final String fileName = "wordPile.json";
 		/*如果來源是NET_SOURCE則要指定主題*/
-		final String topic = new String("水");
+		final String topic = new String("跑步");
+		final int wordType = ChineseWord.VERB;
 		/*=====================================*/
-		WordPile wordPile = new WordPile(topic,ChineseWord.NOUN);
+		WordPile wordPile = new WordPile(topic,wordType);
 		switch (SOURCE){
 		case NET_SOURCE :
-			ConceptNetCrawler wordSource= new ConceptNetCrawler(topic,ChineseWord.NOUN);
+			ConceptNetCrawler wordSource= new ConceptNetCrawler(topic,wordType);
 			wordPile.AddWords(wordSource.getWordList_ChineseSource());
 			// TODO 平常會關閉英文翻譯減少翻譯配額消耗
 			//wordPile.AddWords(wordSource.getWordList_EnlishSource());

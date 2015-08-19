@@ -318,7 +318,7 @@ public class GeneticAlgorithm {
 		int tail,head ;
 		
 		Arrays.sort(population);
-		tail = POPULATION_SIZE/10;
+		tail = 0;
 		head = POPULATION_SIZE - tail;
 		
 		PoemTemplate[] populationCopy = new PoemTemplate[POPULATION_SIZE];

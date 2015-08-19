@@ -27,7 +27,7 @@ public class TempMain {
 		String file[] ={"computer3","cry3","dog3","food3","friend3","hand3","money3","run3","teacher3","water3"};
 		JSONObject obj = null;
 		
-		for (int k = 9 ; k < 10 ; k++){
+		for (int k = 3 ; k < 4 ; k++){
 			
 			try {
 				obj = new JSONObject(MainClass.ReadFile("topic/"+file[k]+".json"));

@@ -367,12 +367,6 @@ edges:[
 "rel": "/r/HasProperty"
 },
 {
-"surfaceText": "[[水]] 由 [[H和O]] 組成。",
-"start": "/c/zh_TW/水",
-"end": "/c/zh_TW/h和o",
-"rel": "/r/MadeOf"
-},
-{
 "surfaceText": "[[雨水]] 的原料是 [[水]]。",
 "start": "/c/zh_TW/雨水",
 "end": "/c/zh_TW/水",

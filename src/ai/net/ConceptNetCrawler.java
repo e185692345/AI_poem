@@ -139,6 +139,7 @@ public class ConceptNetCrawler {
 		final String[] detailCapableOf = {"會"};
 		final String[] detailHasSubevent = {"代表","可以"};
 		final String[] detailMotivatedByGoal = {"因為你","是為了","時候會"};
+		final String[] detailMadeOf = {"組成"};
 		String[] keywords;
 		HashMap<Relation, String[]> detailData = new HashMap<Relation, String[]>();
 		
@@ -146,6 +147,8 @@ public class ConceptNetCrawler {
 		detailData.put(Relation.CapableOf, detailCapableOf);
 		detailData.put(Relation.HasSubevent, detailHasSubevent);
 		detailData.put(Relation.MotivatedByGoal, detailMotivatedByGoal);
+		detailData.put(Relation.MadeOf,detailMadeOf);
+		
 		surfaceText = surfaceText.replaceAll("\\[\\[.*?\\]\\]", "");
 		switch (relation){
 		case Desires:
@@ -159,6 +162,7 @@ public class ConceptNetCrawler {
 		case Causes:
 		case CapableOf :
 		case HasSubevent :
+		case MadeOf :
 			keywords = detailData.get(relation);
 			for (int i = 0 ; i < keywords.length ; i++){
 				if (surfaceText.indexOf(keywords[i]) != -1){

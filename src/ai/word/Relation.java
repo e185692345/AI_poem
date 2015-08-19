@@ -28,8 +28,9 @@ public enum Relation {
 	Desires(20,"/r/Desires","名","名動"),
 	  NotDesires(21,"/r/NotDesires","名","名動"),			// S 不想要/痛恨/懼怕 E
 	MadeOf(22,"/r/MadeOf","名","名"),
-	CausesDesire(23,"/r/CausesDesire","名","動"),
-	SymbolOf(24,"/r/SymbolOf","名","名");
+	  MadeOf0(23,"/r/MadeOf0","名","名"),				// S由E組成
+	CausesDesire(24,"/r/CausesDesire","名","動"),
+	SymbolOf(25,"/r/SymbolOf","名","名");
 	
 	public static final int START = 0;
 	public static final int END = 1;
