@@ -77,8 +77,11 @@ public class WordPile {
 				relationPile.get(word.getRelation().getIndex()).get(word.getStartOrEnd()).get(word.getLength()).add(word);
 				totalWordCount += 1;
 			}
+			else {
+				System.err.println(word.getWord()+"已經出現過了");
+			}
 		}
-		System.out.printf("詞庫中新增了 %d 個詞 ， 目前共有 %d 個詞\n",wordList.length,totalWordCount);
+		System.out.printf("目前共有 %d 個詞\n",totalWordCount);
 	}
 	
 	public void addWords(JSONObject json){
@@ -225,5 +228,43 @@ public class WordPile {
 			}
 		}
 		return sb.toString();
+	}
+	
+	public void printWordPileStatistic(){
+		System.out.println("=== 詞庫統計 ===");
+		System.out.println("詞庫共有"+totalWordCount+"個詞");
+		for (int i = 0 ; i < Relation.TOTAL_RELATION ; i++){
+			try {
+				ArrayList<ArrayList<ChineseWord>> temp;
+				System.out.println(i+". "+Relation.getRelation(i).toString());
+				temp = relationPile.get(i).get(Relation.START);
+				System.out.printf("start : %d %d %d\n",temp.get(1).size(),temp.get(2).size(),temp.get(3).size());
+				temp = relationPile.get(i).get(Relation.END);
+				System.out.printf("start : %d %d %d\n",temp.get(1).size(),temp.get(2).size(),temp.get(3).size());
+				System.out.println();
+			} catch (RelationConvertException e) {
+				e.printStackTrace();
+				System.exit(1);
+			}
+		}
+	}
+	
+	public void printBopomofo(){
+		HashMap<Character, Integer> rhythm = new HashMap<>();
+		for (ChineseWord[] wordList: wordListPile){
+			for (ChineseWord word : wordList){
+				char r = word.getRhythm();
+				if (rhythm.containsKey(r)){
+					rhythm.put(r,rhythm.get(r)+1);
+				}
+				else{
+					rhythm.put(r,1);
+				}
+			}
+		}
+		System.out.println("=== 韻腳統計 ===");
+		for (Character c : rhythm.keySet()){
+			System.out.println(c+" : "+rhythm.get(c));
+		}
 	}
 }

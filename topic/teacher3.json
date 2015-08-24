@@ -752,12 +752,6 @@ edges:[
 },
 {
 "start": "/c/zh_TW/老師",
-"rel": "/r/SymbolOf",
-"end": "/c/zh_TW/前輩",
-"surfaceText": "[[老師]] 代表 [[前輩]]。"
-},
-{
-"start": "/c/zh_TW/老師",
 "rel": "/r/UsedFor",
 "end": "/c/zh_TW/上課",
 "surfaceText": "[[上課]] 的時候可能會用到 [[老師]]。"

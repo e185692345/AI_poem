@@ -34,7 +34,8 @@ public enum Relation {
 	
 	public static final int START = 0;
 	public static final int END = 1;
-	public static final int TOTAL_RELATION = Relation.values().length; 
+	// TODO 要扣掉 <0  的部分
+	public static final int TOTAL_RELATION = Relation.values().length-2; 
 	
 	private int index;
 	private String str;

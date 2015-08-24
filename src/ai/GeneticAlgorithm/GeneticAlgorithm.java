@@ -25,7 +25,7 @@ public class GeneticAlgorithm {
     private static final double MUTATION_RATE = 0.1;
     //終止條件
 	private final int maxGeneration = 200;
-	private final int targetScore = PoemTemplate.MAX_ANTITHESIS_SCORE + PoemTemplate.MAX_DIVERSITY_SCORE + PoemTemplate.MAX_TONE_SCORE + PoemTemplate.MAX_RHYTHM_SCORE;
+	private final int targetScore = 1+PoemTemplate.MAX_ANTITHESIS_SCORE + PoemTemplate.MAX_DIVERSITY_SCORE + PoemTemplate.MAX_TONE_SCORE + PoemTemplate.MAX_RHYTHM_SCORE;
 	//===================================================
 
     

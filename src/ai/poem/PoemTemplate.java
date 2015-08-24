@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-
 import ai.GeneticAlgorithm.MyRandom;
 import ai.exception.MakeSentenceException;
 import ai.sentence.LineComposition;
@@ -25,8 +23,8 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	// TODO 新增分數種類時也要一並更改這個數值
 	public final static int COUNT_FITNESS_TYPE = 4;
 	// ===============================================================
-	public final static int MAX_RHYTHM_SCORE = 100;
-	public final static int MAX_TONE_SCORE = 200;
+	public final static int MAX_RHYTHM_SCORE = 200;
+	public final static int MAX_TONE_SCORE = 100;
 	public final static int MAX_ANTITHESIS_SCORE = 200;
 	public final static int MAX_DIVERSITY_SCORE = 100;
 	// 設定個分數的最低門檻，不足的項目分數會直接變成1分，確保詩在每個項目都有一定的品質
@@ -258,7 +256,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 		
 		/*處理韻腳的平仄*/
 		if (DEBUG) System.out.println("===韻腳平仄===");
-		if (poem[0].getWords()[poem[0].getLength()-1].getRythm() == poem[1].getWords()[poem[1].getLength()-1].getRythm()){
+		if (poem[0].getWords()[poem[0].getLength()-1].getRhythm() == poem[1].getWords()[poem[1].getLength()-1].getRhythm()){
 			if (getToneAt(1*col) == 0){
 				countMatchRhythmTone += 1; /*首句押韻用平聲*/
 				if (DEBUG) System.out.printf("第1句 : 平 (%c,%c)\n",getCharAt(col),getCharAt(2*col));
@@ -391,7 +389,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 		int maxCountSameRhytm = 0;
 		char mostRhythm='?';
 		for (int  i = 1 ; i < row ; i += 2){
-			char rhythm = poem[i].getWords()[poem[i].getLength()-1].getRythm();
+			char rhythm = poem[i].getWords()[poem[i].getLength()-1].getRhythm();
 			int temp;
 			if (recordRhythm.containsKey(rhythm)){
 				temp = recordRhythm.get(rhythm)+1;
@@ -406,7 +404,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 			}
 		}
 		for (int i = 1 ; i < row ; i+= 2){
-			if (DEBUG) System.out.print(" ("+poem[i].getWords()[poem[i].getLength()-1].getWord()+","+poem[i].getWords()[poem[i].getLength()-1].getRythm()+")");
+			if (DEBUG) System.out.print(" ("+poem[i].getWords()[poem[i].getLength()-1].getWord()+","+poem[i].getWords()[poem[i].getLength()-1].getRhythm()+")");
 		}
 		if (DEBUG) System.out.println();
 		if (DEBUG) System.out.printf(">>最多的韻腳是 \"%c\"，共有 %d / %d 個\n",mostRhythm,maxCountSameRhytm,maxRhythmMatch);

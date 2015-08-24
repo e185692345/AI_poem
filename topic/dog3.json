@@ -409,12 +409,6 @@ edges:[
 "rel": "/r/HasProperty"
 },
 {
-"surfaceText": "[[狗]] 有 [[嗅覺]]。",
-"start": "/c/zh_TW/嗅覺",
-"rel": "/r/AtLocation",
-"end": "/c/zh_TW/狗"
-},
-{
 "surfaceText": "[[狗]] 會 [[打呼]]。",
 "start": "/c/zh_TW/狗",
 "rel": "/r/CapableOf",

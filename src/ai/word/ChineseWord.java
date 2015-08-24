@@ -130,7 +130,7 @@ public class ChineseWord {
 	}
 	
 	/*取得韻腳*/
-	public char getRythm(){
+	public char getRhythm(){
 		return bopomofo[length-1];
 	}
 	/*取得詞性*/

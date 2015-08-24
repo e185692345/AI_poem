@@ -27,8 +27,9 @@ public class TempMain {
 		String file[] ={"computer3","cry3","dog3","food3","friend3","hand3","money3","run3","teacher3","water3"};
 		JSONObject obj = null;
 		
-		for (int k = 3 ; k < 4 ; k++){
-			
+		// 調整 for loop 的迴圈範圍可以用不同的主題作詩
+		// 演化趨勢圖片會儲存在 pic/ 資料夾下
+		for (int k = 0 ; k < 10 ; k++){
 			try {
 				obj = new JSONObject(MainClass.ReadFile("topic/"+file[k]+".json"));
 			} catch (JSONException e2) {
@@ -41,6 +42,10 @@ public class TempMain {
 			ConceptNetCrawler wordSource= new ConceptNetCrawler(topic[k],wordType[k]);
 			wordPile.AddWords(wordSource.getWordList_ChineseSource(obj));
 			MakeSentence maker = new MakeSentence(wordPile);
+			System.out.println("主題 : "+topic[k]);
+			wordPile.printWordPileStatistic();
+			//wordPile.printBopomofo();
+			maker.printAvailableSentenceStatistic();
 			new GeneticAlgorithm(8, 5, wordPile, maker).evole();
 		}
 	}

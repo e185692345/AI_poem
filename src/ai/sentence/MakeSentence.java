@@ -27,6 +27,7 @@ public class MakeSentence {
 	private int countType = 0;
 	private HashMap<String, ChineseWord> paddingWordList = new HashMap<String, ChineseWord>();
 	private ArrayList<Integer> availabelSentenceTemplate;
+	private int[] countAvailableSentence;
 	private int[] statistic;
 	/**
 	 * 從 paddingWordFile 和 sentenceTypeFile 分別載入
@@ -39,31 +40,35 @@ public class MakeSentence {
 		loadSentenceTypeFile();
 		loadPaddingWordFile();
 		getAvailableSentenceTemplate();
-		/*for (int i = 0 ; i < countType ; i++){
-			if (availabelSentenceTemplate.contains(i))
-				continue;
-			System.out.println(getPrintableTemoplate(i));
-		}*/
+		
+	}
+	
+	public void printAvailableSentenceStatistic(){
+		System.out.println("=== 句型統計 ===");
+		for (int i = 0 ; i < countType ; i++){
+			if (countAvailableSentence[i] > 0)
+				System.out.println("句型"+i+" : "+countAvailableSentence[i]);
+		}
 	}
 	
 	private void getAvailableSentenceTemplate(){
 		availabelSentenceTemplate = new ArrayList<>();
+		countAvailableSentence = new int[countType];
 		for (int i = 0 ; i < countType ; i++){
 			HashMap<String,Boolean> countSentence = new HashMap<String,Boolean>();
-			int count = 0;
 			for (int j = 0 ; j < 100 ; j++){
 				String sentence;
 				try {
 					sentence = this.makeSentence(i).toString();
 					if ( !countSentence.containsKey(sentence)){
 						countSentence.put(sentence, true);
-						count += 1;
+						countAvailableSentence[i] += 1;
 					}
 				} catch (MakeSentenceException e) {
 					break;
 				}
 			}
-			if (count > 0){
+			if (countAvailableSentence[i] > 0){
 				availabelSentenceTemplate.add(i);
 			}
 		}
@@ -262,14 +267,6 @@ public class MakeSentence {
 			return paddingWordList.get(word);
 		else {
 			throw new Exception("沒有 \""+word+"\" 這個paddingWord");
-		}
-	}
-	
-	public void printStatistic() {
-		for (int i = 0 ; i < countType ; i++){
-			if (!availabelSentenceTemplate.contains(i))
-				continue;
-			System.out.println(getPrintableTemoplate(i)+" : "+statistic[i]);
 		}
 	}
 	

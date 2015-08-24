@@ -128,6 +128,7 @@ public class ConceptNetCrawler {
 		} catch (JSONException e1) {
 			e1.printStackTrace();
 		}
+		System.out.println("從 concpt net 上獲取了 "+count+" 個詞");
 		return Arrays.copyOf(tempWordList, count);
 	}
 	

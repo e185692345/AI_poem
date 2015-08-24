@@ -2,14 +2,19 @@ package ai.GeneticAlgorithm;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 import ai.poem.PoemTemplate;
@@ -31,16 +36,31 @@ class StatisticWindow extends JFrame{
 		
 		DateFormat sdf = SimpleDateFormat.getDateTimeInstance();
 		Date date = new Date();
-		this.setTitle(title+" "+sdf.format(date)+" ("+date.getTime()+")");
+		this.setTitle(title+" "+sdf.format(date));
 		this.setLayout(null);
 		this.setBounds(0,0,1320,730);
-		this.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		//this.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		
 		panel = new MyPanel();
 		panel.setBackground(Color.WHITE);
 		this.add(panel);
 		this.setVisible(true);
+		
+		try {
+			ImageIO.write(getScreenShot(this.getContentPane()),"png",new File("pic/"+title+".png"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
+	
+	private static BufferedImage getScreenShot(Component component) {
+
+	    BufferedImage image = new BufferedImage(component.getWidth(),component.getHeight(),BufferedImage.TYPE_INT_RGB);
+	    component.paint( image.getGraphics() ); // alternately use .printAll(..)
+	    return image;
+	 }
 	
 	private class MyPanel extends JPanel{
 
@@ -84,9 +104,10 @@ class StatisticWindow extends JFrame{
 			drawScale(g, minValue);
 			drawScale(g, (minValue*3+maxValue)/4);
 			drawScale(g, (minValue+maxValue)/2);
-			drawScale(g, (minValue+maxValue*3)/4);
-			drawScale(g, dataSet.bestPoemValue);
+			drawScale(g, (minValue+maxValue*3)/4);		
 			drawScale(g, dataSet.max[dataSet.countPoint-1]);
+			if (dataSet.bestPoemValue > dataSet.max[dataSet.countPoint-1]+10)
+				drawScale(g, dataSet.bestPoemValue);
 			drawScale(g, dataSet.average[dataSet.countPoint-1]);
 			drawScale(g, maxValue);
 
@@ -109,15 +130,15 @@ class StatisticWindow extends JFrame{
 			
 			((Graphics2D)g).setStroke(new BasicStroke(3));
 
-			drawLine(g, dataSet.max,Color.red);
-			drawLine(g, dataSet.average,new Color(0xAA, 0x00, 0xAA));
+			drawLine(g,"Maximum",dataSet.max,Color.red);
+			drawLine(g,"Average",dataSet.average,new Color(0xAA, 0x00, 0xAA));
 			// TODO 不畫下限，避免畫面雜亂
 			//drawLine(g, dataSet.min, Color.pink);
 			Color[] color = {Color.blue,Color.orange,Color.green,Color.gray};
-			String[] label = {"  押韻","  平仄","  對仗","  多樣性"};
+			String[] label = {"Rhythm","Tone","Antithesis","Diversity"};
 			for (int i = 0 ; i < PoemTemplate.COUNT_FITNESS_TYPE ; i++){
-				drawLine(g, dataSet.detailScore[i] , color[i]);
-				g.drawString(label[i], BORDER_OFFSET+(int)(countPoint*unitX),(int)(HEIGHT-BORDER_OFFSET-(dataSet.detailScore[i][countPoint-1]-minValue+1)*unitY));
+				drawLine(g,label[i], dataSet.detailScore[i] , color[i]);
+				//g.drawString(label[i], BORDER_OFFSET+(int)(countPoint*unitX),(int)(HEIGHT-BORDER_OFFSET-(dataSet.detailScore[i][countPoint-1]-minValue+1)*unitY));
 			}
 			
 		}
@@ -134,7 +155,7 @@ class StatisticWindow extends JFrame{
 			g.drawLine(BORDER_OFFSET-5, y, WIDTH - BORDER_OFFSET, y);
 		}
 		
-		private void drawLine(Graphics g,int[] data,Color color){
+		private void drawLine(Graphics g,String label,int[] data,Color color){
 			int preX = 0, preY = 0, x, y;
 			int countPoint = data.length;
 			
@@ -143,19 +164,13 @@ class StatisticWindow extends JFrame{
 				x = BORDER_OFFSET+(int)((i+1)*unitX);
 				y = (int)(HEIGHT-BORDER_OFFSET-(data[i]-minValue+1)*unitY);
 				if ( i > 0){
-					/*((Graphics2D)g).setStroke(new BasicStroke(3.0f));*/
 					g.drawLine(preX, preY, x, y);
 				}
 				g.drawOval(x-2, y-2, 4, 4);
-				/*g.setColor(Color.red);
-				g.setFont(new Font(Font.SERIF,Font.BOLD,20));
-				if ( i < countPoint-1 && data[i] < data[i+1] )
-					g.drawString(String.valueOf(data[i]),(int)x-2,(int)y+18);
-				else
-					g.drawString(String.valueOf(data[i]),(int)x-2,(int)y-6);*/
 				preX = x;
 				preY = y;
 			}
+			g.drawString(label, BORDER_OFFSET+(int)((countPoint+2)*unitX),(int)(HEIGHT-BORDER_OFFSET-(data[countPoint-1]-minValue+1)*unitY));
 		}
 		
 	}
@@ -201,6 +216,7 @@ class StatisticWindow extends JFrame{
 			// TODO 因為樣詳細畫出各個fitnessScore，所以把下限拉到0
 			minValue = 0;
 			bestPoemValue = maxValue;
+			// TODO
 			maxValue = 600;
 		}
 	}
