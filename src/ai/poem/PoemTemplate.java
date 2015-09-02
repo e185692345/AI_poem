@@ -7,7 +7,7 @@ import java.util.HashMap;
 import ai.GeneticAlgorithm.MyRandom;
 import ai.exception.MakeSentenceException;
 import ai.sentence.LineComposition;
-import ai.sentence.MakeSentence;
+import ai.sentence.SentenceMaker;
 import ai.sentence.PoemSentence;
 import ai.word.ChineseWord;
 import ai.word.Relation;
@@ -82,7 +82,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
      * @return PoemTemplate的object
 	 * @throws MakeSentenceException 
      */
-    public static PoemTemplate getRandomPoem(int row,int col,WordPile wordPile,MakeSentence maker){
+    public static PoemTemplate getRandomPoem(int row,int col,WordPile wordPile,SentenceMaker maker){
     	HashMap<String, Boolean> repeatSentence = new HashMap<String, Boolean>();
     	PoemSentence[] poem = new PoemSentence[row];
     	
@@ -107,7 +107,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
     	return new PoemTemplate(row, col, poem);
     }
     
-    private static boolean tryToMakeASentence(MakeSentence maker, HashMap<String, Boolean> repeatSentence,PoemSentence[] poem, int rowIndex, int[] lineComposition){
+    private static boolean tryToMakeASentence(SentenceMaker maker, HashMap<String, Boolean> repeatSentence,PoemSentence[] poem, int rowIndex, int[] lineComposition){
     	int maxTry = 100;
     	while (maxTry > 0){
 			try {

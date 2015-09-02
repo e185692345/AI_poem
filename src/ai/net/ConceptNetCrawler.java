@@ -11,6 +11,9 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,6 +23,7 @@ import com.memetix.mst.translate.Translate;
 
 import ai.exception.BopomofoException;
 import ai.exception.RelationConvertException;
+import ai.userInterface.MyUtility;
 import ai.word.ChineseWord;
 import ai.word.Relation;
 
@@ -30,6 +34,8 @@ public class ConceptNetCrawler {
 	
 	private String topic;
 	private int wordType;
+	private JProgressBar loadingBar = null;
+	private int progress;
 	
 	public ConceptNetCrawler(String topic, int wordType) {
 		this.topic = topic;
@@ -67,7 +73,24 @@ public class ConceptNetCrawler {
 				
 		try {
 			JSONArray array = obj.getJSONArray("edges");
+			if (loadingBar != null){
+				progress = 0;
+				SwingUtilities.invokeLater(new Runnable() {
+				
+					@Override
+					public void run() {
+						loadingBar.setValue(loadingBar.getMinimum());
+						loadingBar.setStringPainted(true);
+						loadingBar.setIndeterminate(false);
+					}
+				});
+			}
 			for (int i=0; i<array.length(); i++){
+				int nowProgress = i*100/(array.length()-1);
+				if (loadingBar != null && nowProgress > progress){
+					progress = nowProgress;
+					SwingUtilities.invokeLater(new MyUtility.ProgressBarSetting(loadingBar,progress));
+				}
 				JSONObject jsonObj  = ((JSONObject)array.getJSONObject(i));
 				try {
 					relation = Relation.getRelation(jsonObj.getString("rel"));
@@ -362,6 +385,10 @@ public class ConceptNetCrawler {
 			}
 		}
 		return json;
+	}
+	
+	public void  setLoadingBar(JProgressBar loadingBar) {
+		this.loadingBar = loadingBar;
 	}
 	
 	/**

@@ -1,12 +1,15 @@
-package ai.GeneticAlgorithm;
+package ai.userInterface;
 
 import java.awt.BasicStroke;
+import java.awt.Button;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -19,7 +22,7 @@ import javax.swing.*;
 
 import ai.poem.PoemTemplate;
 
-class StatisticWindow extends JFrame{
+public class StatisticWindow extends JFrame{
 	
 	/**
 	 * 最多只會畫出 400 筆資料，超過400筆的話會捨棄較年輕的世代，只把後面的世代資料畫出來
@@ -27,24 +30,28 @@ class StatisticWindow extends JFrame{
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	MyPanel panel;
 	GenerationData dataSet;
 	
-	public StatisticWindow(String title,int countPoint,int[] max, int[] min, int[] average, int[][] detailScore){
+	public StatisticWindow(String title,int countPoint,int[] max, int[] min, int[] average, int[][] detailScore,String[] bestPoems){
 		this.dataSet = new GenerationData(countPoint, max, min, average,detailScore);
 
-		
 		DateFormat sdf = SimpleDateFormat.getDateTimeInstance();
 		Date date = new Date();
-		this.setTitle(title+" "+sdf.format(date));
-		this.setLayout(null);
-		this.setBounds(0,0,1320,730);
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		//this.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+		setTitle(title+" "+sdf.format(date));
+		setLayout(null);
+		setBounds(0,0,1300,730);
+		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		
-		panel = new MyPanel();
+		MyPanel panel = new MyPanel();
+		panel.setLocation(10, 10);
 		panel.setBackground(Color.WHITE);
-		this.add(panel);
+		add(panel);
+		
+		ShowPoemPanel poemPanel = new ShowPoemPanel(bestPoems);
+		poemPanel.setLocation(MyPanel.WIDTH+20,10);
+		add(poemPanel);
+		
 		this.setVisible(true);
 		
 		try {
@@ -62,14 +69,67 @@ class StatisticWindow extends JFrame{
 	    return image;
 	 }
 	
+	private class ShowPoemPanel extends JPanel implements ActionListener{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -8560872406473150050L;
+		private String[] poems;
+		private JTextArea showPoem;
+		private Button previousPoem, nextPoem;
+		int poemIndex;
+		
+		public ShowPoemPanel(String[] poems) {
+			
+			this.poems = poems;
+			poemIndex = 0;
+			setLayout(null);
+			
+			setSize(340, 210);
+			setBorder(BorderFactory.createTitledBorder("較好的詩"));
+			
+			showPoem = new JTextArea(poems[poemIndex]);
+			showPoem.setBounds(10,50, 320, 150);
+			showPoem.setBackground(Color.WHITE);
+			showPoem.setEditable(false);
+			showPoem.setLineWrap(true);
+			showPoem.setBorder(BorderFactory.createCompoundBorder(
+					showPoem.getBorder(), 
+			        BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+			add(showPoem);
+			
+			previousPoem = new Button("< Previous");
+			previousPoem.setBounds(10, 20, 160, 30);
+			previousPoem.addActionListener(this);
+			add(previousPoem);
+			
+			nextPoem = new Button("Next >");
+			nextPoem.setBounds(170, 20, 160, 30);
+			nextPoem.addActionListener(this);
+			add(nextPoem);
+			
+		}
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (e.getActionCommand().equals("< Previous") && poemIndex > 0){
+				showPoem.setText(poems[--poemIndex]);
+			}
+			else if (e.getActionCommand().equals("Next >") && poemIndex < poems.length-1){
+				showPoem.setText(poems[++poemIndex]);
+			}
+			
+		}
+	}
+	
 	private class MyPanel extends JPanel{
 
 		/**
 		 * 
 		 */
-		private static final int BORDER_OFFSET = 30;
-		private static final int WIDTH = 1300;
-		private static final int HEIGHT = 700;
+		static final int BORDER_OFFSET = 30;
+		static final int WIDTH = 900;
+		static final int HEIGHT = 670;
 		private double unitX, unitY;
 		private int maxValue = dataSet.maxValue;
 		private int minValue = dataSet.minValue;
@@ -77,6 +137,7 @@ class StatisticWindow extends JFrame{
 		
 		public MyPanel (){
 			super();
+			setBorder(BorderFactory.createTitledBorder("演化趨勢圖"));
 			setSize(WIDTH,HEIGHT);
 		}
 		

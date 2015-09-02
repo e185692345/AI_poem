@@ -5,7 +5,7 @@ import org.json.JSONObject;
 
 import ai.GeneticAlgorithm.GeneticAlgorithm;
 import ai.net.ConceptNetCrawler;
-import ai.sentence.MakeSentence;
+import ai.sentence.SentenceMaker;
 import ai.word.ChineseWord;
 import ai.word.WordPile;
 
@@ -29,7 +29,7 @@ public class TempMain {
 		
 		// 調整 for loop 的迴圈範圍可以用不同的主題作詩
 		// 演化趨勢圖片會儲存在 pic/ 資料夾下
-		for (int k = 0 ; k < 10 ; k++){
+		for (int k = 0 ; k < 1 ; k++){
 			try {
 				obj = new JSONObject(MainClass.ReadFile("topic/"+file[k]+".json"));
 			} catch (JSONException e2) {
@@ -41,12 +41,12 @@ public class TempMain {
 				wordPile.addTopicWord(str);
 			ConceptNetCrawler wordSource= new ConceptNetCrawler(topic[k],wordType[k]);
 			wordPile.AddWords(wordSource.getWordList_ChineseSource(obj));
-			MakeSentence maker = new MakeSentence(wordPile);
+			SentenceMaker maker = new SentenceMaker(wordPile);
 			System.out.println("主題 : "+topic[k]);
 			wordPile.printWordPileStatistic();
 			//wordPile.printBopomofo();
 			maker.printAvailableSentenceStatistic();
-			new GeneticAlgorithm(8, 5, wordPile, maker).evole();
+			new GeneticAlgorithm(8, 5, wordPile, maker).evolve();
 		}
 	}
 }

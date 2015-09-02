@@ -16,7 +16,7 @@ import ai.word.ChineseWord;
 import ai.word.Relation;
 import ai.word.WordPile;
 
-public class MakeSentence {
+public class SentenceMaker {
 	private final static String paddingWordFile = "paddingWord.data";
 	private final static String sentenceTypeFile = "sentenceType.data";
 	
@@ -27,15 +27,15 @@ public class MakeSentence {
 	private int countType = 0;
 	private HashMap<String, ChineseWord> paddingWordList = new HashMap<String, ChineseWord>();
 	private ArrayList<Integer> availabelSentenceTemplate;
-	private int[] countAvailableSentence;
-	private int[] statistic;
+	private int[] availableSentences;
+	private int availableTypeCount = 0, availableSentenceCount = 0;
 	/**
 	 * 從 paddingWordFile 和 sentenceTypeFile 分別載入
 	 * @param wordPile
 	 * @throws Exception 
 	 */
 
-	public MakeSentence(WordPile wordPile) {
+	public SentenceMaker(WordPile wordPile) {
 		this.wordPile = wordPile;
 		loadSentenceTypeFile();
 		loadPaddingWordFile();
@@ -46,14 +46,14 @@ public class MakeSentence {
 	public void printAvailableSentenceStatistic(){
 		System.out.println("=== 句型統計 ===");
 		for (int i = 0 ; i < countType ; i++){
-			if (countAvailableSentence[i] > 0)
-				System.out.println("句型"+i+" : "+countAvailableSentence[i]);
+			if (availableSentences[i] > 0)
+				System.out.println("句型"+i+" : "+availableSentences[i]);
 		}
 	}
 	
 	private void getAvailableSentenceTemplate(){
 		availabelSentenceTemplate = new ArrayList<>();
-		countAvailableSentence = new int[countType];
+		availableSentences = new int[countType];
 		for (int i = 0 ; i < countType ; i++){
 			HashMap<String,Boolean> countSentence = new HashMap<String,Boolean>();
 			for (int j = 0 ; j < 100 ; j++){
@@ -62,13 +62,15 @@ public class MakeSentence {
 					sentence = this.makeSentence(i).toString();
 					if ( !countSentence.containsKey(sentence)){
 						countSentence.put(sentence, true);
-						countAvailableSentence[i] += 1;
+						availableSentences[i] += 1;
+						availableSentenceCount += 1;
 					}
 				} catch (MakeSentenceException e) {
 					break;
 				}
 			}
-			if (countAvailableSentence[i] > 0){
+			if (availableSentences[i] > 0){
+				availableTypeCount += 1;
 				availabelSentenceTemplate.add(i);
 			}
 		}
@@ -79,7 +81,6 @@ public class MakeSentence {
 		try {
 			countType = getFileLines(sentenceTypeFile);
 			System.out.println("總共有 "+countType+" 個句型模板");
-			statistic = new int[countType];
 			BufferedReader bufRead = new BufferedReader(new FileReader(sentenceTypeFile));
 			
 			sentenceTemplate = new String[countType][];
@@ -199,7 +200,6 @@ public class MakeSentence {
 					break;
 				}
 			}
-			statistic[type] += 1;
 			return new PoemSentence(type,words,composition);
 		}
 		else
@@ -275,5 +275,13 @@ public class MakeSentence {
 		for (String str : sentenceTemplate[index])
 			sb.append(" "+str);
 		return sb.toString();
+	}
+	
+	public int getAvailableSentenceCount(){
+		return availableSentenceCount;
+	}
+	
+	public int getAvailableTypeCount(){
+		return availableTypeCount;
 	}
 }

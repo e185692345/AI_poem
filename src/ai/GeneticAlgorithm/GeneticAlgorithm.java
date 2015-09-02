@@ -4,11 +4,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
+
 import ai.exception.MakeSentenceException;
 import ai.exception.RelationWordException;
 import ai.poem.PoemTemplate;
-import ai.sentence.MakeSentence;
+import ai.sentence.SentenceMaker;
 import ai.sentence.PoemSentence;
+import ai.userInterface.MyUtility;
+import ai.userInterface.StatisticWindow;
 import ai.word.ChineseWord;
 import ai.word.Relation;
 import ai.word.WordPile;
@@ -24,34 +29,39 @@ public class GeneticAlgorithm {
     //突變機率
     private static final double MUTATION_RATE = 0.1;
     //終止條件
-	private final int maxGeneration = 200;
-	private final int targetScore = 1+PoemTemplate.MAX_ANTITHESIS_SCORE + PoemTemplate.MAX_DIVERSITY_SCORE + PoemTemplate.MAX_TONE_SCORE + PoemTemplate.MAX_RHYTHM_SCORE;
+	private static final int maxGeneration = 200;
+	private static final int targetScore = 1+PoemTemplate.MAX_ANTITHESIS_SCORE + PoemTemplate.MAX_DIVERSITY_SCORE + PoemTemplate.MAX_TONE_SCORE + PoemTemplate.MAX_RHYTHM_SCORE;
 	//===================================================
 
     
 	/*詞庫*/
     private WordPile wordPile;
-    private MakeSentence sentenceMaker;
+    private SentenceMaker sentenceMaker;
     /*一個世代*/
     private PoemTemplate[] population;
 	
     private int row, col;
 	private final static MyRandom rand = new MyRandom();
+	private JProgressBar progressBar = null;
+	private int progress = 0;
 	/**
 	 * 
 	 * @param row 詩有幾句
 	 * @param col 每句幾個字
 	 * @param wordPile 單詞庫
 	 */
-    public GeneticAlgorithm(int row, int col,WordPile wordPile, MakeSentence sentenceMaker) {
+    public GeneticAlgorithm(int row, int col,WordPile wordPile, SentenceMaker sentenceMaker) {
 		this.wordPile = wordPile;
 		this.sentenceMaker = sentenceMaker;
 		this.row = row;
 		this.col = col;
 	}
     
+    public static final int getMaxGeneration(){
+    	return maxGeneration;
+    }
     
-    public void evole() {
+    public void evolve() {
 		int[] maxScore = new int[maxGeneration];
 		int[] minScore = new int[maxGeneration];
 		int[] avgScore = new int[maxGeneration];
@@ -63,8 +73,26 @@ public class GeneticAlgorithm {
     	
     	initPopulation();
     	if (DEBUG) printPoem();
-    	if (!DEBUG) System.out.println("演化進度");
+    	if (UI) System.out.println("演化進度");
+    	if (progressBar != null){
+    		progress = 0;
+    		SwingUtilities.invokeLater(new Runnable() {
+				
+				@Override
+				public void run() {
+					progressBar.setIndeterminate(false);
+					progressBar.setValue(progressBar.getMinimum());
+		    		progressBar.setStringPainted(true);
+				}
+			});
+    		
+		}
     	for ( int i = 0; i < maxGeneration ; i++){
+    		int nowProgress = 100*i/(maxGeneration-1);
+    		if (progressBar != null &&  nowProgress > progress){
+    			progress = nowProgress;
+    			SwingUtilities.invokeLater(new MyUtility.ProgressBarSetting(progressBar,progress));
+    		}
     		if (DEBUG) System.out.println(" === 第"+i+"代 ===");
      		crossover();
      		mutation();
@@ -102,15 +130,20 @@ public class GeneticAlgorithm {
     	int numberToPrint = Math.min(POPULATION_SIZE,10);
     	Arrays.sort(population);
     	System.out.println("較好的詩");
-	    for ( int i = 0 ; i < numberToPrint ; i++){
-	       	System.out.println("=== 第"+i+"首 ===");
-	        System.out.println(population[i].printScore());
-	        System.out.println(population[i].toString());
+    	String[] bestPoems = new String[numberToPrint];
+	    
+    	for ( int i = 0 ; i < numberToPrint ; i++){
+	       	StringBuilder sb = new StringBuilder();
+    		sb.append("=== 第"+i+"首 ===\n");
+    		sb.append(population[i].printScore()+'\n');
+    		sb.append(population[i].toString()+'\n');
+    		bestPoems[i] = sb.toString();
+    		System.out.println(bestPoems[i]);
 	    }
     	
     	if (counPoint > 0){
     		String title = wordPile.getTopic().getWord()+" ("+wordPile.getTotalWordCount()+")";
-    		new StatisticWindow(title,counPoint, maxScore, minScore, avgScore, detailScore);
+    		new StatisticWindow(title,counPoint, maxScore, minScore, avgScore, detailScore,bestPoems);
     	}
 
 	}
@@ -381,5 +414,9 @@ public class GeneticAlgorithm {
             System.out.println(population[i].printScore());
             System.out.println(population[i].toString());
         }
+    }
+    
+    public void setProgressBar(JProgressBar progressBar){
+    	this.progressBar = progressBar;
     }
 }
