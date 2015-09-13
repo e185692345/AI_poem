@@ -3,21 +3,16 @@ package ai.userInterface;
 import java.awt.BasicStroke;
 import java.awt.Button;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 
 import ai.poem.PoemTemplate;
@@ -31,7 +26,7 @@ public class StatisticWindow extends JFrame{
 	private static final long serialVersionUID = 1L;
 	
 	GenerationData dataSet;
-	
+	MyPanel myPanel;
 	public StatisticWindow(String title,int countPoint,int[] max, int[] min, int[] average, int[][] detailScore,String[] bestPoems){
 		this.dataSet = new GenerationData(countPoint, max, min, average,detailScore);
 
@@ -40,34 +35,24 @@ public class StatisticWindow extends JFrame{
 		setTitle(title+" "+sdf.format(date));
 		setLayout(null);
 		setBounds(0,0,1300,730);
-		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setLocationRelativeTo(null);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		
-		MyPanel panel = new MyPanel();
-		panel.setLocation(10, 10);
-		panel.setBackground(Color.WHITE);
-		add(panel);
+		myPanel = new MyPanel();
+		myPanel.setLocation(10, 10);
+		myPanel.setBackground(Color.WHITE);
+		add(myPanel);
 		
 		ShowPoemPanel poemPanel = new ShowPoemPanel(bestPoems);
 		poemPanel.setLocation(MyPanel.WIDTH+20,10);
 		add(poemPanel);
 		
 		this.setVisible(true);
-		
-		try {
-			ImageIO.write(getScreenShot(this.getContentPane()),"png",new File("pic/"+title+".png"));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 	
-	private static BufferedImage getScreenShot(Component component) {
-
-	    BufferedImage image = new BufferedImage(component.getWidth(),component.getHeight(),BufferedImage.TYPE_INT_RGB);
-	    component.paint( image.getGraphics() ); // alternately use .printAll(..)
-	    return image;
-	 }
+	public JPanel getGraohicPanel() {
+		return myPanel;
+	}
 	
 	private class ShowPoemPanel extends JPanel implements ActionListener{
 		/**
@@ -85,11 +70,11 @@ public class StatisticWindow extends JFrame{
 			poemIndex = 0;
 			setLayout(null);
 			
-			setSize(340, 210);
+			setSize(360, 210);
 			setBorder(BorderFactory.createTitledBorder("較好的詩"));
 			
 			showPoem = new JTextArea(poems[poemIndex]);
-			showPoem.setBounds(10,50, 320, 150);
+			showPoem.setBounds(10,50, 340, 150);
 			showPoem.setBackground(Color.WHITE);
 			showPoem.setEditable(false);
 			showPoem.setLineWrap(true);

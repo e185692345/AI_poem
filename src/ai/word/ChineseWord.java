@@ -1,5 +1,11 @@
 package ai.word;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import ai.exception.RelationConvertException;
+
 public class ChineseWord {
 
 	public static final int SINGLE = 8, NOUN = 1, ADJ = 2, VERB = 4, EMPTY = 0;;
@@ -11,6 +17,8 @@ public class ChineseWord {
 	private int wordType;
 	private Relation relation;
 	private int startOrEnd;
+	private String surfaceText="123";
+	
 	/**
 	 * 	建立一個詞，儲存詞性和每個字的平仄、韻腳
 	 * 	@param word: 中文字詞
@@ -22,7 +30,7 @@ public class ChineseWord {
 	 * 	用二進位表示詞性需要3bit(van) 某個bit是1就表示具有該詞性 
 	 * 	例如: 詞性 = 5,van = 101, 表示是動詞和名詞
 	 */
-	public ChineseWord(String word, String[] letterBopomofo, int wordType, Relation relation, int startOrEnd){
+	public ChineseWord(String word, String[] letterBopomofo, int wordType, Relation relation, int startOrEnd, String surfaceText){
 		String str;
 		
 		this.length = word.length();
@@ -32,7 +40,7 @@ public class ChineseWord {
 		this.wordType = wordType;
 		this.relation = relation;
 		this.startOrEnd = startOrEnd;
-		
+		this.surfaceText = surfaceText;
 		for (int i = 0 ; i < this.length ; i++){
 			str = letterBopomofo[i];
 			
@@ -59,7 +67,7 @@ public class ChineseWord {
 		}
 	}
 	
-	public ChineseWord(String word, char[] bopomofo, int[] tone, int wordType, int length, Relation relation, int startOrEnd) {
+	public ChineseWord(String word, char[] bopomofo, int[] tone, int wordType, int length, Relation relation, int startOrEnd, String surfaceText) {
 		this.bopomofo = bopomofo;
 		this.length = length;
 		this.tone = tone;
@@ -67,6 +75,7 @@ public class ChineseWord {
 		this.wordType = wordType;
 		this.relation = relation;
 		this.startOrEnd = startOrEnd;
+		this.surfaceText = surfaceText;
 	}
 	
 	public int getStartOrEnd(){
@@ -189,5 +198,42 @@ public class ChineseWord {
 			sb.append(word.charAt(i)+", "+bopomofo[i]+", "+String.valueOf(tone[i])+"\n");
 		}
 		return sb.toString();
+	}
+
+	public String getSurfaceText() {
+		return surfaceText;
+	}
+	
+	/*
+	 * 從JSON Array中讀取 資料
+	 */
+	public static ChineseWord[] loadWords(JSONArray arr) throws JSONException, RelationConvertException{
+		ChineseWord[] wordList = new ChineseWord[arr.length()];
+		if ( arr != null){
+			for ( int i = 0 ; i < arr.length() ; i++){
+				JSONObject item;
+				item = arr.getJSONObject(i);
+				int relationIndex = Integer.parseInt(item.optJSONObject("relation").optString("index"));
+				wordList[i] = new ChineseWord(item.optString("word"),getBopomofo(item.optJSONArray("bopomofo")), 
+						getTone(item.optJSONArray("tone")),item.optInt("wordType"),item.optInt("length"),Relation.getRelation(relationIndex),item.optInt("startOrEnd"),item.optString("surfaceText"));				
+			}
+		}
+		return wordList;
+	}
+	
+	private static int[] getTone(JSONArray arr){
+		int[] tone = new int[arr.length()];
+		for (int i = 0 ; i < arr.length() ; i++){
+			tone[i] = arr.optInt(i);
+		}
+		
+		return tone;
+	}
+	private static char[] getBopomofo(JSONArray arr){
+		char[] bopomofo = new char[arr.length()];
+		for (int i = 0 ; i < arr.length() ; i++){
+			bopomofo[i] = arr.optString(i).charAt(0);
+		}
+		return bopomofo;
 	}
 }

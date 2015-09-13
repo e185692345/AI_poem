@@ -98,7 +98,8 @@ public class ConceptNetCrawler {
 					String endWord = jsonObj.getString("end").split("/")[3];
 					String extraData;
 					/* TODO 修正某些relation*/
-					relation = fixRelation(relation, jsonObj.getString("surfaceText"));
+					String surfaceText = jsonObj.getString("surfaceText");
+					relation = fixRelation(relation, surfaceText);
 					
 					if (startWord.equals(topic)){
 						word = endWord;
@@ -130,7 +131,7 @@ public class ConceptNetCrawler {
 								isRecorded.put(word, true);
 							wordType = Relation.getWordType(relation,startOrEnd);
 							try {
-								tempWordList[count] =  new ChineseWord(word, BopomofoCrawler.getBopomofo(word), wordType, relation, startOrEnd);
+								tempWordList[count] =  new ChineseWord(word, BopomofoCrawler.getBopomofo(word), wordType, relation, startOrEnd,surfaceText);
 								count += 1;
 							} catch (BopomofoException e) {
 									System.err.println(e.getMessage());
@@ -259,6 +260,7 @@ public class ConceptNetCrawler {
 				
 				try {
 					String word;
+					String surfaceText = jsonObj.getString("surfaceText");
 					int startOrEnd;
 					Relation relation = Relation.getRelation(jsonObj.getString("rel"));
 					int wordType;
@@ -285,7 +287,7 @@ public class ConceptNetCrawler {
 						if (!isRecorded.containsKey(word)){
 							isRecorded.put(word, true);
 							englishInput[countTranlation] = word;
-							semiWordData[countTranlation] = new SemiChineseWord(wordType, relation, startOrEnd);
+							semiWordData[countTranlation] = new SemiChineseWord(wordType, relation, startOrEnd,surfaceText);
 							countTranlation += 1;
 						}
 						else{
@@ -331,7 +333,7 @@ public class ConceptNetCrawler {
 				if (!isRecorded.containsKey(word)){
 					try {
 						SemiChineseWord data = semiWordData[i];
-						tempWordList[count] =  new ChineseWord(word, BopomofoCrawler.getBopomofo(word), data.wordType, data.relation, data.startOrEnd);
+						tempWordList[count] =  new ChineseWord(word, BopomofoCrawler.getBopomofo(word), data.wordType, data.relation, data.startOrEnd, data.surfaceText);
 						count += 1;
 					} catch (BopomofoException e) {
 						System.err.println(e.getMessage());
@@ -398,11 +400,13 @@ public class ConceptNetCrawler {
 		int wordType;
 		Relation relation;
 		int startOrEnd;
+		String surfaceText;
 		
-		public SemiChineseWord(int wordType, Relation relation, int startOrEnd) {
+		public SemiChineseWord(int wordType, Relation relation, int startOrEnd, String surfaceText) {
 			this.wordType = wordType;
 			this.relation = relation;
 			this.startOrEnd = startOrEnd;
+			this.surfaceText = surfaceText;
 		}
 	}
 }

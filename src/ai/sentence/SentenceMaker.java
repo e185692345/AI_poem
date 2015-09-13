@@ -117,7 +117,7 @@ public class SentenceMaker {
 				if (line == null)
 					break;
 				String[] str = line.split(" +");
-				ChineseWord word  = new ChineseWord(str[0],Arrays.copyOfRange(str, 1,str.length-1), ChineseWord.convertWordType(str[str.length-1]), Relation.PADDING, Relation.START);
+				ChineseWord word  = new ChineseWord(str[0],Arrays.copyOfRange(str, 1,str.length-1), ChineseWord.convertWordType(str[str.length-1]), Relation.PADDING, Relation.START,"padding : "+str[0]);
 				if (!paddingWordList.containsKey(str[0])){
 					paddingWordList.put(str[0], word);
 				}

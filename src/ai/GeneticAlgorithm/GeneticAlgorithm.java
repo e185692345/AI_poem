@@ -1,9 +1,12 @@
 package ai.GeneticAlgorithm;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 
+import javax.imageio.ImageIO;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
@@ -143,7 +146,14 @@ public class GeneticAlgorithm {
     	
     	if (counPoint > 0){
     		String title = wordPile.getTopic().getWord()+" ("+wordPile.getTotalWordCount()+")";
-    		new StatisticWindow(title,counPoint, maxScore, minScore, avgScore, detailScore,bestPoems);
+    		StatisticWindow window = new StatisticWindow(title,counPoint, maxScore, minScore, avgScore, detailScore,bestPoems);
+    		;
+    		try{
+    			String fileName = wordPile.getTopic().getWord()+new Date().getTime()+".png";
+    			System.out.println("scrennshot result : "+ImageIO.write(MyUtility.getScreenShot(window.getGraohicPanel()),"png",new File("./pic/",fileName)));
+    		}catch (Exception e) {
+    			e.printStackTrace();
+    		}
     	}
 
 	}

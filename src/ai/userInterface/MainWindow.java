@@ -6,7 +6,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -23,6 +27,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 
+import org.json.JSONObject;
+
 import ai.GeneticAlgorithm.GeneticAlgorithm;
 import ai.net.ConceptNetCrawler;
 import ai.sentence.SentenceMaker;
@@ -35,8 +41,9 @@ public class MainWindow extends JFrame{
 	 * 
 	 */
 	private static final long serialVersionUID = 4615405674885421489L;
-	
-	private ChineseWord[] wordList;
+	private String topic;
+	private int topicWordType;
+	private ArrayList<ChineseWord> wordArrayList;
 	private WordPile wordPile;
 	private SentenceMaker maker;
 	private GeneticAlgorithm ga;
@@ -44,6 +51,9 @@ public class MainWindow extends JFrame{
 	private WordSourcePanel sourcePanel = new WordSourcePanel();
 	private StatisticalPanel statisticalPanel = new StatisticalPanel();
 	private ProgressBarPanel progressPanel = new ProgressBarPanel();
+	
+	private ModifyWindow modifyWindow = null;
+	
 	public static void main(String[] srgv){
 		new MainWindow();
 	}
@@ -53,6 +63,8 @@ public class MainWindow extends JFrame{
 		setSize(455, 310);
 		setResizable(false);
 		setLayout(null);
+		setTitle("電腦作詩");
+		setLocationRelativeTo(null);
 		
 		sourcePanel.setLocation(10,10);
 		add(sourcePanel);
@@ -66,6 +78,17 @@ public class MainWindow extends JFrame{
 		
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setVisible(true);
+	}
+	
+	public void updateStatisticValue() {
+		wordPile = new WordPile(topic,topicWordType);
+		wordPile.AddWords(wordArrayList);
+		maker = new SentenceMaker(wordPile);
+		ga = new GeneticAlgorithm(8, 5, wordPile, maker);
+		ga.setProgressBar(progressPanel.progressBar);
+		statisticalPanel.txt_countWordValue.setText(Integer.toString(wordPile.getTotalWordCount()));
+		statisticalPanel.txt_countSentenceTypeValue.setText(Integer.toString(maker.getAvailableTypeCount()));
+		statisticalPanel.txt_countSentenceValue.setText(Integer.toString(maker.getAvailableSentenceCount()));
 	}
 	
 	private class StatisticalPanel extends JPanel implements ActionListener{
@@ -112,7 +135,9 @@ public class MainWindow extends JFrame{
 			
 			btn_modify = new JButton("修改");
 			btn_modify.setBounds(60,165,60,25);
+			btn_modify.addActionListener(this);
 			add(btn_modify);
+			
 			btn_evolve = new JButton("演化");
 			btn_evolve.setBounds(130,165,60,25);
 			btn_evolve.addActionListener(this);
@@ -120,15 +145,10 @@ public class MainWindow extends JFrame{
 			
 			setVisible(true);
 		}
-		
-		public void updateValue() {
-			txt_countWordValue.setText(Integer.toString(wordPile.getTotalWordCount()));
-			txt_countSentenceTypeValue.setText(Integer.toString(maker.getAvailableTypeCount()));
-			txt_countSentenceValue.setText(Integer.toString(maker.getAvailableSentenceCount()));
-		}
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
+			
 			if (e.getSource().equals(btn_evolve)){
 				new Thread(new Runnable() {
 					@Override
@@ -150,6 +170,10 @@ public class MainWindow extends JFrame{
 				MyUtility.enableComponents(sourcePanel, false);
 				MyUtility.enableComponents(StatisticalPanel.this, false);
 				progressPanel.setTitle("演化中...");
+			}
+			else if (e.getSource().equals(btn_modify)){
+				MainWindow.this.setVisible(false);
+				modifyWindow.setVisible(true);
 			}
 			
 		}
@@ -267,6 +291,7 @@ public class MainWindow extends JFrame{
 					if (!fileSource.isSelected())
 						return;
 					JFileChooser fc = new JFileChooser();
+					fc.setCurrentDirectory(new File("."));
 					int result = fc.showOpenDialog(MainWindow.this);
 					if (result == JFileChooser.APPROVE_OPTION) {
 						sourceJsonFile = fc.getSelectedFile();
@@ -283,7 +308,30 @@ public class MainWindow extends JFrame{
 			
 			setVisible(true);
 		}
-
+		
+		private Runnable finishLoading = new Runnable(){
+			@Override
+			public void run() {
+				MyUtility.enableComponents(WordSourcePanel.this,true);
+				updateStatisticValue();
+				MyUtility.enableComponents(statisticalPanel,true);
+				progressPanel.setTitle("讀取完成");
+				progressPanel.progressBar.setStringPainted(true);
+				progressPanel.progressBar.setIndeterminate(false);
+			}
+		};
+		
+		private Runnable failLoading = new Runnable(){
+			@Override
+			public void run() {
+				progressPanel.progressBar.setStringPainted(true);
+				progressPanel.progressBar.setIndeterminate(false);
+				MyUtility.enableComponents(WordSourcePanel.this,true);
+				progressPanel.setTitle("讀取失敗");
+				JOptionPane.showMessageDialog(MainWindow.this, "從檔案讀取詞彙失敗","錯誤",JOptionPane.ERROR_MESSAGE);
+			}
+		};
+		
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource().equals(btn_load)){
@@ -296,39 +344,27 @@ public class MainWindow extends JFrame{
 						new Thread(new Runnable() {
 							@Override
 							public void run() {
-								int wordType;
+								
 								String selected = (String)cbox_wordType.getSelectedItem();
 								if (selected.equals("名")){
-									wordType = ChineseWord.NOUN;
+									topicWordType = ChineseWord.NOUN;
 								}
 								else if (selected.equals("形")){
-									wordType = ChineseWord.NOUN;
+									topicWordType = ChineseWord.NOUN;
 								}
 								else if (selected.equals("動")){
-									wordType = ChineseWord.NOUN;
+									topicWordType = ChineseWord.NOUN;
 								}
 								else {
-									wordType = 0;
+									topicWordType = 0;
 								}
-								ConceptNetCrawler crawler = new ConceptNetCrawler(txt_topic.getText(),wordType);
+								ConceptNetCrawler crawler = new ConceptNetCrawler(txt_topic.getText(),topicWordType);
 								crawler.setLoadingBar(progressPanel.progressBar);
-								wordList = crawler.getWordList_ChineseSource();
-								wordPile = new WordPile(txt_topic.getText(),wordType);
-								wordPile.AddWords(wordList);
-								maker = new SentenceMaker(wordPile);
-								ga = new GeneticAlgorithm(8, 5, wordPile, maker);
-								ga.setProgressBar(progressPanel.progressBar);
-								
-								SwingUtilities.invokeLater(new Runnable() {
-									
-									@Override
-									public void run() {
-										MyUtility.enableComponents(WordSourcePanel.this,true);
-										statisticalPanel.updateValue();
-										MyUtility.enableComponents(statisticalPanel,true);
-										progressPanel.setTitle("讀取完成");
-									}
-								});
+								ChineseWord[] wordList = crawler.getWordList_ChineseSource();
+								wordArrayList = new ArrayList<>(Arrays.asList(wordList));
+								MainWindow.this.topic = txt_topic.getText();
+								modifyWindow = new ModifyWindow(MainWindow.this,topic,topicWordType,wordArrayList);
+								SwingUtilities.invokeLater(finishLoading);
 							}
 						}).start();
 						progressPanel.setTitle("讀取中...");
@@ -344,6 +380,38 @@ public class MainWindow extends JFrame{
 					}
 					else{
 						System.out.println("read source from file");
+						new Thread(new Runnable() {
+							@Override
+							public void run() {
+								JSONObject root = null;
+								ChineseWord[] wordList = null;
+								try {
+									BufferedInputStream in = new BufferedInputStream(new FileInputStream(sourceJsonFile));
+									int count;
+									StringBuilder sb = new StringBuilder();
+									byte[] buff = new byte[4096];
+									while ((count = in.read(buff)) != -1){
+										sb.append(new String(buff,0,count));
+									}
+									root = new JSONObject(sb.toString());
+									in.close();
+									topic = root.getString("topic");
+									topicWordType = root.getInt("topicWordType");
+									wordList = ChineseWord.loadWords(root.getJSONArray("wordList"));
+									wordArrayList = new ArrayList<>(Arrays.asList(wordList));
+									modifyWindow = new ModifyWindow(MainWindow.this,topic,topicWordType,wordArrayList);
+									SwingUtilities.invokeLater(finishLoading);
+								} catch (Exception e) {
+									SwingUtilities.invokeLater(failLoading);
+									e.printStackTrace();
+								}
+							}
+						}).start();
+						progressPanel.setTitle("讀取中...");
+						progressPanel.progressBar.setStringPainted(false);
+						progressPanel.progressBar.setIndeterminate(true);
+						MyUtility.enableComponents(WordSourcePanel.this,false);
+						MyUtility.enableComponents(statisticalPanel,false);
 					}
 				}
 			}

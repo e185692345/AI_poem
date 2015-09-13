@@ -2,6 +2,8 @@ package ai.userInterface;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 
 import javax.swing.JProgressBar;
 
@@ -31,4 +33,13 @@ public final class MyUtility {
 		}
 		
 	}
+	
+	public static BufferedImage getScreenShot(Component component) {
+
+	    BufferedImage image = new BufferedImage(component.getWidth(),component.getHeight(),BufferedImage.TYPE_INT_RGB);
+	    Graphics g = image.createGraphics();
+	    component.paint(g);
+	    g.dispose();
+	    return image;
+	 }
 }
