@@ -40,7 +40,7 @@ public class TempMain {
 			for (String str : topicWord[k])
 				wordPile.addTopicWord(str);
 			ConceptNetCrawler wordSource= new ConceptNetCrawler(topic[k],wordType[k]);
-			wordPile.AddWords(wordSource.getWordList_ChineseSource(obj));
+			wordPile.AddWords(wordSource.getWordList_ChineseSource(topic[k],obj));
 			SentenceMaker maker = new SentenceMaker(wordPile);
 			System.out.println("主題 : "+topic[k]);
 			wordPile.printWordPileStatistic();

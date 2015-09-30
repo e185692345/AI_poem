@@ -56,7 +56,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 		/*錯誤的複製 : this.poem = poem;*/
 		this.poem = new PoemSentence[row];
 		for ( int i = 0 ; i < row ; i++){
-			this.poem[i] = new PoemSentence(poem[i].getSentenceType(), poem[i].getWords(),poem[i].getLineComposition());
+			this.poem[i] = new PoemSentence(poem[i].getSentenceType(), poem[i].getWords(),poem[i].getLineComposition(),poem[i].getSentenceTag());
 		}
 		
 		maxRhythmMatch = row/2;

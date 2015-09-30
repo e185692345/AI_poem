@@ -8,6 +8,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -23,6 +24,7 @@ import com.memetix.mst.translate.Translate;
 
 import ai.exception.BopomofoException;
 import ai.exception.RelationConvertException;
+import ai.sentence.PoemSentence;
 import ai.userInterface.MyUtility;
 import ai.word.ChineseWord;
 import ai.word.Relation;
@@ -31,7 +33,7 @@ public class ConceptNetCrawler {
 	
 	private static final int LIMIT = 9999;
 	private static final int MAX_TRANSLATION = 1000;
-	
+	public final static int START = 0, END = 1, NODES = 2;
 	private String topic;
 	private int wordType;
 	private JProgressBar loadingBar = null;
@@ -41,8 +43,38 @@ public class ConceptNetCrawler {
 		this.topic = topic;
 		this.wordType = wordType;
 	}
+	
+	public ChineseWord[] getWordList_ChineseSource(){
+		String url;
+		ArrayList<ChineseWord> relativeWord = new ArrayList<ChineseWord>();
+		relativeWord.addAll(Arrays.asList(getWordList_ChineseSource(topic,NODES)));
+		
+		/*try {
+			url = new String("http://conceptnet5.media.mit.edu/data/5.2/search?limit="+LIMIT+"&rel=/r/IsA&nodes=/c/zh_TW/"+URLEncoder.encode(topic,"UTF-8"));
+		
+			System.out.println(url);
+			JSONObject obj = readJsonFromURL(url);
+			
+			
+			JSONArray arr = obj.optJSONArray("edges");
+			for (int i = 0 ; i < arr.length() ; i++){
+				String[] tmp = arr.optJSONObject(i).optString("end").split("/");
+				ChineseWord[] wordPile = getWordList_ChineseSource(tmp[tmp.length-1],START);
+				relativeWord.addAll(Arrays.asList(wordPile));
+			}
+			
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}*/
+		
+		ChineseWord[] wordList = new ChineseWord[relativeWord.size()];
+		return  relativeWord.toArray(wordList);
+	}
+	
 	/**
 	 * 	利用concept net的API尋找和某個中文主題相關的詞，並且利用rel來推測詞的詞性
+	 * 	@param input : 主題
+	 * 	@param position : START(0), END(1), NODES(other)
 	 * 	@return 相關詞的陣列(ChineseWord[])
 	 * 	
 	 * 	並非所有從concept net上獲得的詞語都可以轉換成詞庫
@@ -51,19 +83,27 @@ public class ConceptNetCrawler {
 	 * 
 	 * 	處理json的library要另外去下載，請參考 http://www.ewdna.com/2008/10/jsonjar.html
 	 */
-	public ChineseWord[] getWordList_ChineseSource() {
+	private ChineseWord[] getWordList_ChineseSource(String input,int position) {
+		String pos;
+		if (position == START)
+			pos = "start";
+		else if(position == END)
+			pos = "end";
+		else {
+			pos = "nodes";
+		}
 		try {
-			String url = new String("http://conceptnet5.media.mit.edu/data/5.2/search?limit="+LIMIT+"&nodes=/c/zh_TW/"+URLEncoder.encode(topic,"UTF-8"));
+			String url = new String("http://conceptnet5.media.mit.edu/data/5.2/search?limit="+LIMIT+"&"+pos+"=/c/zh_TW/"+URLEncoder.encode(input,"UTF-8"));
 			System.out.println(url);
 			JSONObject obj = readJsonFromURL(url);
-			return getWordList_ChineseSource(obj);
+			return getWordList_ChineseSource(input,obj);
 		} catch (UnsupportedEncodingException e) {
+			System.err.println('\"'+input+"\" 無法用UTF-8編碼");
 			e.printStackTrace();
-			System.exit(1);
+			return new ChineseWord[0];
 		}
-		return null;
 	}
-	public ChineseWord[] getWordList_ChineseSource(JSONObject obj){
+	public ChineseWord[] getWordList_ChineseSource(String topic,JSONObject obj){
 		ChineseWord[] tempWordList = new ChineseWord[LIMIT];
 		int wordType,count = 0;
 		Relation relation;
@@ -86,7 +126,7 @@ public class ConceptNetCrawler {
 				});
 			}
 			for (int i=0; i<array.length(); i++){
-				int nowProgress = i*100/(array.length()-1);
+				int nowProgress = (i+1)*100/array.length();
 				if (loadingBar != null && nowProgress > progress){
 					progress = nowProgress;
 					SwingUtilities.invokeLater(new MyUtility.ProgressBarSetting(loadingBar,progress));
@@ -357,7 +397,7 @@ public class ConceptNetCrawler {
 	 * 	@param  url: json檔案的url (String)
 	 * 	@return JSONObject
 	 */
-	private static JSONObject readJsonFromURL(String url){
+	public static JSONObject readJsonFromURL(String url){
 		JSONObject json = null;
 		InputStream is = null;
 		try {

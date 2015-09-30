@@ -23,10 +23,9 @@ import ai.word.WordPile;
 
 public class GeneticAlgorithm {
 	private static final boolean DEBUG = false ;
-	private static final boolean UI = false ;
 	//======================參數設定======================
     //族群大小
-    private static final int POPULATION_SIZE = 1000;
+    private static final int POPULATION_SIZE = 300;
     //交配親代競爭群組大小
     private static final int SELECTED_GROUP_SIZE = 5;
     //突變機率
@@ -76,7 +75,6 @@ public class GeneticAlgorithm {
     	
     	initPopulation();
     	if (DEBUG) printPoem();
-    	if (UI) System.out.println("演化進度");
     	if (progressBar != null){
     		progress = 0;
     		SwingUtilities.invokeLater(new Runnable() {
@@ -123,8 +121,6 @@ public class GeneticAlgorithm {
 			counPoint += 1;
 			if (DEBUG) printPoem();
 			
-			if (UI)
-				System.out.print(getProgressBar(i*100/maxGeneration));
 			if (maxScore[i] >= targetScore)
 				break;
     	}
@@ -158,30 +154,14 @@ public class GeneticAlgorithm {
 
 	}
     
-    private String getProgressBar(int percent){
-    	StringBuilder sb = new StringBuilder();
-    	sb.append("\r[");
-    	for (int i = 0 ; i < 50 ; i++){
-    		if (i==24){
-    			sb.append(String.format("%2d%%", percent));
-    		}
-    		else if ( i != 25 && i != 26){
-	    		if (i*2<=percent)
-	    			sb.append('=');
-	    		else
-	    			sb.append(' ');
-    		}
-    	}
-    	sb.append(']');
-    	
-    	return sb.toString();
-    }
     /**
      * 初始化族群
      */
     public void initPopulation(){
     	population = new PoemTemplate[POPULATION_SIZE];
         for (int i = 0 ; i < POPULATION_SIZE ; i++){
+        	//TODO
+        	System.out.println("init : "+i);
            population[i] = PoemTemplate.getRandomPoem(this.row, this.col,this.wordPile,this.sentenceMaker);
         }
     }

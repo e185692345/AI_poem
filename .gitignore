@@ -1,5 +1,6 @@
 *.txt
 *.log
+*.json
 .project
 .classpath
 bin/

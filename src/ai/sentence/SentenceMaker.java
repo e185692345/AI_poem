@@ -3,15 +3,20 @@ package ai.sentence;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+
+import org.json.JSONObject;
 
 import ai.GeneticAlgorithm.MyRandom;
 import ai.exception.MakeSentenceException;
 import ai.exception.RelationConvertException;
 import ai.exception.RelationWordException;
 import ai.exception.TopicWordException;
+import ai.net.ConceptNetCrawler;
 import ai.word.ChineseWord;
 import ai.word.Relation;
 import ai.word.WordPile;
@@ -19,10 +24,12 @@ import ai.word.WordPile;
 public class SentenceMaker {
 	private final static String paddingWordFile = "paddingWord.data";
 	private final static String sentenceTypeFile = "sentenceType.data";
+	private final static int SPECIAL_TYPE = 12; 
 	
 	private MyRandom rand = new MyRandom();
 	private WordPile wordPile;
 	/*第一層: 第幾個句型, 第二層:第幾個element*/
+	private int[] sentenceTag;	// 0: 單relation句型, 1:複relation句型
 	private String[][] sentenceTemplate;
 	private int countType = 0;
 	private HashMap<String, ChineseWord> paddingWordList = new HashMap<String, ChineseWord>();
@@ -40,7 +47,6 @@ public class SentenceMaker {
 		loadSentenceTypeFile();
 		loadPaddingWordFile();
 		getAvailableSentenceTemplate();
-		
 	}
 	
 	public void printAvailableSentenceStatistic(){
@@ -55,6 +61,10 @@ public class SentenceMaker {
 		availabelSentenceTemplate = new ArrayList<>();
 		availableSentences = new int[countType];
 		for (int i = 0 ; i < countType ; i++){
+			 if (sentenceTag[i] == SPECIAL_TYPE){
+				availabelSentenceTemplate.add(i);
+				break;
+			}
 			HashMap<String,Boolean> countSentence = new HashMap<String,Boolean>();
 			for (int j = 0 ; j < 100 ; j++){
 				String sentence;
@@ -84,8 +94,18 @@ public class SentenceMaker {
 			BufferedReader bufRead = new BufferedReader(new FileReader(sentenceTypeFile));
 			
 			sentenceTemplate = new String[countType][];
-			for (int i = 0 ; i < countType ; i++){
-				sentenceTemplate[i] = bufRead.readLine().split(" +");
+			sentenceTag = new int[countType];
+			int index = 0;
+			while(true){
+				String line = bufRead.readLine();
+				if(line == null)
+					break;
+				if (line.length() == 0 || line.charAt(0) == '#')
+					continue;
+				String[] tmp = line.split(" +");
+				sentenceTag[index] = Integer.valueOf(tmp[0]);
+				sentenceTemplate[index] = Arrays.copyOfRange(tmp, 1, tmp.length);
+				index += 1;
 			}
 			bufRead.close();
 		} catch (IOException e) {
@@ -98,7 +118,12 @@ public class SentenceMaker {
 		int count = 0;
 		try {
 			BufferedReader bufRead = new BufferedReader(new FileReader(fileName));
-			while (bufRead.readLine() != null){
+			while (true){
+				String line = bufRead.readLine();
+				if (line==null)
+					break;
+				if (line.length() == 0 || line.charAt(0) == '#')
+					continue;
 				count += 1;
 			}
 			bufRead.close();
@@ -136,10 +161,14 @@ public class SentenceMaker {
 		}*/
 	}
 	
+	
 	public PoemSentence makeSentence(int[] composition, int type) throws MakeSentenceException {
 		final String TOPIC = "TOPIC";
 		boolean isDone = true;
 		ChineseWord[] words = new ChineseWord[composition.length];
+		int countWord = 0;
+		int[] wordLocation = new int[2];
+		
 		for ( int k = 0 ; k < sentenceTemplate[type].length ; k++){
 			String element = sentenceTemplate[type][k];
 			/*填入主題*/
@@ -169,41 +198,66 @@ public class SentenceMaker {
 			}
 			/*填入relation word*/
 			else{
-				String[] data = element.split("_");
-				try {
-					Relation relation = Relation.getRelation(data[0]);
-					int startOrEnd = Relation.START;
-					if (data[1].equals("START"))
-						startOrEnd = Relation.START;
-					else if (data[1].equals("END"))
-						startOrEnd = Relation.END;
-					else{
-						System.err.println(data[1]+" 不是 \"START\" 也不是 \"END\"");
-						System.exit(1);
-					}
-					try {
-						words[k] = wordPile.getRlationWord(relation, startOrEnd, composition[k]);
-					} catch (RelationWordException e) {
-						isDone = false;
-						break;
-					}
+				try{
+					words[k] = pickAWord(element, composition[k]);
+					wordLocation[countWord++] = k;
+				} catch (RelationWordException e) {
+					isDone = false;
+					break;
 				} catch (RelationConvertException e1) {
-					System.err.println(e1.getMessage());
 					e1.printStackTrace();
 					System.exit(1);
 				}	
 			}
 		}
 		if (isDone){
-			for (int i = 0 ; i < LineComposition.FIVE_LETTER_COMPOSITION.length ; i++){
-				if (LineComposition.FIVE_LETTER_COMPOSITION[i].equals(composition)){
-					break;
+			if (sentenceTag[type] == SPECIAL_TYPE){
+				
+				if(isMultipleRelationValid(words[wordLocation[0]].getWord(), words[wordLocation[1]].getWord())){
+					return new PoemSentence(type,words,composition,sentenceTag[type]);
 				}
+				throw new MakeSentenceException(composition,sentenceTemplate[type]);
 			}
-			return new PoemSentence(type,words,composition);
+			else {
+				return new PoemSentence(type,words,composition,sentenceTag[type]);
+			}
 		}
 		else
 			throw new MakeSentenceException(composition,sentenceTemplate[type]);
+	}
+	
+	private ChineseWord pickAWord(String relationString, int length) throws RelationWordException, RelationConvertException{
+		String[] data = relationString.split("_");
+		Relation relation = Relation.getRelation(data[0]);
+		int startOrEnd = Relation.START;
+		if (data[1].equals("START"))
+			startOrEnd = Relation.START;
+		else if (data[1].equals("END"))
+			startOrEnd = Relation.END;
+		else{
+			System.err.println(data[1]+" 不是 \"START\" 也不是 \"END\"");
+			System.exit(1);
+		}
+		
+		return wordPile.getRlationWord(relation, startOrEnd, length);
+	}
+	
+	public static boolean isMultipleRelationValid(String word1,String word2) {
+		try {
+			String url1 = "http://conceptnet5.media.mit.edu/data/5.2/search?limit=1&start=/c/zh_TW/"+URLEncoder.encode(word1,"UTF-8")+"&end=/c/zh_TW/"+URLEncoder.encode(word2,"UTF-8");
+			String url2 = "http://conceptnet5.media.mit.edu/data/5.2/search?limit=1&start=/c/zh_TW/"+URLEncoder.encode(word2,"UTF-8")+"&end=/c/zh_TW/"+URLEncoder.encode(word1,"UTF-8");
+			JSONObject result1 = ConceptNetCrawler.readJsonFromURL(url1);
+			JSONObject result2 = ConceptNetCrawler.readJsonFromURL(url2);
+			
+			if (result1.optInt("numFound") > 0 || result2.optInt("numFound") > 0)
+				return true;
+			else
+				return false;
+			
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 	
 	public PoemSentence makeSentence(int[] composition) throws MakeSentenceException{
@@ -270,7 +324,7 @@ public class SentenceMaker {
 		}
 	}
 	
-	public String getPrintableTemoplate(int index){
+	public String getPrintableTemplate(int index){
 		StringBuilder sb = new StringBuilder();
 		for (String str : sentenceTemplate[index])
 			sb.append(" "+str);

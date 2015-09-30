@@ -34,7 +34,7 @@ public class FormatTopicData {
 			
 		
 			ConceptNetCrawler wordSource= new ConceptNetCrawler(topic[k],wordType[k]);
-			ChineseWord[] wordList = wordSource.getWordList_ChineseSource(obj);
+			ChineseWord[] wordList = wordSource.getWordList_ChineseSource(topic[k],obj);
 			saveToJsonFile(topic[k], wordType[k], wordList, file[k]+".json");
 			
 		}

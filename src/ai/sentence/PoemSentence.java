@@ -5,20 +5,18 @@ import ai.word.ChineseWord;
 public class PoemSentence {
 	
 	private int sentenceType;
+	private int sentenceTag;
 	private int[] lineComposition;
 	private ChineseWord[] words;
 	private int lineCompositionEncode;
 	
-	public PoemSentence(int sentenceType,ChineseWord[] sentence, int[] lineComposition){
+	public PoemSentence(int sentenceType,ChineseWord[] sentence, int[] lineComposition,int sentenceTag){
 		this.lineComposition = lineComposition;
 		lineCompositionEncode = 0;
 		for (int element : lineComposition){
 			lineCompositionEncode = lineCompositionEncode*10 + element;
 		}
-		this.setSentence(sentenceType,sentence);
-	}
-	
-	public void setSentence(int sentenceType,ChineseWord[] sentence) {
+		this.sentenceTag = sentenceTag;
 		this.sentenceType = sentenceType;
 		/*不可以用this.words = sentence 這種方式複製*/
 		this.words = new ChineseWord[sentence.length];
@@ -27,6 +25,10 @@ public class PoemSentence {
 		}	
 	}
 	
+	/**
+	 * 
+	 * @return 斷句方式的編碼，用於基因演算的的交配階段，確保相鄰兩句的斷句方式相同
+	 */
 	public int getLineCompositionEncode() {
 		return this.lineCompositionEncode;
 	}
@@ -45,6 +47,10 @@ public class PoemSentence {
 	
 	public int getLength() {
 		return words.length;
+	}
+	
+	public int getSentenceTag() {
+		return sentenceTag;
 	}
 	
 	public String toString() {

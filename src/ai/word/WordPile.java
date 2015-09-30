@@ -80,7 +80,7 @@ public class WordPile {
 				totalWordCount += 1;
 			}
 			else {
-				System.err.println(word.getWord()+"已經出現過了");
+				//System.err.println(word.getWord()+"已經出現過了");
 			}
 		}
 		System.out.printf("目前共有 %d 個詞\n",totalWordCount);
