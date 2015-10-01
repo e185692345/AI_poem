@@ -31,8 +31,8 @@ public class GeneticAlgorithm {
     //突變機率
     private static final double MUTATION_RATE = 0.1;
     //終止條件
-	private static final int maxGeneration = 200;
-	private static final int targetScore = 1+PoemTemplate.MAX_ANTITHESIS_SCORE + PoemTemplate.MAX_DIVERSITY_SCORE + PoemTemplate.MAX_TONE_SCORE + PoemTemplate.MAX_RHYTHM_SCORE;
+	private static final int maxGeneration = 400;
+	private static final int targetScore = 1 + PoemTemplate.TOTAL_SCORE;
 	//===================================================
 
     
@@ -160,9 +160,7 @@ public class GeneticAlgorithm {
     public void initPopulation(){
     	population = new PoemTemplate[POPULATION_SIZE];
         for (int i = 0 ; i < POPULATION_SIZE ; i++){
-        	//TODO
-        	System.out.println("init : "+i);
-           population[i] = PoemTemplate.getRandomPoem(this.row, this.col,this.wordPile,this.sentenceMaker);
+        	population[i] = PoemTemplate.getRandomPoem(this.row, this.col,this.wordPile,this.sentenceMaker);
         }
     }
  // TODO crossover()

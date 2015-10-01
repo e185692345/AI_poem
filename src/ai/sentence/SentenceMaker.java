@@ -22,6 +22,7 @@ import ai.word.Relation;
 import ai.word.WordPile;
 
 public class SentenceMaker {
+	private static boolean TURN_ON_MULTIPLE_RELATION_CHECK = false; 
 	private final static String paddingWordFile = "paddingWord.data";
 	private final static String sentenceTypeFile = "sentenceType.data";
 	private final static int SPECIAL_TYPE = 12; 
@@ -211,7 +212,7 @@ public class SentenceMaker {
 			}
 		}
 		if (isDone){
-			if (sentenceTag[type] == SPECIAL_TYPE){
+			if (sentenceTag[type] == SPECIAL_TYPE && TURN_ON_MULTIPLE_RELATION_CHECK){
 				
 				if(isMultipleRelationValid(words[wordLocation[0]].getWord(), words[wordLocation[1]].getWord())){
 					return new PoemSentence(type,words,composition,sentenceTag[type]);

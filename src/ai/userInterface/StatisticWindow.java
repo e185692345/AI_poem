@@ -34,7 +34,7 @@ public class StatisticWindow extends JFrame{
 		Date date = new Date();
 		setTitle(title+" "+sdf.format(date));
 		setLayout(null);
-		setBounds(0,0,1300,730);
+		setBounds(0,0,1300,930);
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		
@@ -114,7 +114,7 @@ public class StatisticWindow extends JFrame{
 		 */
 		static final int BORDER_OFFSET = 30;
 		static final int WIDTH = 900;
-		static final int HEIGHT = 670;
+		static final int HEIGHT = 870;
 		private double unitX, unitY;
 		private int maxValue = dataSet.maxValue;
 		private int minValue = dataSet.minValue;
@@ -180,8 +180,16 @@ public class StatisticWindow extends JFrame{
 			drawLine(g,"Average",dataSet.average,new Color(0xAA, 0x00, 0xAA));
 			// TODO 不畫下限，避免畫面雜亂
 			//drawLine(g, dataSet.min, Color.pink);
-			Color[] color = {Color.blue,Color.orange,Color.green,Color.gray};
-			String[] label = {"Rhythm","Tone","Antithesis","Diversity"};
+			Color[] color = {Color.blue,Color.orange,Color.green,Color.gray,Color.MAGENTA};
+			String[] label = {"Rhythm","Tone","Antithesis","Diversity","Pattern"};
+			if (color.length != PoemTemplate.COUNT_FITNESS_TYPE){
+				System.err.println("繪製折線圖失敗，請設定足夠的顏色");
+				System.exit(1);
+			}
+			if (color.length != PoemTemplate.COUNT_FITNESS_TYPE){
+				System.err.println("繪製折線圖失敗，請設定足夠的標籤");
+				System.exit(1);
+			}
 			for (int i = 0 ; i < PoemTemplate.COUNT_FITNESS_TYPE ; i++){
 				drawLine(g,label[i], dataSet.detailScore[i] , color[i]);
 				//g.drawString(label[i], BORDER_OFFSET+(int)(countPoint*unitX),(int)(HEIGHT-BORDER_OFFSET-(dataSet.detailScore[i][countPoint-1]-minValue+1)*unitY));
@@ -263,7 +271,7 @@ public class StatisticWindow extends JFrame{
 			minValue = 0;
 			bestPoemValue = maxValue;
 			// TODO
-			maxValue = 600;
+			maxValue = PoemTemplate.TOTAL_SCORE;
 		}
 	}
 }

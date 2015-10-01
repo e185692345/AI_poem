@@ -1,6 +1,7 @@
 package ai.sentence;
 
 import ai.word.ChineseWord;
+import ai.word.Relation;
 
 public class PoemSentence {
 	
@@ -57,6 +58,19 @@ public class PoemSentence {
 		StringBuilder sb = new StringBuilder();
 		for (ChineseWord word : words){
 			sb.append(word.getWord()+" ");
+		}
+		return sb.toString();
+	}
+	/**
+	 * 
+	 * @return 將句子中除了 padding 之外的詞連起來，用於判斷類似的句子是否重複出現於同一首詩中
+	 */
+	public String encode() {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0 ; i < words.length ; i++){
+			if(words[i].getRelation() == Relation.PADDING)
+				continue;
+			sb.append(words[i].getWord());
 		}
 		return sb.toString();
 	}

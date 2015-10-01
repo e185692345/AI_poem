@@ -1,8 +1,15 @@
 package ai.poem;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+
 
 import ai.GeneticAlgorithm.MyRandom;
 import ai.exception.MakeSentenceException;
@@ -21,17 +28,21 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	
 	// ===============================================================
 	// TODO 新增分數種類時也要一並更改這個數值
-	public final static int COUNT_FITNESS_TYPE = 4;
+	public final static int COUNT_FITNESS_TYPE = 5;
 	// ===============================================================
 	public final static int MAX_RHYTHM_SCORE = 200;
 	public final static int MAX_TONE_SCORE = 100;
 	public final static int MAX_ANTITHESIS_SCORE = 200;
 	public final static int MAX_DIVERSITY_SCORE = 100;
+	public final static int MAX_PATTERN_SCORE = 200;
+	public final static int TOTAL_SCORE = MAX_RHYTHM_SCORE + MAX_TONE_SCORE + MAX_ANTITHESIS_SCORE + MAX_DIVERSITY_SCORE + MAX_PATTERN_SCORE;
+	
 	// 設定個分數的最低門檻，不足的項目分數會直接變成1分，確保詩在每個項目都有一定的品質
 	public final static int MIN_RHYTHM_SCORE = 50;
 	public final static int MIN_TONE_SCORE = 50;
 	public final static int MIN_ANTITHESIS_SCORE = 50;
 	public final static int MIN_DIVERSITY_SCORE = 50;
+	public final static int MIN_PATTERN_SCORE = 0;
 	
 	private int col, row;
 	private PoemSentence[] poem;
@@ -39,7 +50,8 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	private boolean modified;
 	private static MyRandom rand = new MyRandom();
 	private int maxRhythmMatch, maxToneMatch, maxAntithesisMatch;
-
+	private static ArrayList<ArrayList<Integer>> firstSentenceTags, secondSentenceTags;
+	
 	/**
 	 * 創建一首新的詩，每首詩可以有不同的模板
 	 * <注意>因為poem中的詞語在基因演算法中會被替換，所以每個PoemTemplate都要有一個poem的實體，
@@ -53,6 +65,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	public PoemTemplate(int row,int col, PoemSentence[] poem){
 		this.row = row;
 		this.col = col;
+		loadSentencePattern();
 		/*錯誤的複製 : this.poem = poem;*/
 		this.poem = new PoemSentence[row];
 		for ( int i = 0 ; i < row ; i++){
@@ -85,16 +98,17 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
     public static PoemTemplate getRandomPoem(int row,int col,WordPile wordPile,SentenceMaker maker){
     	HashMap<String, Boolean> repeatSentence = new HashMap<String, Boolean>();
     	PoemSentence[] poem = new PoemSentence[row];
+    	int[] repeatSentenceTag = new int[100];
     	
     	for (int i = 0 ; i < row ; i+=2){
     		ArrayList<int[]> compositionList = new ArrayList<>(Arrays.asList(LineComposition.FIVE_LETTER_COMPOSITION));
     		boolean isDone = false;
     		while(!compositionList.isEmpty()){
     			int[] lineComposition = (int[]) rand.getRandomObject(compositionList);
-    			isDone = tryToMakeASentence(maker,repeatSentence,poem,i,lineComposition);
+    			isDone = tryToMakeASentence(maker,repeatSentenceTag,repeatSentence,poem,i,lineComposition);
     			if (!isDone)
     				continue;
-    			isDone = tryToMakeASentence(maker,repeatSentence,poem,i+1,lineComposition);
+    			isDone = tryToMakeASentence(maker,repeatSentenceTag,repeatSentence,poem,i+1,lineComposition);
         		if (isDone)
         			break;
     		}
@@ -107,16 +121,17 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
     	return new PoemTemplate(row, col, poem);
     }
     
-    private static boolean tryToMakeASentence(SentenceMaker maker, HashMap<String, Boolean> repeatSentence,PoemSentence[] poem, int rowIndex, int[] lineComposition){
+    private static boolean tryToMakeASentence(SentenceMaker maker,int[] repeatSentenceTag, HashMap<String, Boolean> repeatSentence,PoemSentence[] poem, int rowIndex, int[] lineComposition){
     	int maxTry = 100;
     	while (maxTry > 0){
 			try {
 				poem[rowIndex] = maker.makeSentence(lineComposition);
-				if (repeatSentence.containsKey(poem[rowIndex].toString())){
+				if (repeatSentence.containsKey(poem[rowIndex].encode()) || repeatSentenceTag[poem[rowIndex].getSentenceTag()] >= 2){
 					maxTry -= 1;
 				}
 				else{
-					repeatSentence.put(poem[rowIndex].toString(),true);
+					repeatSentence.put(poem[rowIndex].encode(),true);
+					repeatSentenceTag[poem[rowIndex].getSentenceTag()] += 1;
 					return true;
 				}
 			} catch (MakeSentenceException e) {
@@ -158,6 +173,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 		detailScore[1] = getToneScore();
 		detailScore[2] = getAntithesisScore();
 		detailScore[3] = getDiversityScore();
+		detailScore[4] = getPatternScore();
 		fitnessScore = 0;
 		for (int score : detailScore)
 			fitnessScore += score;
@@ -166,10 +182,8 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	}
 	
 	/**
-	 * 產詩的時候已經確保同一首詩不會有相同的2句
+	 * 確保同一首詩不會有相同(或類似)的2句
 	 * 若一個詞出現2次以上 => 0 分
-	 * 若相鄰兩句同句型，且除了填充詞之外有相同的詞 => 0
-	 * 除此之外，一首詩用越多詞分數越高
 	 * @return
 	 */
 	private int getDiversityScore(){
@@ -178,23 +192,11 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 		HashMap<String, Boolean> repeatedSentence = new HashMap<String,Boolean>();
 		
 		for (PoemSentence sentence : poem){
-			if (repeatedSentence.containsKey(sentence.toString())){
-				return 0;
+			if (repeatedSentence.containsKey(sentence.encode())){
+				return 0 ;
 			}
 			else{
-				repeatedSentence.put(sentence.toString(), true);
-			}
-		}
-		
-		/*相鄰兩句若是相同的句型，不允許重複出現相同的詞(填充詞除外)*/
-		for (int i = 0 ; i < row ; i += 2){
-			if ( poem[i].getSentenceType() != poem[i+1].getSentenceType())
-				continue;
-			for (int j = 0 ; j < poem[i].getLength() ; j++){
-				if(poem[i].getWords()[j].getWord().equals(poem[i+1].getWords()[j].getWord())
-						&& poem[i].getWords()[j].getRelation() != Relation.PADDING){
-					return 0;
-				}
+				repeatedSentence.put(sentence.encode(), true);
 			}
 		}
 		
@@ -415,10 +417,49 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 			return score;
 	}
 
+	private int getPatternScore(){
+		int countPattern = 0;
+		int[] recordTag = new int[100];
+		HashMap<Integer, Boolean> recordPattern = new HashMap<>();
+		for (int i = 0 ; i < row ; i+=2){
+			int tag1 =  poem[i].getSentenceTag();
+			int tag2 =  poem[i+1].getSentenceTag();
+			
+			if (matchSentencePattern(tag1, tag2)){
+				int patternEncode = tag1 * 1000 + tag2;
+				if (!recordPattern.containsKey(patternEncode)){
+					if (patternEncode == 16008 || patternEncode == 8016){
+							recordPattern.put(16008, true);
+							recordPattern.put(8016, true);
+					}
+					else {
+						recordPattern.put(patternEncode, true);
+					}	
+					countPattern += 1;
+				}
+			}
+			
+			if (recordTag[tag1] >= 2){
+				return 0;
+			}
+			else{
+				recordTag[tag1] += 1;
+			}
+			
+			if (recordTag[tag2] >= 2){
+				return 0;
+			}
+			else{
+				recordTag[tag2] += 1;
+			}
+		}
+		
+		return MAX_PATTERN_SCORE*(countPattern)/4;
+	}
 	
 	public String printScore(){
 		this.getFitnessScore();
-		return String.format("押韻: %d/%d, 平仄: %d/%d, 對仗:%d/%d, 多樣性:%d/%d",detailScore[0],MAX_RHYTHM_SCORE,detailScore[1],MAX_TONE_SCORE,detailScore[2],MAX_ANTITHESIS_SCORE,detailScore[3],MAX_DIVERSITY_SCORE);
+		return String.format("押韻: %d/%d, 平仄: %d/%d, 對仗:%d/%d\n多樣性:%d/%d, 句型:%d/%d",detailScore[0],MAX_RHYTHM_SCORE,detailScore[1],MAX_TONE_SCORE,detailScore[2],MAX_ANTITHESIS_SCORE,detailScore[3],MAX_DIVERSITY_SCORE,detailScore[4],MAX_PATTERN_SCORE);
 	}
 	
 	public int[] getDetailScore(){
@@ -431,7 +472,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0 ; i < row ; i+=2){
-			sb.append(poem[i].toString()+"，"+poem[i+1].toString()+"\n");
+			sb.append(poem[i].toString()+"("+poem[i].getSentenceTag()+")"+"，"+poem[i+1].toString()+"("+poem[i+1].getSentenceTag()+")"+"\n");
 		}	
 		return sb.toString();
 	}
@@ -447,5 +488,50 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
 		else {
 			return 0;
 		}
+	}
+	
+	private void loadSentencePattern(){
+		final String fileName = "sentencePattern.data";
+		
+		if (firstSentenceTags != null && secondSentenceTags != null)
+			return;
+		
+		firstSentenceTags = new ArrayList<>();
+		secondSentenceTags= new ArrayList<>();
+		ArrayList<Integer> tagList;
+		try {
+			BufferedReader bufRead = new BufferedReader(new FileReader(fileName));
+			while (true) {
+				String line = bufRead.readLine();
+				if (line == null)
+					break;
+				if (line.length() == 0 || line.charAt(0) == '#')
+					continue;
+				String firstTag = line.split(" +")[0];
+				String secondTag = line.split(" +")[1];
+				tagList = new ArrayList<>();
+				for (String tag : firstTag.split("/")){
+					tagList.add(Integer.valueOf(tag));
+				}
+				firstSentenceTags.add(tagList);
+				tagList = new ArrayList<>();
+				for (String tag : secondTag.split("/")){
+					tagList.add(Integer.valueOf(tag));
+				}
+				secondSentenceTags.add(tagList);
+			}
+			bufRead.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+	
+	public boolean matchSentencePattern(int tag1,int tag2){
+		for (int i = 0 ; i < firstSentenceTags.size() ; i++){
+			if (firstSentenceTags.get(i).contains(tag1) && secondSentenceTags.get(i).contains(tag2))
+				return true;
+		}
+		return false;
 	}
 }

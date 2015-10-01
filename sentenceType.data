@@ -1,3 +1,4 @@
+#tag 編號請不要超過100
 0 (是) (一種) /r/IsA_END
 0 (一種) /r/IsA_END
 
@@ -79,8 +80,8 @@
 11 /r/MotivatedByGoal0_END (造成/引起/釀成/導致)
 
 #複合關係
-12 /r/AtLocation_END /r/CapableOf_END
-12 (在) /r/AtLocation_END /r/CapableOf_END
+#12 /r/AtLocation_END /r/CapableOf_END
+#12 (在) /r/AtLocation_END /r/CapableOf_END
 # 被server 擋住了 (429 Too Many Requests)
 13 /r/HasProperty_END (的) TOPIC
 13 /r/HasProperty_END (的) /r/IsA_END
