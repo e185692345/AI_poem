@@ -158,9 +158,9 @@ public class WordPile {
 	 * 從 relationPile 中隨機取出一個符合條件的詞，若是沒有符合的詞則會回傳null
 	 * 
 	 * @param relation 參見ai.word.Relation
-	 * @param startOrEnd start : 0 / end : 0
+	 * @param startOrEnd start : 0 / end : 1
 	 * @param length 詞的長度
-	 * @return 若沒有符合的詞則會還傳null
+	 * @return 
 	 * @throws RelationWordException 
 	 */
 	public ChineseWord getRlationWord(Relation relation,int startOrEnd, int length) throws RelationWordException{

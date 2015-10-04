@@ -256,8 +256,9 @@ public class GeneticAlgorithm {
     // TODO mutation()
     /**
      * 突變某首詩25%的句子
+     * @throws MakeSentenceException 
      */
-    private void mutation(){
+    private void mutation() throws MakeSentenceException{
     	if (DEBUG) System.out.println("===Mutation===");
     	for (int i = 0 ; i < POPULATION_SIZE ; i++){
     		if (canHappen(MUTATION_RATE)){
@@ -268,11 +269,7 @@ public class GeneticAlgorithm {
 	    			else {
 						index = rand.getNoRepeatInt(0);
 					}
-	    			try {
-						population[i].getPoem()[index] = sentenceMaker.makeSentence(population[i].getPoem()[index].getLineComposition());
-						} catch (MakeSentenceException e) {
-						System.err.println(e.getMessage());
-					}
+					population[i].getPoem()[index] = sentenceMaker.makeSentence(population[i].getPoem()[index].getLineComposition());
     			}
     		}
     	}
@@ -280,7 +277,7 @@ public class GeneticAlgorithm {
 	/**
 	 * 	逐一替換每個詞，若替換後分數較低則把詩復原
 	 */
- // TODO polish()
+    // TODO polish()
     private void polish(){
 		if (DEBUG) System.out.println("===Polish===");
 		
