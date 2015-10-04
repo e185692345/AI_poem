@@ -1,9 +1,6 @@
 package ai.poem;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,7 +14,6 @@ import ai.sentence.LineComposition;
 import ai.sentence.SentenceMaker;
 import ai.sentence.PoemSentence;
 import ai.word.ChineseWord;
-import ai.word.Relation;
 import ai.word.WordPile;
 
 public class PoemTemplate implements Comparable<PoemTemplate>{
@@ -93,9 +89,10 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
      * @param row 詩有幾句
      * @param col 每句幾個字
      * @return PoemTemplate的object
+	 * @throws Exception 
 	 * @throws MakeSentenceException 
      */
-    public static PoemTemplate getRandomPoem(int row,int col,WordPile wordPile,SentenceMaker maker){
+    public static PoemTemplate getRandomPoem(int row,int col,WordPile wordPile,SentenceMaker maker) throws Exception{
     	HashMap<String, Boolean> repeatSentence = new HashMap<String, Boolean>();
     	PoemSentence[] poem = new PoemSentence[row];
     	int[] repeatSentenceTag = new int[100];
@@ -113,8 +110,7 @@ public class PoemTemplate implements Comparable<PoemTemplate>{
         			break;
     		}
     		if (!isDone){
-    			System.err.println("error : 造詩失敗，句型模板太少");
-    	    	System.exit(1);
+    			throw new Exception("error : 造詩失敗，句型模板太少");
     		}
     	}
     	

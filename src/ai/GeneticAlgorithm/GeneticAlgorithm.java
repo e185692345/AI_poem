@@ -63,7 +63,7 @@ public class GeneticAlgorithm {
     	return maxGeneration;
     }
     
-    public void evolve() {
+    public void evolve() throws Exception {
 		int[] maxScore = new int[maxGeneration];
 		int[] minScore = new int[maxGeneration];
 		int[] avgScore = new int[maxGeneration];
@@ -156,8 +156,9 @@ public class GeneticAlgorithm {
     
     /**
      * 初始化族群
+     * @throws Exception 
      */
-    public void initPopulation(){
+    public void initPopulation() throws Exception{
     	population = new PoemTemplate[POPULATION_SIZE];
         for (int i = 0 ; i < POPULATION_SIZE ; i++){
         	population[i] = PoemTemplate.getRandomPoem(this.row, this.col,this.wordPile,this.sentenceMaker);
@@ -330,9 +331,10 @@ public class GeneticAlgorithm {
     }
 	/**
 	 * 用轉盤法篩選出下一個世代，最後10%一律捨棄重新隨機產生
+	 * @throws Exception 
 	 */
     // TODO select()
-    private void select(){
+    private void select() throws Exception{
 		int[] cumulativeSum = new int[POPULATION_SIZE];
 		
 		int totalSum = 0;

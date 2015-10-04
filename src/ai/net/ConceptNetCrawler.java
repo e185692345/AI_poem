@@ -24,7 +24,6 @@ import com.memetix.mst.translate.Translate;
 
 import ai.exception.BopomofoException;
 import ai.exception.RelationConvertException;
-import ai.sentence.PoemSentence;
 import ai.userInterface.MyUtility;
 import ai.word.ChineseWord;
 import ai.word.Relation;
@@ -45,12 +44,11 @@ public class ConceptNetCrawler {
 	}
 	
 	public ChineseWord[] getWordList_ChineseSource(){
-		String url;
 		ArrayList<ChineseWord> relativeWord = new ArrayList<ChineseWord>();
 		relativeWord.addAll(Arrays.asList(getWordList_ChineseSource(topic,NODES)));
 		
 		/*try {
-			url = new String("http://conceptnet5.media.mit.edu/data/5.2/search?limit="+LIMIT+"&rel=/r/IsA&nodes=/c/zh_TW/"+URLEncoder.encode(topic,"UTF-8"));
+			String url = new String("http://conceptnet5.media.mit.edu/data/5.2/search?limit="+LIMIT+"&rel=/r/IsA&nodes=/c/zh_TW/"+URLEncoder.encode(topic,"UTF-8"));
 		
 			System.out.println(url);
 			JSONObject obj = readJsonFromURL(url);

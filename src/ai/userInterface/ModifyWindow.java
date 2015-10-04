@@ -35,6 +35,8 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Stack;
 
+import ai.exception.BopomofoException;
+import ai.net.BopomofoCrawler;
 import ai.word.ChineseWord;
 import ai.word.Relation;
 
@@ -47,23 +49,26 @@ public class ModifyWindow extends JFrame{
 	private RelationPanel relationPanel;
 	private FilterPanel filterPanel;
 	private WordListPanel wordListPanel;
+	private AddTopicPanel addTopicPanel;
 	
 	private String topic;
 	private int topicWordType;
 	private ArrayList<ChineseWord> wordPile;
-	boolean[] isVisible;
+	private ArrayList<Boolean> isVisible;
 	private DefaultListModel<ChineseWord> listModel;
 	private Relation selectedRelation;
 	private Stack<Integer> deletedWords;
 	private JTextField txt_file;
+	private File saveJson;
 	
 	public ModifyWindow(MainWindow parent, String topic, Integer topicWordType, ArrayList<ChineseWord> wordPile) {
 		
 		
-		this.wordPile = wordPile;
-		isVisible = new boolean[wordPile.size()];
+		this.wordPile = new ArrayList<>(wordPile);
+		
+		isVisible = new ArrayList<>();
 		for (int i = 0 ; i < wordPile.size() ; i++)
-			isVisible[i] = true;
+			isVisible.add(true);
 		this.topic = topic;
 		this.topicWordType = topicWordType;
 		deletedWords = new Stack<>();
@@ -97,7 +102,13 @@ public class ModifyWindow extends JFrame{
 			
 			@Override
 			public void windowClosing(WindowEvent e) {
-				parent.updateStatisticValue();
+				ArrayList<ChineseWord> newList = new ArrayList<>();
+				for (int i = 0; i < wordPile.size() ; i++){
+					if (!deletedWords.contains(i)){
+						newList.add(wordPile.get(i));
+					}
+				}
+				parent.updateStatisticValue(newList);
 				parent.setVisible(true);
 			}
 			
@@ -128,6 +139,10 @@ public class ModifyWindow extends JFrame{
 		filterPanel.setLocation(200,10);
 		add(filterPanel);
 		
+		addTopicPanel = new AddTopicPanel();
+		addTopicPanel.setLocation(440,10);
+		add(addTopicPanel);
+		
 		wordListPanel = new WordListPanel();
 		wordListPanel.setLocation(200,120);
 		add(wordListPanel);
@@ -152,7 +167,13 @@ public class ModifyWindow extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				ModifyWindow.this.setVisible(false);
-				parent.updateStatisticValue();
+				ArrayList<ChineseWord> newList = new ArrayList<>();
+				for (int i = 0; i < wordPile.size() ; i++){
+					if (!deletedWords.contains(i)){
+						newList.add(wordPile.get(i));
+					}
+				}
+				parent.updateStatisticValue(newList);
 				parent.setVisible(true);
 			}
 		});
@@ -162,6 +183,7 @@ public class ModifyWindow extends JFrame{
 		txt_file = new JTextField();
 		txt_file.setBounds(330, 370, 100, 25);
 		txt_file.setText(topic+".json");
+		saveJson = new File(topic+".json");
 		txt_file.addMouseListener(new MouseListener() {
 			
 			@Override
@@ -194,7 +216,7 @@ public class ModifyWindow extends JFrame{
 				int result = fc.showSaveDialog(ModifyWindow.this);
 				
 				if (result == JFileChooser.APPROVE_OPTION) {
-					File saveJson = fc.getSelectedFile();
+					saveJson = fc.getSelectedFile();
 					tmp.setText(saveJson.getName());
 				}
 			}
@@ -207,9 +229,13 @@ public class ModifyWindow extends JFrame{
 	private void updateWordJlist(){
 		
 		listModel.clear();
+		if (selectedRelation == Relation.TOPIC)
+			MyUtility.enableComponents(addTopicPanel, true);
+		else
+			MyUtility.enableComponents(addTopicPanel, false);
 		for (int i = 0 ; i < wordPile.size() ; i++){
 			ChineseWord word = wordPile.get(i);
-			if (word.getRelation() == selectedRelation && filterPanel.isWordValid(word) && isVisible[i] == true)
+			if (word.getRelation() == selectedRelation && filterPanel.isWordValid(word) && isVisible.get(i) == true)
 				listModel.addElement(word);
 		}
 		if (listModel.getSize() == 0){
@@ -232,7 +258,7 @@ public class ModifyWindow extends JFrame{
 			JOptionPane.showMessageDialog(ModifyWindow.this,"刪除 \""+word.getWord()+"\" 失敗","錯誤",JOptionPane.ERROR_MESSAGE);
 		}
 		
-		isVisible[result1] = false;
+		isVisible.set(result1,false);
 		deletedWords.push(result1);
 		wordListPanel.btn_undo.setEnabled(true);
 		
@@ -248,7 +274,7 @@ public class ModifyWindow extends JFrame{
 	
 	private void restoreDeletion(){
 		int index1 = deletedWords.pop();
-		isVisible[index1] = true;
+		isVisible.set(index1, true);
 		ChineseWord word = wordPile.get(index1);
 		updateWordJlist();
 		
@@ -264,22 +290,27 @@ public class ModifyWindow extends JFrame{
 	
 	private void saveToJsonFile(){
 		JSONObject root = new JSONObject();
-		
+		ArrayList<ChineseWord> newList = new ArrayList<>();
+		for (int i = 0; i < wordPile.size() ; i++){
+			if (!deletedWords.contains(i)){
+				newList.add(wordPile.get(i));
+			}
+		}
 		try {
 			root.put("topic", topic);
 			root.put("topicWordType", topicWordType);
 			JSONArray wordArray = new JSONArray();
-			for (ChineseWord word : wordPile){
+			for (ChineseWord word : newList){
 				wordArray.put(new JSONObject(word));
 			}
 			root.put("wordList", wordArray);
-			File saveFile = new File(txt_file.getText());
-			if (saveFile.exists()){
+		
+			if (saveJson.exists()){
 				int result = JOptionPane.showConfirmDialog(ModifyWindow.this,"檔案已經存在，請問要覆蓋嗎?","警告",JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE);
 				if (result != 0)
 					return;
 			}
-			BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(saveFile));
+			BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(saveJson));
 			out.write(root.toString().getBytes());
 			out.close();
 			JOptionPane.showMessageDialog(ModifyWindow.this, "存檔成功","訊息",JOptionPane.INFORMATION_MESSAGE);
@@ -466,5 +497,48 @@ public class ModifyWindow extends JFrame{
 			}
 			
 		}
+	}
+	
+	private class AddTopicPanel extends JPanel{
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 616728237478438517L;
+		
+		public AddTopicPanel(){
+			setLayout(null);
+			setSize(140, 100);
+			JTextField txt_input = new JTextField();
+			txt_input.setBounds(10, 20, 120, 30);
+			add(txt_input);
+			
+			JButton btn_addTopic = new JButton("增加");
+			btn_addTopic.setBounds(70, 60, 60, 30);
+			add(btn_addTopic);
+			btn_addTopic.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					String topic = txt_input.getText();
+					if (topic.length() > 0){
+						try {
+							wordPile.add(new ChineseWord(topic, BopomofoCrawler.getBopomofo(topic), topicWordType, Relation.TOPIC, Relation.START,"主題：" + topic));
+							isVisible.add(true);
+							txt_input.setText("");
+							updateWordJlist();
+						} catch (BopomofoException e1) {
+							e1.printStackTrace();
+						}
+					}
+				}
+			});
+			
+			setBorder(BorderFactory.createTitledBorder("增加主題"));
+			
+			
+			setVisible(true);
+		}
+		
 	}
 }

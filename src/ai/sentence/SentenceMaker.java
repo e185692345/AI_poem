@@ -7,6 +7,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 
 import org.json.JSONObject;
@@ -59,20 +60,22 @@ public class SentenceMaker {
 	}
 	
 	private void getAvailableSentenceTemplate(){
+		int[] availableSentenceTag = new int[100];
+		ArrayList<Integer> startIndex = new ArrayList<>();
 		availabelSentenceTemplate = new ArrayList<>();
 		availableSentences = new int[countType];
 		for (int i = 0 ; i < countType ; i++){
 			 if (sentenceTag[i] == SPECIAL_TYPE){
-				availabelSentenceTemplate.add(i);
+				 availabelSentenceTemplate.add(i);
 				break;
 			}
 			HashMap<String,Boolean> countSentence = new HashMap<String,Boolean>();
 			for (int j = 0 ; j < 100 ; j++){
-				String sentence;
+				PoemSentence sentence;
 				try {
-					sentence = this.makeSentence(i).toString();
-					if ( !countSentence.containsKey(sentence)){
-						countSentence.put(sentence, true);
+					sentence = this.makeSentence(i);
+					if ( !countSentence.containsKey(sentence.toString())){
+						countSentence.put(sentence.toString(), true);
 						availableSentences[i] += 1;
 						availableSentenceCount += 1;
 					}
@@ -83,9 +86,49 @@ public class SentenceMaker {
 			if (availableSentences[i] > 0){
 				availableTypeCount += 1;
 				availabelSentenceTemplate.add(i);
+				availableSentenceTag[sentenceTag[i]] += 1;
 			}
 		}
 		
+		availabelSentenceTemplate.sort(new Comparator<Integer>() {
+			@Override
+			public int compare(Integer o1, Integer o2) {
+				if (sentenceTag[o1] <= sentenceTag[o2])
+					return -1;
+				else
+					return 1;
+			}
+		});
+		
+		int preTag = -1;
+		for (int i = 0 ; i < availabelSentenceTemplate.size() ; i++){
+			int type = availabelSentenceTemplate.get(i);
+			int tag = sentenceTag[type];
+			if (tag != preTag){
+				preTag = tag;
+				startIndex.add(i);
+			}
+		}
+		startIndex.add(availabelSentenceTemplate.size());
+		
+		int preIndex = 0,max = 0;
+		for (int index : startIndex){
+			int count = index - preIndex;
+			if (count > max)
+				max = count;
+			preIndex = index;
+		}
+		
+		preIndex = 0;
+		for (int index : startIndex){
+			int count = index - preIndex;
+			if (count > 0 && count < max){
+				for (int i = 0 ; i < max-count ; i++){
+					availabelSentenceTemplate.add(availabelSentenceTemplate.get(preIndex+i%count));
+				}
+			}
+			preIndex = index;
+		}
 	}
 	
 	private void loadSentenceTypeFile(){
@@ -218,6 +261,15 @@ public class SentenceMaker {
 					return new PoemSentence(type,words,composition,sentenceTag[type]);
 				}
 				throw new MakeSentenceException(composition,sentenceTemplate[type]);
+			}
+			else if (sentenceTag[type] == 15){
+				// /r/HasProperty_END (也/又) /r/HasProperty_END 兩個形容詞不可以一樣
+				if (words[0].getWord().equals(words[2].getWord())){
+					throw new MakeSentenceException(composition,sentenceTemplate[type]);
+				}
+				else{
+					return new PoemSentence(type,words,composition,sentenceTag[type]);
+				}
 			}
 			else {
 				return new PoemSentence(type,words,composition,sentenceTag[type]);

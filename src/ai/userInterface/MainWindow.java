@@ -80,9 +80,10 @@ public class MainWindow extends JFrame{
 		setVisible(true);
 	}
 	
-	public void updateStatisticValue() {
+	public void updateStatisticValue(ArrayList<ChineseWord> wordArrayList) {
 		wordPile = new WordPile(topic,topicWordType);
-		wordPile.AddWords(wordArrayList);
+		this.wordArrayList = wordArrayList;
+		wordPile.addWords(wordArrayList);
 		maker = new SentenceMaker(wordPile);
 		ga = new GeneticAlgorithm(8, 5, wordPile, maker);
 		ga.setProgressBar(progressPanel.progressBar);
@@ -153,16 +154,29 @@ public class MainWindow extends JFrame{
 				new Thread(new Runnable() {
 					@Override
 					public void run() {
-						ga.evolve();
-						SwingUtilities.invokeLater(new Runnable() {
-							
-							@Override
-							public void run() {
-								MyUtility.enableComponents(sourcePanel, true);
-								MyUtility.enableComponents(StatisticalPanel.this, true);
-								progressPanel.setTitle("演化完成");
-							}
-						});
+						try{
+							ga.evolve();
+							SwingUtilities.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									MyUtility.enableComponents(sourcePanel, true);
+									MyUtility.enableComponents(StatisticalPanel.this, true);
+									progressPanel.setTitle("演化完成");
+								}
+							});
+						}
+						catch (Exception e){
+							SwingUtilities.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									MyUtility.enableComponents(sourcePanel, true);
+									MyUtility.enableComponents(StatisticalPanel.this, true);
+									progressPanel.setTitle("演化失敗");
+									progressPanel.progressBar.setIndeterminate(false);
+								}
+							});
+							JOptionPane.showMessageDialog(MainWindow.this,"作詩失敗","錯誤",JOptionPane.ERROR_MESSAGE);
+						}
 					}
 				}).start();
 				progressPanel.progressBar.setStringPainted(false);
@@ -313,7 +327,7 @@ public class MainWindow extends JFrame{
 			@Override
 			public void run() {
 				MyUtility.enableComponents(WordSourcePanel.this,true);
-				updateStatisticValue();
+				updateStatisticValue(wordArrayList);
 				MyUtility.enableComponents(statisticalPanel,true);
 				progressPanel.setTitle("讀取完成");
 				progressPanel.progressBar.setStringPainted(true);

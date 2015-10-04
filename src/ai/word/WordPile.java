@@ -1,7 +1,9 @@
 package ai.word;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 
 import org.json.JSONArray;
@@ -68,7 +70,11 @@ public class WordPile {
 		}
 	}
 	
-	public void AddWords(ArrayList<ChineseWord> wordList){
+	public void addTopicWord(ChineseWord word){
+		topicWord.get(word.getLength()).add(word);
+	}
+	
+	public void addWords(List<ChineseWord> wordList){
 		for (int i = 0 ; i < wordList.size() ; i++){
 			allWords.add(wordList.get(i));
 		}
@@ -76,7 +82,13 @@ public class WordPile {
 		for (ChineseWord word : wordList){
 			if(!isRecord.containsKey(word.getWord())){
 				isRecord.put(word.getWord(), true);
-				relationPile.get(word.getRelation().getIndex()).get(word.getStartOrEnd()).get(word.getLength()).add(word);
+				Relation relation = word.getRelation();
+				if (relation.getIndex() >= 0){
+					relationPile.get(relation.getIndex()).get(word.getStartOrEnd()).get(word.getLength()).add(word);
+				}
+				else if (relation == Relation.TOPIC){
+					addTopicWord(word);
+				}
 				totalWordCount += 1;
 			}
 			else {
@@ -86,22 +98,8 @@ public class WordPile {
 		System.out.printf("目前共有 %d 個詞\n",totalWordCount);
 	}
 	
-	public void AddWords(ChineseWord[] wordList){
-		for (int i = 0 ; i < wordList.length ; i++){
-			allWords.add(wordList[i]);
-		}
-		
-		for (ChineseWord word : wordList){
-			if(!isRecord.containsKey(word.getWord())){
-				isRecord.put(word.getWord(), true);
-				relationPile.get(word.getRelation().getIndex()).get(word.getStartOrEnd()).get(word.getLength()).add(word);
-				totalWordCount += 1;
-			}
-			else {
-				System.err.println(word.getWord()+"已經出現過了");
-			}
-		}
-		System.out.printf("目前共有 %d 個詞\n",totalWordCount);
+	public void addWords(ChineseWord[] wordList){
+		addWords(Arrays.asList(wordList));
 	}
 	
 	

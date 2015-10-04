@@ -63,12 +63,12 @@ public class PoemSentence {
 	}
 	/**
 	 * 
-	 * @return 將句子中除了 padding 之外的詞連起來，用於判斷類似的句子是否重複出現於同一首詩中
+	 * @return 將句子中除了 padding 跟 TOPIC 之外的詞連起來，用於判斷類似的句子是否重複出現於同一首詩中
 	 */
 	public String encode() {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0 ; i < words.length ; i++){
-			if(words[i].getRelation() == Relation.PADDING)
+			if(words[i].getRelation() == Relation.PADDING || words[i].getRelation() == Relation.TOPIC)
 				continue;
 			sb.append(words[i].getWord());
 		}

@@ -40,13 +40,18 @@ public class TempMain {
 			for (String str : topicWord[k])
 				wordPile.addTopicWord(str);
 			ConceptNetCrawler wordSource= new ConceptNetCrawler(topic[k],wordType[k]);
-			wordPile.AddWords(wordSource.getWordList_ChineseSource(topic[k],obj));
+			wordPile.addWords(wordSource.getWordList_ChineseSource(topic[k],obj));
 			SentenceMaker maker = new SentenceMaker(wordPile);
 			System.out.println("主題 : "+topic[k]);
 			wordPile.printWordPileStatistic();
 			//wordPile.printBopomofo();
 			maker.printAvailableSentenceStatistic();
-			new GeneticAlgorithm(8, 5, wordPile, maker).evolve();
+			try {
+				new GeneticAlgorithm(8, 5, wordPile, maker).evolve();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 }
