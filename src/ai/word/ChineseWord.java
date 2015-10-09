@@ -8,7 +8,7 @@ import ai.exception.RelationConvertException;
 
 public class ChineseWord {
 
-	public static final int SINGLE = 8, NOUN = 1, ADJ = 2, VERB = 4, EMPTY = 0;;
+	public static final int SINGLE = 8, NOUN = 1, ADJ = 2, VERB = 4, EMPTY = 0;
 	
 	private int length;
 	private String word;
