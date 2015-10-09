@@ -146,6 +146,14 @@ public class GeneticAlgorithm {
     		;
     		try{
     			String fileName = wordPile.getTopic().getWord()+new Date().getTime()+".png";
+    			File dir = new File("./pic");
+    			if(!dir.exists()){
+    				boolean file_true = dir.mkdirs();
+    				if(file_true)
+    					System.out.println("mkdir successfully!");
+    				else
+    					System.out.println("mkdir failed!");
+    			}
     			System.out.println("scrennshot result : "+ImageIO.write(MyUtility.getScreenShot(window.getGraohicPanel()),"png",new File("./pic/",fileName)));
     		}catch (Exception e) {
     			e.printStackTrace();
