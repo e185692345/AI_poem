@@ -10,7 +10,8 @@ public final class LineComposition {
 		{1,1,3},{1,3,1},{3,1,1},
 		{2,2,1},{2,1,2},{1,2,2}/*,
 		{1,1,1,2},{1,1,2,1},{1,2,1,1},{2,1,1,1}*/};
-		
+	public final static int[][] SEVEN_LETTER_COMPOSITION 
+	= new int[][]{{2,2,3},{4,3}};
 	private static final Random rand = new Random();
 	
 	public static int[] getRandomComposition(int countLetter){

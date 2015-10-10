@@ -41,9 +41,9 @@ public class ChineseWord {
 		this.relation = relation;
 		this.startOrEnd = startOrEnd;
 		this.surfaceText = surfaceText;
+		
 		for (int i = 0 ; i < this.length ; i++){
 			str = letterBopomofo[i];
-			
 			if (str.charAt(str.length()-1) =='˙'){
 				this.tone[i] = 0;
 				this.bopomofo[i] = str.charAt(str.length()-2);

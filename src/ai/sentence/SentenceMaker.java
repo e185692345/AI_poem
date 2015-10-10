@@ -331,7 +331,6 @@ public class SentenceMaker {
 	
 	public PoemSentence makeSentence(int type) throws MakeSentenceException{
 		ArrayList<int[]> compositionList = new ArrayList<>(Arrays.asList(LineComposition.FIVE_LETTER_COMPOSITION));
-		
 		while(!compositionList.isEmpty()){
 			int[] composition =(int[]) rand.getRandomObject(compositionList);
 			if ( sentenceTemplate[type].length != composition.length)
