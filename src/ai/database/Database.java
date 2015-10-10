@@ -1,6 +1,5 @@
 package ai.database;
 
-import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -59,60 +58,60 @@ public class Database {
 		HashMap<String, Boolean> isRecorded = new HashMap<String,Boolean>();
 		String word;
 		int startOrEnd;
-		int cc=0;
+		
 		try{
-			while (rs.next()) {cc++;
+			while (rs.next()) {
 				try {
 					relation = Relation.getRelation("/r/" + rs.getString("Relation"));
 				
-				String startWord = rs.getString("Start");
-				String endWord = rs.getString("End");
-				//System.out.println(startWord+ " " + endWord);
-				String extraData;
-				/* TODO 修正某些relation*/
-				String surfaceText = rs.getString("SurfaceText");
-				relation = fixRelation(relation, surfaceText);
-				if (startWord.equals(topic)){
-					word = endWord;
-					startOrEnd = Relation.END;
-				}
-				else if (endWord.equals(topic)){
-					word = startWord;
-					startOrEnd = Relation.START;
-				}
-				else{
-					//System.err.println("warning : ConceptNet gives a json object without corresponding start wrod / end word ( "+startWord+" , "+endWord+" )");
-					continue;
-				}
-						
-				/* TODO 把特定的介係詞加入word尾端*/
-				final String[] detailLocation = {"下","外","裡"};
-				if(relation == Relation.AtLocation){
-					extraData = rs.getString("surfaceText");
-					extraData = extraData.substring(extraData.length()-2, extraData.length()-1);
-					for (String temp : detailLocation){
-						if (extraData.equals(temp) && !word.substring(word.length()-1, word.length()).equals(temp)){
-							word = word+temp;
-						}
+					String startWord = rs.getString("Start");
+					String endWord = rs.getString("End");
+					//System.out.println(startWord+ " " + endWord);
+					String extraData;
+					/* TODO 修正某些relation*/
+					String surfaceText = rs.getString("SurfaceText");
+					relation = fixRelation(relation, surfaceText);
+					if (startWord.equals(topic)){
+						word = endWord;
+						startOrEnd = Relation.END;
 					}
-				}
-						
-				if (word.length() <= 3){
-					if (!isRecorded.containsKey(word)){
-						isRecorded.put(word, true);
-						wordType = Relation.getWordType(relation,startOrEnd);
-						try {//System.out.println(word);
-							tempWordList[count] =  new ChineseWord(word, BopomofoCrawler.getBopomofo(word), wordType, relation, startOrEnd,surfaceText);
-							count += 1;
-						} catch (BopomofoException e) {
-							System.err.println(e.getMessage());
-							continue;	
-						}
+					else if (endWord.equals(topic)){
+						word = startWord;
+						startOrEnd = Relation.START;
 					}
 					else{
-						//System.out.println(word + " 已經出現過");
+						//System.err.println("warning : ConceptNet gives a json object without corresponding start wrod / end word ( "+startWord+" , "+endWord+" )");
+						continue;
 					}
-				}
+							
+					/* TODO 把特定的介係詞加入word尾端*/
+					final String[] detailLocation = {"下","外","裡"};
+					if(relation == Relation.AtLocation){
+						extraData = rs.getString("surfaceText");
+						extraData = extraData.substring(extraData.length()-2, extraData.length()-1);
+						for (String temp : detailLocation){
+							if (extraData.equals(temp) && !word.substring(word.length()-1, word.length()).equals(temp)){
+								word = word+temp;
+							}
+						}
+					}
+							
+					if (word.length() <= 3){
+						if (!isRecorded.containsKey(word)){
+							isRecorded.put(word, true);
+							wordType = Relation.getWordType(relation,startOrEnd);
+							try {//System.out.println(word);
+								tempWordList[count] =  new ChineseWord(word, BopomofoCrawler.getBopomofo(word), wordType, relation, startOrEnd,surfaceText);
+								count += 1;
+							} catch (BopomofoException e) {
+								System.err.println(e.getMessage());
+								continue;	
+							}
+						}
+						else{
+							//System.out.println(word + " 已經出現過");
+						}
+					}
 				} catch (RelationConvertException e1) {
 					// TODO Auto-generated catch block
 					System.err.println(e1.getMessage());
@@ -124,7 +123,7 @@ public class Database {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		System.out.println("從 concpt net 上獲取了 "+count+" 個詞" +cc);
+		System.out.println("從 concpt net 上獲取了 "+count+" 個詞");
 		return Arrays.copyOf(tempWordList, count);
 	}
 	private Relation fixRelation(Relation relation,String surfaceText) {
@@ -147,35 +146,21 @@ public class Database {
 		
 		surfaceText = surfaceText.replaceAll("\\[\\[.*?\\]\\]", "");
 		switch (relation){
-		case Desires:
-			for (String temp : negativeDesire){
-				if (surfaceText.indexOf(temp) != -1){
-					return Relation.NotDesires;
-				}
-			}
-			return relation;
-		
-		case Causes:
-		case CapableOf :
-		case HasSubevent :
-		case MadeOf :
-			keywords = detailData.get(relation);
-			for (int i = 0 ; i < keywords.length ; i++){
-				if (surfaceText.indexOf(keywords[i]) != -1){
-					try {
-						return Relation.getRelation(relation.toString()+i);
-					} catch (RelationConvertException e) {
-						e.printStackTrace();
-						System.exit(1);
+			case Desires:
+				for (String temp : negativeDesire){
+					if (surfaceText.indexOf(temp) != -1){
+						return Relation.NotDesires;
 					}
 				}
-			}
-			return relation;
-		case MotivatedByGoal :
-			keywords = detailData.get(relation);
-			for (int i = 0 ; i < keywords.length ; i++){
-				if (surfaceText.indexOf(keywords[i]) != -1){
-					if (!keywords[i].equals("時候會") || keywords[i].equals("時候會") && (wordType&ChineseWord.VERB) > 0){
+				return relation;
+			
+			case Causes:
+			case CapableOf :
+			case HasSubevent :
+			case MadeOf :
+				keywords = detailData.get(relation);
+				for (int i = 0 ; i < keywords.length ; i++){
+					if (surfaceText.indexOf(keywords[i]) != -1){
 						try {
 							return Relation.getRelation(relation.toString()+i);
 						} catch (RelationConvertException e) {
@@ -184,9 +169,23 @@ public class Database {
 						}
 					}
 				}
-			}
-		default:
-			return relation;
+				return relation;
+			case MotivatedByGoal :
+				keywords = detailData.get(relation);
+				for (int i = 0 ; i < keywords.length ; i++){
+					if (surfaceText.indexOf(keywords[i]) != -1){
+						if (!keywords[i].equals("時候會") || keywords[i].equals("時候會") && (wordType&ChineseWord.VERB) > 0){
+							try {
+								return Relation.getRelation(relation.toString()+i);
+							} catch (RelationConvertException e) {
+								e.printStackTrace();
+								System.exit(1);
+							}
+						}
+					}
+				}
+			default:
+				return relation;
 		}
 	}
 }
