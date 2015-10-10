@@ -68,9 +68,10 @@ public class BopomofoCrawler {
 				return getSingleLetterBopoMofo(target);
 			}
 		}
-		
 		String[] bopomofoList;
-		bopomofo = bopomofo.replace("ㄦ","　ㄦ");
+		if(bopomofo.charAt(0)!='ㄦ') bopomofo = bopomofo.replace("ㄦ","　ㄦ");
+		//特例：耳 ㄦˇ 若無if判斷會出錯
+		
 		bopomofoList = bopomofo.split("　+");
 		
 		if ( word.length() != bopomofoList.length){
