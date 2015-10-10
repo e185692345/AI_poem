@@ -8,3 +8,5 @@ pic/
 CKIPClient/
 src/ai/net/MicrosoftTranslatorKey.java
 src/Config/Translator.properties
+
+ConceptNet.db
