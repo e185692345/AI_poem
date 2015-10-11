@@ -1,10 +1,9 @@
-package ai;
+package ai.database;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import ai.GeneticAlgorithm.GeneticAlgorithm;
-import ai.database.Database;
 import ai.sentence.SentenceMaker;
 import ai.word.ChineseWord;
 import ai.word.WordPile;
